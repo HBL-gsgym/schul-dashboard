@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · GitHub-Test v3.2</title>
+<title>Schul-Dashboard HBL · Mobil-Test v3.3</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1237,6 +1237,12 @@ body.dark .tile-tool:hover,body.dark .tile-grip:hover{background:rgba(255,255,25
 body:not(.dark) .demo-alert{color:#6f4200;background:#fff4dc;border-color:#e4c68a}
 
 </style>
+<link rel="stylesheet" href="./mobile.css?v=3.3">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#253b60">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HBL Dashboard">
+<script defer src="./mobile.js?v=3.3"></script>
 </head>
 <body>
 <script>
@@ -2244,7 +2250,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 16. November 2026">v3.2 Demo<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 16. November 2026">v3.3 Mobil-Demo<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Speicherung ausschließlich in diesem Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2549,7 +2555,7 @@ function renderParticipationPage(courseId){
  document.body.innerHTML=`
  <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
  <div class="part-shell">
-  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><span class="part-top-meta">MITARBEIT · HBL v3.2 Demo</span></div>
+  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><span class="part-top-meta">MITARBEIT · HBL v3.3 Mobil-Demo</span></div>
   <header class="part-hero"><div class="part-eyebrow">Mitarbeitserfassung · DEMO · Nur Beispieldaten</div>
    <div class="part-hero-row"><div><h1>${header}</h1><p>Termine, Bewertungen und individuelle Kommentare pro Schüler/in</p></div>
    <div style="font-size:12px;color:var(--muted);font-weight:700" id="partHeroStats">Noch keine Einträge</div></div>
@@ -2568,7 +2574,7 @@ function renderParticipationPage(courseId){
        <div class="part-roster-actions"><button type="button" class="part-button primary" onclick="replaceParticipationRoster()">Klassenliste übernehmen &amp; Platzhalter entfernen</button><button type="button" class="part-button" onclick="addParticipationStudents()">Nur Namen hinzufügen</button><button class="part-button" type="button" onclick="toggleParticipationRoster(false)">Abbrechen</button></div></div>
      <div class="part-roster-info"><b>Am schnellsten:</b> Eine Spalte mit Namen aus Excel kopieren (ein Name pro Zeile) und <b>„Klassenliste übernehmen“</b> wählen. Die 30 Platzhalter werden durch genau diese Liste ersetzt. Sollten vorhandene Bewertungen oder echte Namen betroffen sein, erscheint vorher eine Sicherheitsabfrage. <b>„Nur Namen hinzufügen“</b> behält die bisherige Liste bei. Mit <b>„Leere Platzhalter entfernen“</b> kannst du unbewertete „Schüler 1–30“ später separat löschen.</div>
    </div>
-   <div class="part-status" id="participationStatus">Verbindung zur JSON-Datei wird hergestellt …</div>
+   <div class="part-status" id="participationStatus">Testversion · Daten bleiben in diesem Browser …</div>
    <div class="part-table-scroll" id="participationTableHost"><div class="part-empty">Mitarbeitsdaten werden geladen …</div></div>
    <div class="part-footer"><span>Durchschnitt: ++ = 1, + = 2, 0 = 3, − = 4, −− = 5; leere Zellen zählen nicht. Notenvorschlag = mathematisch gerundeter Durchschnitt. Endnote bei Bedarf manuell setzen.</span><span>↗ verbessert · → gleichbleibend · ↘ verschlechtert (Vergleich letzte 2 mit vorherigen 2 Bewertungen)</span></div>
   </section>
