@@ -1,0 +1,12 @@
+{
+  "name": "Schul-Dashboard HBL – Testversion",
+  "short_name": "HBL Dashboard",
+  "description": "Schul-Dashboard HBL – mobile Testversion mit anonymen Beispieldaten",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#11151a",
+  "theme_color": "#253b60",
+  "lang": "de",
+  "icons": [{"src":"./hbl-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}
