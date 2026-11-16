@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · Cloud-Test v4.0</title>
+<title>Schul-Dashboard HBL · Stundenplan-Editor v5.0</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1239,12 +1239,83 @@ body:not(.dark) .demo-alert{color:#6f4200;background:#fff4dc;border-color:#e4c68
 </style>
 <link rel="stylesheet" href="./mobile.css?v=3.3">
 <link rel="stylesheet" href="./cloud.css?v=4.0">
+<style>
+/* HBL Dashboard v5.0: customizable A/B timetable */
+.hbl-plan-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.hbl-plan-heading h2{margin:0}
+.hbl-plan-manage,.hbl-plan-manager button{border:1px solid var(--line);color:var(--text);background:var(--panel2);border-radius:10px;min-height:39px;padding:8px 12px;font:700 12px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
+.hbl-plan-manage:hover,.hbl-plan-manager button:hover{border-color:var(--accent)}
+.hbl-slot-cell{font:inherit;text-align:left;appearance:none;width:100%;min-width:0;cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:transform .12s,box-shadow .12s;padding:8px!important}
+.hbl-slot-cell:hover{transform:translateY(-2px);box-shadow:0 4px 12px #0002}
+.hbl-slot-cell:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.hbl-slot-cell .blocknum{display:flex;align-items:center;justify-content:space-between;width:100%;white-space:nowrap}
+.hbl-slot-cell .blocknum span{font-size:11px;opacity:.55}
+.hbl-slot-parts{display:flex;gap:4px;width:100%;min-width:0;flex:1}
+.hbl-slot-item{display:flex;min-width:0;flex:1;flex-direction:column;justify-content:center;border-radius:7px;padding:7px 5px;line-height:1.25;overflow-wrap:anywhere}
+.hbl-slot-item b{font-size:9px;letter-spacing:.06em;margin-bottom:4px}
+.hbl-slot-item strong{font-size:11px}
+.hbl-slot-item small{font-size:10px;margin-top:4px;opacity:.8}
+.hbl-slot-item.A{background:#d7f2e2;color:#164a31}
+.hbl-slot-item.B{background:#dceaff;color:#173d77}
+.hbl-slot-item.shared{background:#e5e8ec;color:#26313d}
+body.dark .hbl-slot-item.A{background:#153729;color:#d5f7e3}
+body.dark .hbl-slot-item.B{background:#18375c;color:#d5e8ff}
+body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
+.hbl-slot-cell.mixed{background:var(--panel2)!important}
+.hbl-slot-cell.mixed .hbl-slot-item{padding:6px 4px}
+.hbl-slot-cell.off{opacity:.76}
+.hbl-empty-label{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);width:100%;min-height:34px}
+.hbl-plan-hint{font-size:11px;color:var(--muted);margin-top:9px}
+.hbl-plan-manager{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-top:13px;font-size:13px}
+.hbl-plan-manager[hidden],.hbl-plan-overlay[hidden]{display:none!important}
+.hbl-plan-manager strong{display:block;margin-bottom:5px;font-size:14px}
+.hbl-plan-manager p{margin:2px 0 6px;line-height:1.6}
+.hbl-plan-manager small{color:var(--muted);font-size:11px}
+.hbl-plan-manager-actions{display:flex;flex-direction:column;gap:8px}
+.hbl-plan-overlay{position:fixed;inset:0;z-index:13000;background:rgba(10,17,31,.75);display:flex;align-items:center;justify-content:center;padding:14px}
+.hbl-plan-dialog{color:#172033;background:#fff;border-radius:17px;width:min(100%,535px);max-height:calc(100vh - 30px);overflow:auto;padding:23px;position:relative;box-shadow:0 18px 70px #0006;font:14px/1.5 Inter,Segoe UI,Arial,sans-serif}
+.hbl-plan-eyebrow{font-size:10px;color:#556987;font-weight:850;letter-spacing:.14em}
+.hbl-plan-dialog h2{font-size:22px;margin:4px 0 14px}
+.hbl-plan-close{position:absolute;right:13px;top:12px;background:#e9edf4;color:#1e2d45;border:0;border-radius:8px;min-width:35px;min-height:35px;cursor:pointer}
+.hbl-plan-current{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.hbl-plan-current>div{background:#f3f5fa;border:1px solid #dbe1ed;padding:11px;border-radius:9px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.hbl-plan-current b{font-size:11px}.hbl-plan-current span{font-size:12px;overflow-wrap:anywhere}
+.hbl-plan-current>div:first-child{border-left:4px solid #4bb57a}
+.hbl-plan-current>div:last-child{border-left:4px solid #538fe2}
+.hbl-plan-dialog label{display:block;font-size:12px;font-weight:800;margin-bottom:12px}
+.hbl-plan-dialog select,.hbl-plan-dialog input{margin-top:5px;display:block;width:100%;box-sizing:border-box;border:1px solid #afbed5;border-radius:9px;min-height:44px;padding:9px;font:15px Inter,Segoe UI,Arial,sans-serif;color:#1f2d40;background:#fff}
+.hbl-plan-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hbl-plan-form-grid label:last-child{grid-column:1/-1}
+.hbl-plan-info{font-size:12px;color:#5a6b84;margin:2px 0 14px}
+.hbl-plan-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.hbl-plan-buttons button{border:1px solid #b6c5da;border-radius:9px;background:#f3f5fa;color:#1b2a42;padding:9px 12px;min-height:43px;font-weight:750;cursor:pointer}
+.hbl-plan-buttons .hbl-plan-primary{background:#315e9a;color:#fff;border-color:#315e9a}
+.hbl-empty-courses{padding:15px 17px;border:1px dashed var(--line);border-radius:11px;background:var(--panel2);font-size:13px}
+.hbl-empty-courses button{border:0;background:transparent;color:var(--accent);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}
+@media(max-width:710px){
+.hbl-plan-heading{align-items:flex-start}
+.hbl-plan-manage{min-height:44px}
+.timetablegrid{grid-template-columns:repeat(5,minmax(138px,1fr))!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:3px}
+.hbl-slot-cell{min-height:107px}
+.hbl-slot-parts{min-height:62px}
+.hbl-plan-manager{grid-template-columns:1fr;padding:12px}
+.hbl-plan-manager-actions{flex-direction:row;flex-wrap:wrap}
+.hbl-plan-manager button{min-height:44px}
+.hbl-plan-overlay{align-items:flex-end;padding:9px}
+.hbl-plan-dialog{padding:17px 15px 23px;max-height:calc(100dvh - 14px);border-radius:16px}
+.hbl-plan-form-grid{grid-template-columns:1fr}
+.hbl-plan-form-grid label:last-child{grid-column:auto}
+.hbl-plan-buttons button{flex:1}
+}
+
+</style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HBL Dashboard">
 <script defer src="./mobile.js?v=3.3"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
+
 <script defer src="./cloud.js?v=4.0"></script>
 </head>
 <body>
@@ -1533,7 +1604,7 @@ function openGroup(key){
 }
 
 const LESSON_TIMES={1:["08:15","09:00"],2:["09:00","09:45"],3:["10:05","10:50"],4:["10:50","11:35"],5:["12:20","13:05"],6:["13:05","13:50"],7:["14:00","14:45"],8:["14:45","15:30"]};
-const TIMETABLE={
+let TIMETABLE={
 A:{
 1:{1:["WAT","9c","225"],2:["WAT","9c","225"],5:["WAT","9a","225"],6:["WAT","9a","225"]},
 2:{3:["MA","9a","226"],4:["MA","9a","226"],5:["GKPH1","12","0.16"],6:["GKPH1","12","0.16"]},
@@ -1545,6 +1616,8 @@ B:{
 3:{5:["PH","9a","0.14"],6:["PH","9a","0.14"],7:["Astro","10","1.16"],8:["Astro","10","1.16"]},
 4:{},5:{1:["GKPH1","12","0.14"],2:["GKPH1","12","0.14"],3:["MA","9a","226"],4:["MA","9a","226"],5:["WAT","9d","225"],6:["WAT","9d","225"]}}
 };
+const HBL_SAMPLE_TIMETABLE=JSON.parse(JSON.stringify(TIMETABLE));
+TIMETABLE={A:{1:{},2:{},3:{},4:{},5:{}},B:{1:{},2:{},3:{},4:{},5:{}}};
 function tmin(x){let a=x.split(":").map(Number);return a[0]*60+a[1]}
 
 const BLOCKS=[
@@ -1570,6 +1643,7 @@ function applyPrepData(data){
  renderTasks();
  renderParticipationOverview();
  renderParticipationTable();
+ if(typeof window.hblScheduleAfterLoad==='function')window.hblScheduleAfterLoad();
 }
 const HBL_DEMO_KEY = "hbl-github-pages-demo-v1";
 async function loadPrepFromServer(){
@@ -1635,7 +1709,7 @@ function renderToday(){
   const active=offset===0&&cur>=b.s&&cur<b.e;
   const label=active?"Jetzt":i===0?"Als Nächstes":"Danach";
   const dlabel=offset===0?"Heute":offset===1?"Morgen":DAYNAMES[date.getDay()]+" "+date.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
-  const details=b.entries.map(([f,k,r])=>`${f} · ${k} · Raum ${r}`).join("<br>");
+  const details=b.entries.map(([f,k,r])=>`${partEsc(f)} · ${partEsc(k)} · Raum ${partEsc(r)}`).join("<br>");
   return `<div class="lessonrow ${active?"current":""}">
    <div class="lessontime"><strong>${dlabel}</strong><div>${b.start}–${b.end}</div><div class="lessondetail">${label} · ${b.n}. Block</div></div>
    <div class="lessonmain">${details}</div>
@@ -2022,17 +2096,19 @@ function renderSchoolCalendar(){
 }
 
 function renderTimetable(){
- const el=document.getElementById("weeklyTimetable");if(!el)return;
- const blockHours=[[1,2],[3,4],[5,6],[7,8]];
- let html=["Mo","Di","Mi","Do","Fr"].map(x=>`<div class="dayhead">${x}</div>`).join("");
- for(let bi=0;bi<4;bi++)for(let day=1;day<=5;day++){
-  const collect=cycle=>blockHours[bi].map(h=>TIMETABLE[cycle][day][h]).filter(Boolean).filter((v,i,a)=>a.findIndex(w=>w.join("|")===v.join("|"))===i);
-  const a=collect("A"),b=collect("B"),same=JSON.stringify(a)===JSON.stringify(b);
-  const cls=(!a.length&&!b.length)?"off":same?"shared":a.length&&!b.length?"green":!a.length&&b.length?"blue":"mixed";
-  const entries=same?a.map(v=>v.join(" · ")):[...a.map(v=>"A: "+v.join(" · ")),...b.map(v=>"B: "+v.join(" · "))];
-  html+=`<div class="blockcell ${cls}"><div class="blocknum">${bi+1}. Block</div>${entries.map(x=>`<div class="blockentry">${x}</div>`).join("")}</div>`;
+ const host=document.getElementById('weeklyTimetable');if(!host)return;
+ let html=['Mo','Di','Mi','Do','Fr'].map(x=>`<div class="dayhead">${x}</div>`).join('');
+ for(let block=1;block<=4;block++)for(let day=1;day<=5;day++){
+  const hours=BLOCKS[block-1].hours;
+  const get=w=>hours.map(h=>TIMETABLE[w]?.[day]?.[h]).filter(Boolean)[0]||null;
+  const A=get('A'),B=get('B'),same=A&&B&&JSON.stringify(A)===JSON.stringify(B);
+  const cls=!A&&!B?'off':same?'shared':A&&!B?'green':!A&&B?'blue':'mixed';
+  const content=(entry,week)=>entry?`<span class="hbl-slot-item ${week}" title="Bearbeiten"><b>${week==='shared'?'A+B':week}</b><strong>${partEsc(entry[0])} · ${partEsc(entry[1])}</strong><small>${partEsc(entry[2]||'Ohne Raum')}</small></span>`:'';
+  html+=`<button type="button" class="blockcell hbl-slot-cell ${cls}" onclick="hblOpenSlotEditor(${day},${block})" title="${day}. Wochentag, ${block}. Block bearbeiten"><span class="blocknum">${block}. Block <span>✎</span></span><span class="hbl-slot-parts">${same?content(A,'shared'):(content(A,'A')+content(B,'B'))||'<span class="hbl-empty-label">+ Belegung hinzufügen</span>'}</span></button>`;
  }
- el.innerHTML=html;
+ host.innerHTML=html;
+ const note=document.getElementById('hblPlanHint');
+ if(note){const amount=Object.values(TIMETABLE.A).reduce((n,d)=>n+Object.keys(d).length,0)+Object.values(TIMETABLE.B).reduce((n,d)=>n+Object.keys(d).length,0);note.textContent=amount?'Jede Änderung aktualisiert auch die geplanten Mitarbeitstermine.':'Noch kein eigener Stundenplan – zum Start auf „Stundenplan bearbeiten“ klicken.';}
 }
 
 
@@ -2253,8 +2329,8 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 16. November 2026">v4.0 Cloud-Demo<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
-            <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Cloud-Synchronisierung nach Anmeldung</div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 16. November 2026">v3.3 Mobil-Demo<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Speicherung ausschließlich in diesem Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
 <defs>
@@ -2366,7 +2442,7 @@ function renderHome(){
         <div class="card-title" onclick="openGroup('tools')" title="Alle digitalen Tools öffnen"><h2>Digitale Tools</h2><span class="openall">Alle öffnen ↗</span></div>
         <div class="links">${CONFIG.links.tools.map(mkBtn).join("")}</div>
       </section>
-<section class="card timetablecard"><h2>Wochenstundenplan</h2><div class="timetablegrid" id="weeklyTimetable"></div><div class="timetablelegend">Grau: jede Woche · Grün: nur A · Blau: nur B · A/B: unterschiedliche Belegung</div></section>
+<section class="card timetablecard"><div class="hbl-plan-heading"><h2>Wochenstundenplan</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenPlanManager()">✎ Stundenplan bearbeiten</button></div><div class="timetablegrid" id="weeklyTimetable"></div><div class="timetablelegend">Grau: A und B · Grün: nur A · Blau: nur B · Zwei Fächer im selben Block erscheinen nebeneinander.</div><div id="hblPlanHint" class="hbl-plan-hint"></div></section>
     </main>
 
     <section class="subjects">
@@ -2405,7 +2481,7 @@ function renderHome(){
 }
 
 /* MITARBEIT: ein HTML, feste Kurse, gesamte Datenspeicherung im bestehenden JSON */
-const PARTICIPATION_COURSES = [
+const HBL_SAMPLE_COURSES = [
  {id:"ma9a", label:"Mathematik", group:"9a", short:"MA 9a", subject:"math", icon:"➗"},
  {id:"ph9a", label:"Physik", group:"9a", short:"PH 9a", subject:"physics", icon:"⚛️"},
  {id:"gkph12", label:"Physik GK", group:"12", short:"GK Physik 12", subject:"physics", icon:"⚡"},
@@ -2416,7 +2492,8 @@ const PARTICIPATION_COURSES = [
  {id:"wat9a", label:"WAT", group:"9a", short:"WAT 9a", subject:"wat", icon:"🛠️"},
  {id:"wat9c", label:"WAT", group:"9c", short:"WAT 9c", subject:"wat", icon:"🛠️"},
  {id:"wat9d", label:"WAT", group:"9d", short:"WAT 9d", subject:"wat", icon:"🛠️"}
-];
+ ];
+const PARTICIPATION_COURSES=[];
 const PART_VALUES={"++":1,"+":2,"0":3,"-":4,"--":5};
 const PART_OPTIONS=["","++","+","0","-","--"];
 let currentParticipationCourse=null;
@@ -2444,45 +2521,9 @@ function partCourseData(create=false){
  if(!c.finals||typeof c.finals!=="object")c.finals={};
  return c;
 }
-// Unterrichtstermine 2026/27: aus dem A/B-Stundenplan abgeleitet,
-// pro Fach/Klasse/Unterrichtstag eine Spalte (auch bei Doppelblöcken).
-const PARTICIPATION_TIMETABLE_KEYS={
- "MA|9a":"ma9a", "PH|9a":"ph9a", "GKPH1|12":"gkph12",
- "Astro|10":"astro10", "WAT|8a":"wat8a", "WAT|8b":"wat8b",
- "WAT|8c":"wat8c", "WAT|9a":"wat9a", "WAT|9c":"wat9c", "WAT|9d":"wat9d"
-};
-function plannedParticipationDates(courseId){
- const schoolYear=SCHOOL_YEARS[0];
- const holidays=new Map([...publicHolidays(2026),...publicHolidays(2027)]);
- const dates=[];
- for(let date=parseSchoolDate(schoolYear.start);taskDateString(date)<=schoolYear.end;date=dayOffset(date,1)){
-  const day=date.getDay();
-  if(day===0||day===6)continue;
-  const dateKey=taskDateString(date);
-  if(schoolDateDescription(dateKey,schoolYear,holidays).kind!=="school")continue;
-  const plan=TIMETABLE[weekCycle(date)]?.[day]||{};
-  const lessons=Object.values(plan);
-  if(lessons.some(entry=>entry&&PARTICIPATION_TIMETABLE_KEYS[entry[0]+"|"+entry[1]]===courseId)){
-   dates.push(dateKey);
-  }
- }
- return dates;
-}
-function fillParticipationSchedule(c,courseId){
- // Einmalige Ergänzung erhält alte, manuell angelegte Termine und ihre IDs.
- // Bewusst nicht bei jedem Neuladen neu aufbauen (gelöschte Termine bleiben gelöscht).
- if(c.scheduleYear==="2026/27")return false;
- const found=new Set(c.dates.map(d=>d.date));
- for(const date of plannedParticipationDates(courseId)){
-  if(!found.has(date)){
-   c.dates.push({id:"auto-"+date,date});
-   found.add(date);
-  }
- }
- c.dates.sort((a,b)=>a.date.localeCompare(b.date));
- c.scheduleYear="2026/27";
- return true;
-}
+// Automatisch aus dem bearbeitbaren Stundenplan berechnete Mitarbeitstermine.
+function plannedParticipationDates(courseId){return typeof window.hblPlannedSlots==='function'?window.hblPlannedSlots(courseId):[];}
+function fillParticipationSchedule(c,courseId){return typeof window.hblReconcileCourseDates==='function'?window.hblReconcileCourseDates(c,courseId):false;}
 function partPlaceholder(name){return /^Schüler\s+[1-9]\d*$/.test(String(name).trim());}
 function partStudentHasResults(c,studentId){
  if(c.finals?.[studentId])return true;
@@ -2505,7 +2546,7 @@ function initializeParticipationRoster(){
  if(changed)partPersist();
  else setParticipationStatus("Termine und Namen aus der JSON-Datei geladen ✓");
 }
-function partCourseById(id){return PARTICIPATION_COURSES.find(c=>c.id===id);}
+function partCourseById(id){return PARTICIPATION_COURSES.find(c=>c.id===id)||(/^(kurs-[a-z0-9-]+|ma9a|ph9a|gkph12|astro10|wat8a|wat8b|wat8c|wat9a|wat9c|wat9d)$/.test(String(id))?{id,label:'Kurs',group:'',short:'Kurs wird geladen',subject:'neutral',icon:'📘'}:null);}
 function participationInfo(c){
  const all=c?.students||[];const sessions=c?.dates||[];
  return `${all.length} SuS · ${sessions.length} Termine`;
@@ -2513,6 +2554,7 @@ function participationInfo(c){
 function renderParticipationOverview(){
  const host=document.getElementById("participationOverview");if(!host)return;
  const root=prepDone.__participation?.classes||{};
+ if(!PARTICIPATION_COURSES.length){host.innerHTML=`<div class="hbl-empty-courses">Noch keine Kurse eingerichtet. <button type="button" onclick="hblOpenPlanManager()">Stundenplan gestalten</button></div>`;return;}
  host.innerHTML=PARTICIPATION_COURSES.map(c=>{
   const data=root[c.id];
   return `<a class="participation-course-link" data-subject="${c.subject}" href="?mitarbeit=${c.id}" target="_blank" rel="noopener">
@@ -2558,15 +2600,15 @@ function renderParticipationPage(courseId){
  document.body.innerHTML=`
  <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
  <div class="part-shell">
-  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><span class="part-top-meta">MITARBEIT · HBL v4.0 Cloud-Demo</span></div>
+  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><span class="part-top-meta">MITARBEIT · HBL v5.0 TEST</span></div>
   <header class="part-hero"><div class="part-eyebrow">Mitarbeitserfassung · DEMO · Nur Beispieldaten</div>
-   <div class="part-hero-row"><div><h1>${header}</h1><p>Termine, Bewertungen und individuelle Kommentare pro Schüler/in</p></div>
+   <div class="part-hero-row"><div><h1 id="hblCurrentCourseTitle">${header}</h1><p>Termine, Bewertungen und individuelle Kommentare pro Schüler/in</p></div>
    <div style="font-size:12px;color:var(--muted);font-weight:700" id="partHeroStats">Noch keine Einträge</div></div>
    <div class="part-legend"><span class="part-key"><b class="pk-pp">++</b> sehr gut (1)</span><span class="part-key"><b class="pk-p">+</b> gut (2)</span><span class="part-key"><b class="pk-n">0</b> neutral (3)</span><span class="part-key"><b class="pk-m">−</b> schwach (4)</span><span class="part-key"><b class="pk-mm">−−</b> sehr schwach (5)</span></div>
   </header>
-  <nav class="part-tabs" aria-label="Kurse auswählen">${PARTICIPATION_COURSES.map(c=>`<a class="part-tab ${c.id===courseId?"current":""}" href="?mitarbeit=${c.id}">${partEsc(c.short)}</a>`).join("")}</nav>
+  <nav class="part-tabs" id="hblCourseTabs" aria-label="Kurse auswählen">${PARTICIPATION_COURSES.map(c=>`<a class="part-tab ${c.id===courseId?"current":""}" href="?mitarbeit=${c.id}">${partEsc(c.short)}</a>`).join("")}</nav>
   <section class="part-pane">
-   <div class="part-pane-top"><div><h2>Beobachtungen und Noten</h2><div class="part-pane-sub">Alle planmäßigen Unterrichtstage bis 30.06.2027 · Anzeige nach Monat · 30 Platzhalter-Namen bei neuen Kursen</div></div>
+   <div class="part-pane-top"><div><h2>Beobachtungen und Noten</h2><div class="part-pane-sub">Automatische Termine je Unterrichtsblock bis 30.06.2027 · Monatsauswahl · 30 Platzhalter-Namen bei neuen Kursen</div></div>
     <div class="part-actions"><button type="button" class="part-button" id="partRosterToggle" onclick="toggleParticipationRoster()">↧ Klassenliste importieren</button>
      <button type="button" class="part-button part-prune" onclick="pruneParticipationPlaceholders()" title="Entfernt nur unbewertete Platzhalter, niemals echte Namen oder bewertete Schüler">Leere Platzhalter entfernen</button>
      <label class="part-date-group">Termin ergänzen<input type="date" id="participationNewDate"></label>
@@ -2691,12 +2733,15 @@ function editParticipationDate(dateId,newDate){
  const c=partCourseData(true),d=c.dates.find(d=>d.id===dateId);
  if(!d||!/^\d{4}-\d{2}-\d{2}$/.test(newDate))return;
  if(c.dates.some(other=>other!==d&&other.date===newDate)){setParticipationStatus("Datum bereits vorhanden.",true);renderParticipationTable();return;}
- d.date=newDate;c.dates.sort((a,b)=>a.date.localeCompare(b.date));participationMonthView=newDate.slice(0,7);renderParticipationTable();partPersist();
+ if(d.block){c.excludedAuto=c.excludedAuto||[];const k=d.date+'|'+d.block;if(!c.excludedAuto.includes(k))c.excludedAuto.push(k);}
+ d.date=newDate;d.manual=true;d.auto=false;d.block=null;
+ c.dates.sort((a,b)=>a.date.localeCompare(b.date)||(a.block||0)-(b.block||0));participationMonthView=newDate.slice(0,7);renderParticipationTable();partPersist();
 }
 function deleteParticipationDate(dateId){
  if(!participationCanEdit())return;
  const c=partCourseData(true),d=c.dates.find(d=>d.id===dateId);if(!d)return;
  if(!confirm("Termin "+partDateFormat(d.date)+" und alle dazugehörigen Bewertungen endgültig löschen?"))return;
+ if(d.block&&!d.manual){c.excludedAuto=c.excludedAuto||[];const k=d.date+'|'+d.block;if(!c.excludedAuto.includes(k))c.excludedAuto.push(k);}
  c.dates=c.dates.filter(v=>v.id!==dateId);
  for(const marks of Object.values(c.marks))if(marks&&typeof marks==="object")delete marks[dateId];
  renderParticipationTable();partPersist();
@@ -2758,7 +2803,7 @@ function renderParticipationTable(){
  if(stats)stats.textContent=participationInfo(c);
  if(!students.length){host.innerHTML=`<div class="part-empty">Keine Schüler eingetragen. Über „Klassenliste importieren“ lassen sich Namen übernehmen.</div>`;return;}
  let html=`<table class="part-table"><thead><tr><th>#</th><th>Name</th>`;
- for(const d of dates){html+=`<th class="part-date-head"><span class="part-week">${partWeekText(d.date)}</span><input type="date" value="${partEsc(d.date)}" title="Termin bearbeiten" aria-label="Datum bearbeiten" onchange="editParticipationDate('${d.id}',this.value)"><button class="part-date-remove" title="Termin entfernen" onclick="deleteParticipationDate('${d.id}')">✕ Termin</button></th>`;}
+ for(const d of dates){html+=`<th class="part-date-head"><span class="part-week">${partWeekText(d.date)}${d.block?` · ${d.block}. Block`:""}</span><input type="date" value="${partEsc(d.date)}" title="Termin bearbeiten" aria-label="Datum bearbeiten" onchange="editParticipationDate('${d.id}',this.value)"><button class="part-date-remove" title="Termin entfernen" onclick="deleteParticipationDate('${d.id}')">✕ Termin</button></th>`;}
  html+=`<th>Einträge</th><th>Ø</th><th>Vorschlag</th><th>Endnote</th><th>Trend</th><th></th></tr></thead><tbody>`;
  for(let i=0;i<students.length;i++){
   const student=students[i],sid=student.id,an=partAnalysis(c,sid);
@@ -2796,6 +2841,275 @@ if(readPreference("schoolTheme")==="dark") document.body.classList.add("dark");
 const params=new URLSearchParams(location.search);
 const fach=params.get("fach"),mitarbeit=params.get("mitarbeit");
 mitarbeit && partCourseById(mitarbeit) ? renderParticipationPage(mitarbeit) : fach ? renderSubject(fach) : renderHome();
+</script>
+<script>
+/* HBL Schul-Dashboard v5.0 – personal timetable + automatic per-block participation dates.
+   Public demonstration only. All state is part of the existing per-user Cloud JSON snapshot. */
+(function(){
+'use strict';
+const STORE_KEY='__timetableV1';
+const WORKDAYS=['','Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
+let openEditor=null,managerOpen=false;
+const byId=id=>document.getElementById(id);
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lower=s=>String(s??'').trim().replace(/\s+/g,' ').toLocaleLowerCase('de-DE');
+const normalizedCourseSubject=s=>{
+ const x=lower(s);
+ if(['mathematik','math','ma','mathe'].includes(x))return 'ma';
+ if(['physik','ph'].includes(x))return 'ph';
+ if(['astronomie','astro'].includes(x))return 'astro';
+ if(['physik gk','gkphysik','gk physik','gkph1'].includes(x))return 'gkph1';
+ return x;
+};
+const legacy={
+ 'ma|9a':'ma9a','ph|9a':'ph9a','gkph1|12':'gkph12','astro|10':'astro10',
+ 'wat|8a':'wat8a','wat|8b':'wat8b','wat|8c':'wat8c','wat|9a':'wat9a','wat|9c':'wat9c','wat|9d':'wat9d'
+};
+function hashString(s){let v=2166136261;for(const ch of s){v^=ch.charCodeAt(0);v=Math.imul(v,16777619);}return(v>>>0).toString(36);}
+function courseId(entry){const key=normalizedCourseSubject(entry?.subject)+'|'+lower(entry?.group);return legacy[key]||('kurs-'+hashString(key));}
+function subjectSymbol(subject){const x=normalizedCourseSubject(subject);return x==='ma'?['math','➗']:x==='ph'||x==='gkph1'?['physics','⚛️']:x==='astro'?['astro','🔭']:x==='wat'?['wat','🛠️']:['neutral','📘'];}
+function courseMeta(entry){const id=courseId(entry),[type,icon]=subjectSymbol(entry.subject),legacyCourse=HBL_SAMPLE_COURSES.find(c=>c.id===id);
+ return {id,label:legacyCourse?.label||entry.subject,group:entry.group,short:legacyCourse?.short||`${entry.subject} ${entry.group}`,subject:type,icon};}
+function normalizedEntry(entry){if(!entry||typeof entry!=='object')return null;
+ const subject=String(entry.subject||'').trim().slice(0,60),group=String(entry.group||'').trim().slice(0,30),room=String(entry.room||'').trim().slice(0,40);
+ return subject&&group?{subject,group,room}:null;
+}
+function getSettings(){const data=prepDone?.[STORE_KEY];
+ if(!data||!Array.isArray(data.slots)&&(!data.slots||typeof data.slots!=='object'))return {version:1,slots:{}};
+ return {version:1,slots:data.slots};
+}
+function emptySchedule(){return {A:{1:{},2:{},3:{},4:{},5:{}},B:{1:{},2:{},3:{},4:{},5:{}}};}
+function activeEntries(settings){
+ const list=new Map();
+ for(let day=1;day<=5;day++)for(let block=1;block<=4;block++){
+  const slot=settings.slots[day+'-'+block];
+  if(!slot||typeof slot!=='object')continue;
+  for(const week of ['A','B']){
+   const entry=normalizedEntry(slot[week]);if(!entry)continue;
+   list.set(courseId(entry),courseMeta(entry));
+  }
+ }
+ return list;
+}
+function courseHasSavedData(c){return !!(c&&((Array.isArray(c.students)&&c.students.length)||Object.keys(c.marks||{}).length||Object.keys(c.finals||{}).length||c.dates?.some(x=>x.manual||!x.auto)));}
+function hblUpdateCurrentCourse(){
+ if(!currentParticipationCourse)return;
+ const c=partCourseById(currentParticipationCourse);
+ const title=byId('hblCurrentCourseTitle');
+ if(title&&c)title.innerHTML=`${c.icon} ${escapeHtml(c.label)} <span>· ${escapeHtml(c.group)}</span>`;
+ const tabs=byId('hblCourseTabs');
+ if(tabs)tabs.innerHTML=PARTICIPATION_COURSES.map(x=>`<a class="part-tab ${x.id===currentParticipationCourse?'current':''}" href="?mitarbeit=${encodeURIComponent(x.id)}">${escapeHtml(x.short)}</a>`).join('');
+ const sub=byId('partHeroStats');if(sub){const root=prepDone.__participation?.classes||{};sub.textContent=participationInfo(root[currentParticipationCourse]);}
+ if(c)document.title=`Mitarbeit ${c.short} · Schul-Dashboard`;
+}
+function hblApplyTimetable(){
+ const data=getSettings(),timetable=emptySchedule();
+ for(let day=1;day<=5;day++)for(let block=1;block<=4;block++){
+  const slot=data.slots[day+'-'+block];
+  if(!slot)continue;
+  for(const week of ['A','B']){
+   const entry=normalizedEntry(slot[week]);if(!entry)continue;
+   for(const hour of BLOCKS[block-1].hours)timetable[week][day][hour]=[entry.subject,entry.group,entry.room];
+  }
+ }
+ TIMETABLE=timetable;
+ const courses=activeEntries(data);
+ const stored=prepDone.__participation?.classes||{};
+ for(const [id,c] of Object.entries(stored)){
+  if(courses.has(id)||!courseHasSavedData(c))continue;
+  const meta=c?.meta||HBL_SAMPLE_COURSES.find(x=>x.id===id);
+  if(meta)courses.set(id,{...meta,id,short:meta.short||`${meta.label} ${meta.group}`});
+ }
+ PARTICIPATION_COURSES.splice(0,PARTICIPATION_COURSES.length,...[...courses.values()].sort((a,b)=>a.short.localeCompare(b.short,'de')));
+ renderTimetable();renderToday();renderPreparationWeeks();renderParticipationOverview();hblUpdateCurrentCourse();
+}
+function plannedSlots(course){
+ const year=SCHOOL_YEARS[0], holidays=new Map([...publicHolidays(2026),...publicHolidays(2027)]),result=[];
+ if(!year)return result;
+ for(let date=parseSchoolDate(year.start);taskDateString(date)<=year.end;date=dayOffset(date,1)){
+  const day=date.getDay();if(day<1||day>5)continue;
+  const dateKey=taskDateString(date);
+  if(schoolDateDescription(dateKey,year,holidays).kind!=='school')continue;
+  const plan=TIMETABLE[weekCycle(date)]?.[day]||{};
+  for(const block of BLOCKS){
+   const matched=block.hours.some(h=>{const arr=plan[h];return arr&&courseId({subject:arr[0],group:arr[1]})===course;});
+   if(matched)result.push({date:dateKey,block:block.n});
+  }
+ }
+ return result;
+}
+function dateHasMarks(c,id){return Object.values(c.marks||{}).some(m=>{const x=m?.[id];return x&&(x.rating||x.comment);});}
+function reconcileDates(c,id){
+ if(!Array.isArray(c.dates))c.dates=[];
+ if(!Array.isArray(c.excludedAuto))c.excludedAuto=[];
+ const excluded=new Set(c.excludedAuto),wanted=plannedSlots(id).filter(v=>!excluded.has(v.date+'|'+v.block));
+ const need=new Map(wanted.map(v=>[v.date+'|'+v.block,v]));let changed=false;
+ // Migrate previous 'one date per school day' columns without dropping associated grades.
+ for(const d of c.dates){
+  if(d.manual || d.block || !/^auto-\d{4}-\d{2}-\d{2}$/.test(String(d.id)))continue;
+  const first=wanted.find(w=>w.date===d.date&&need.has(w.date+'|'+w.block));
+  if(first){d.block=first.block;d.auto=true;need.delete(first.date+'|'+first.block);changed=true;}
+  else {d.manual=true;d.auto=false;changed=true;}
+ }
+ const retained=[];
+ for(const d of c.dates){
+  if(d.block && d.auto && !d.manual){
+   const key=d.date+'|'+d.block;
+   if(need.has(key)){need.delete(key);retained.push(d);continue;}
+   if(wanted.some(w=>w.date===d.date&&w.block===d.block)){retained.push(d);continue;}
+   if(dateHasMarks(c,d.id)){d.manual=true;d.auto=false;d.archived=true;retained.push(d);changed=true;}
+   else {for(const marks of Object.values(c.marks||{}))delete marks[d.id];changed=true;}
+  }else retained.push(d);
+ }
+ for(const {date,block} of need.values()){
+  retained.push({id:`auto-${date}-b${block}`,date,block,auto:true});changed=true;
+ }
+ retained.sort((a,b)=>a.date.localeCompare(b.date)||(a.block||0)-(b.block||0));
+ if(retained.length!==c.dates.length)changed=true;
+ c.dates=retained;
+ return changed;
+}
+window.hblPlannedSlots=plannedSlots;
+window.hblReconcileCourseDates=reconcileDates;
+function reconcileAll(){
+ // Existing v3/v4 users have pre-calculated sessions but no custom timetable yet.
+ // Do not touch their historical dates until they explicitly save/import a timetable.
+ if(!prepDone[STORE_KEY] || typeof prepDone[STORE_KEY] !== 'object')return false;
+ const active=activeEntries(getSettings());
+ if(!active.size && !Object.keys(prepDone.__participation?.classes||{}).length)return false;
+ const root=getParticipationRoot();let changed=false;
+ for(const [id,meta] of active){
+  if(!root.classes[id]){root.classes[id]={students:[],dates:[],marks:{},finals:{},meta};changed=true;}
+  const c=root.classes[id];
+  if(JSON.stringify(c.meta)!==JSON.stringify(meta)){c.meta=meta;changed=true;}
+  if(reconcileDates(c,id))changed=true;
+ }
+ // Removed but previously graded courses keep their old dates. Unrated orphan dates are dropped.
+ for(const [id,c] of Object.entries(root.classes))if(!active.has(id)&&reconcileDates(c,id))changed=true;
+ return changed;
+}
+window.hblScheduleAfterLoad=function(){
+ hblApplyTimetable();
+ if(reconcileAll()){
+  renderParticipationOverview();renderParticipationTable();
+  if(serverReady && !window.hblScheduleWriting)savePrepFile().catch(()=>{});
+ }
+};
+async function persistSchedule(slots){
+ if(!serverReady){alert('Speicher noch nicht bereit. Bitte Seite neu laden.');return false;}
+ prepDone[STORE_KEY]={version:1,slots};
+ window.hblScheduleWriting=true;
+ try{
+  hblApplyTimetable();reconcileAll();renderParticipationOverview();renderParticipationTable();
+  await savePrepFile();
+ }catch(e){alert('Speichern fehlgeschlagen: '+e.message);return false;}
+ finally{window.hblScheduleWriting=false;}
+ return true;
+}
+function slotsCopy(){return JSON.parse(JSON.stringify(getSettings().slots));}
+function ensureModal(){
+ if(byId('hblPlanOverlay'))return;
+ const overlay=document.createElement('div');overlay.id='hblPlanOverlay';overlay.className='hbl-plan-overlay';overlay.hidden=true;
+ overlay.innerHTML=`<section class="hbl-plan-dialog" role="dialog" aria-modal="true" aria-labelledby="hblPlanDialogTitle">
+  <button class="hbl-plan-close" type="button" id="hblPlanClose" aria-label="Schließen">✕</button>
+  <div class="hbl-plan-eyebrow">INDIVIDUELLER STUNDENPLAN</div><h2 id="hblPlanDialogTitle">Block bearbeiten</h2>
+  <div class="hbl-plan-current"><div id="hblPlanPreviewA"></div><div id="hblPlanPreviewB"></div></div>
+  <form id="hblPlanForm">
+  <label>Gültigkeit <select id="hblPlanWeek"><option value="both">A und B – beide Wochen</option><option value="A">Nur A – grün</option><option value="B">Nur B – blau</option></select></label>
+  <div class="hbl-plan-form-grid"><label>Fach <input id="hblPlanSubject" type="text" maxlength="60" placeholder="z. B. Mathematik" required autocomplete="off"></label>
+  <label>Klasse / Kurs <input id="hblPlanGroup" type="text" maxlength="30" placeholder="z. B. 9a" required autocomplete="off"></label>
+  <label>Raum <input id="hblPlanRoom" type="text" maxlength="40" placeholder="z. B. 226" autocomplete="off"></label></div>
+  <p id="hblPlanEditorNote" class="hbl-plan-info">Ein Eintrag mit „A und B“ gilt jede Woche. Bei verschiedenen Fächern werden beide Wochen nebeneinander angezeigt.</p>
+  <div class="hbl-plan-buttons"><button class="hbl-plan-primary" type="submit">Belegung speichern</button><button type="button" id="hblPlanDelete">Belegung entfernen</button><button type="button" id="hblPlanCancel">Abbrechen</button></div></form>
+  </section>`;
+ document.body.appendChild(overlay);
+ const close=()=>{overlay.hidden=true;openEditor=null;};
+ byId('hblPlanClose').onclick=close;byId('hblPlanCancel').onclick=close;
+ overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ overlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}});
+ byId('hblPlanWeek').onchange=fillEditor;
+ byId('hblPlanForm').onsubmit=async e=>{
+  e.preventDefault();if(!openEditor)return;
+  const v={subject:byId('hblPlanSubject').value.trim(),group:byId('hblPlanGroup').value.trim(),room:byId('hblPlanRoom').value.trim()};
+  if(!v.subject||!v.group){alert('Fach und Klasse/Kurs müssen ausgefüllt sein.');return;}
+  const key=openEditor.day+'-'+openEditor.block, slots=slotsCopy(),slot=slots[key]||{},week=byId('hblPlanWeek').value;
+  if(week==='both'){
+   if(slot.A&&slot.B&&JSON.stringify(slot.A)!==JSON.stringify(slot.B) && !confirm('In A und B stehen unterschiedliche Belegungen. Wirklich beide durch denselben Eintrag ersetzen?'))return;
+   slot.A={...v};slot.B={...v};
+  } else slot[week]={...v};
+  slots[key]=slot;
+  if(await persistSchedule(slots))close();
+ };
+ byId('hblPlanDelete').onclick=async()=>{
+  if(!openEditor)return;
+  const key=openEditor.day+'-'+openEditor.block,slots=slotsCopy(),slot=slots[key]||{},week=byId('hblPlanWeek').value;
+  if(week==='both'){delete slot.A;delete slot.B;}else delete slot[week];
+  if(!slot.A&&!slot.B)delete slots[key];else slots[key]=slot;
+  if(await persistSchedule(slots))close();
+ };
+}
+function fillEditor(){
+ if(!openEditor)return;
+ const key=openEditor.day+'-'+openEditor.block,slot=getSettings().slots[key]||{},week=byId('hblPlanWeek').value;
+ const v=week==='both'?(slot.A||slot.B):slot[week];
+ byId('hblPlanSubject').value=v?.subject||'';
+ byId('hblPlanGroup').value=v?.group||'';
+ byId('hblPlanRoom').value=v?.room||'';
+ byId('hblPlanEditorNote').textContent=week==='both'?'Wird in Woche A und B identisch eingetragen und grau angezeigt.':`Wird nur für Woche ${week} gespeichert. Eine andere Belegung in der Gegenwoche bleibt bestehen.`;
+}
+window.hblOpenSlotEditor=function(day,block){
+ if(day<1||day>5||block<1||block>4)return;
+ ensureModal();openEditor={day,block};
+ const slot=getSettings().slots[day+'-'+block]||{};
+ byId('hblPlanDialogTitle').textContent=WORKDAYS[day]+' · '+block+'. Block';
+ for(const w of ['A','B']){
+  const v=slot[w];byId('hblPlanPreview'+w).innerHTML=`<b>Woche ${w}</b><span>${v?`${escapeHtml(v.subject)} · ${escapeHtml(v.group)} · ${escapeHtml(v.room||'ohne Raum')}`:'frei'}</span>`;
+ }
+ const same=slot.A&&slot.B&&JSON.stringify(slot.A)===JSON.stringify(slot.B);
+ byId('hblPlanWeek').value=same||(!slot.A&&!slot.B)?'both':slot.A?'A':'B';
+ fillEditor();byId('hblPlanOverlay').hidden=false;byId('hblPlanSubject').focus();
+};
+function makeSampleSlots(){
+ const slots={};
+ for(let day=1;day<=5;day++)for(let block=1;block<=4;block++){
+  const pair={};
+  for(const w of ['A','B']){
+   const entries=BLOCKS[block-1].hours.map(h=>HBL_SAMPLE_TIMETABLE[w]?.[day]?.[h]).filter(Boolean);
+   if(!entries.length)continue;
+   const [subject,group,room]=entries[0];pair[w]={subject,group,room};
+  }
+  if(pair.A||pair.B)slots[day+'-'+block]=pair;
+ }
+ return slots;
+}
+window.hblImportSamplePlan=async function(){
+ const count=Object.keys(getSettings().slots).length;
+ if(count && !confirm('Der aktuelle Stundenplan wird durch den bisherigen HBL-Musterplan ersetzt. Vorhandene Bewertungen bleiben erhalten. Fortfahren?'))return;
+ if(await persistSchedule(makeSampleSlots())){hblOpenPlanManager(false);}
+};
+window.hblClearTimetable=async function(){
+ if(!confirm('Alle Stundenplan-Belegungen löschen? Bereits erfasste Bewertungen bleiben in ihren Kursen erhalten; nicht bewertete automatische Termine werden entfernt.'))return;
+ if(await persistSchedule({}))hblOpenPlanManager(false);
+};
+window.hblOpenPlanManager=function(force){
+ const host=document.querySelector('.timetablecard');if(!host)return;
+ let panel=byId('hblPlanManager');
+ if(!panel){
+  panel=document.createElement('div');panel.id='hblPlanManager';panel.className='hbl-plan-manager';panel.hidden=true;
+  panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke. Trage Fach, Klasse/Kurs und Raum ein und wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
+   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
+  host.appendChild(panel);
+ }
+ managerOpen=typeof force==='boolean'?force:!managerOpen;panel.hidden=!managerOpen;
+ if(managerOpen)panel.scrollIntoView({block:'nearest',behavior:'smooth'});
+};
+function init(){
+ window.hblScheduleAfterLoad();
+ if(byId('dashboardBoard')){const h=byId('hblPlanHint');if(h)h.textContent='Klicke auf einen Block oder „Stundenplan bearbeiten“. Änderungen werden mit deinem Konto synchronisiert.';}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+
 </script>
 </body>
 </html>
