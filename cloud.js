@@ -68,7 +68,10 @@ async function cloudWrite(snapshot){
   throw error;
  }
  revision=Number(data);
- clearPending();dirty=false;lastError="";
+ const pending=getPending();
+ if(pending && JSON.stringify(pending.content)===JSON.stringify(snapshot)){clearPending();dirty=false;}
+ else if(pending){pending.expectedRevision=revision;try{localStorage.setItem(userKey(),JSON.stringify(pending));}catch(e){}}
+ lastError="";
  status("Cloud synchronisiert · Stand "+revision+" ✓");
 }
 window.savePrepFile=function(){
