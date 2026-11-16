@@ -2329,8 +2329,8 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 16. November 2026">v3.3 Mobil-Demo<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
-            <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Speicherung ausschließlich in diesem Browser</div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 16. November 2026">v5.0 Cloud-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
 <defs>
@@ -2586,7 +2586,8 @@ function partPersist(){
  setParticipationStatus("Speichert lokal …");
  participationSaveQueue=participationSaveQueue.catch(()=>{}).then(async()=>{
   await savePrepFile();
-  setParticipationStatus("TESTVERSION · Nur in diesem Browser gespeichert ✓");
+  const cloudLabel=document.getElementById("hblCloudState")?.textContent||"";
+  setParticipationStatus(cloudLabel.includes("synchronisiert")?"Cloud synchronisiert ✓":document.getElementById("hblCloudAccount")?.textContent?.startsWith("Angemeldet:")?"Cloud-Speicherstatus oben prüfen":"TESTVERSION · Nur in diesem Browser gespeichert ✓");
  }).catch(e=>{setParticipationStatus("Testspeicherung fehlgeschlagen: "+e.message,true);throw e;});
 }
 
@@ -2619,7 +2620,7 @@ function renderParticipationPage(courseId){
        <div class="part-roster-actions"><button type="button" class="part-button primary" onclick="replaceParticipationRoster()">Klassenliste übernehmen &amp; Platzhalter entfernen</button><button type="button" class="part-button" onclick="addParticipationStudents()">Nur Namen hinzufügen</button><button class="part-button" type="button" onclick="toggleParticipationRoster(false)">Abbrechen</button></div></div>
      <div class="part-roster-info"><b>Am schnellsten:</b> Eine Spalte mit Namen aus Excel kopieren (ein Name pro Zeile) und <b>„Klassenliste übernehmen“</b> wählen. Die 30 Platzhalter werden durch genau diese Liste ersetzt. Sollten vorhandene Bewertungen oder echte Namen betroffen sein, erscheint vorher eine Sicherheitsabfrage. <b>„Nur Namen hinzufügen“</b> behält die bisherige Liste bei. Mit <b>„Leere Platzhalter entfernen“</b> kannst du unbewertete „Schüler 1–30“ später separat löschen.</div>
    </div>
-   <div class="part-status" id="participationStatus">Testversion · Daten bleiben in diesem Browser …</div>
+   <div class="part-status" id="participationStatus">Testversion · Daten werden geladen …</div>
    <div class="part-table-scroll" id="participationTableHost"><div class="part-empty">Mitarbeitsdaten werden geladen …</div></div>
    <div class="part-footer"><span>Durchschnitt: ++ = 1, + = 2, 0 = 3, − = 4, −− = 5; leere Zellen zählen nicht. Notenvorschlag = mathematisch gerundeter Durchschnitt. Endnote bei Bedarf manuell setzen.</span><span>↗ verbessert · → gleichbleibend · ↘ verschlechtert (Vergleich letzte 2 mit vorherigen 2 Bewertungen)</span></div>
   </section>
