@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#152238"/>
+  <path d="M92 122 H420 V388 H92 Z" fill="none" stroke="#b8a06c" stroke-width="15" stroke-linejoin="round"/>
+  <path d="M115 240 H397 M256 144 V370" stroke="#628bb8" stroke-opacity=".50" stroke-width="9"/>
+  <text x="256" y="294" font-family="Arial,sans-serif" font-size="126" font-weight="bold" text-anchor="middle" fill="#e9d6a1">HBL</text>
+</svg>
