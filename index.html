@@ -2950,7 +2950,8 @@ function reconcileDates(c,id){
   if(d.manual || d.block || !/^auto-\d{4}-\d{2}-\d{2}$/.test(String(d.id)))continue;
   const first=wanted.find(w=>w.date===d.date&&need.has(w.date+'|'+w.block));
   if(first){d.block=first.block;d.auto=true;need.delete(first.date+'|'+first.block);changed=true;}
-  else {d.manual=true;d.auto=false;changed=true;}
+  else if(dateHasMarks(c,d.id)){d.manual=true;d.auto=false;d.archived=true;changed=true;}
+  else {d.block=-1;d.auto=true;changed=true;}
  }
  const retained=[];
  for(const d of c.dates){
