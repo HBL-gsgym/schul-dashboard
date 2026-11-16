@@ -54,7 +54,7 @@ async function loadRemote({force=false}={}){
  if(force && (dirty||getPending()) && !confirm("Ungesicherte Änderungen auf diesem Gerät werden verworfen. Wirklich Cloud-Version laden?"))return;
  active=true;paused=false;dirty=false;clearPending();
  applyPrepData(content);
- if(typeof initializeParticipationRoster==="function" && window.currentParticipationCourse)initializeParticipationRoster();
+ if(typeof initializeParticipationRoster==="function" && currentParticipationCourse)initializeParticipationRoster();
  status("Cloud synchronisiert · Stand "+revision+" ✓");
  controls();
 }
