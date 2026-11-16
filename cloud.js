@@ -48,10 +48,10 @@ async function loadRemote({force=false}={}){
  if(!force && (dirty||paused||getPending())){status("Ungesicherte lokale Änderungen – zuerst synchronisieren",true);return;}
  const {data,error}=await client.from("hbl_dashboard_snapshots").select("content,revision").eq("user_id",user.id).maybeSingle();
  if(error)throw error;
- revision=Number(data?.revision||0);
  const content=data?.content||{};
  if(!validDemoData(content))throw Error("Ungültige Daten in der Cloud.");
  if(force && (dirty||getPending()) && !confirm("Ungesicherte Änderungen auf diesem Gerät werden verworfen. Wirklich Cloud-Version laden?"))return;
+ revision=Number(data?.revision||0);
  active=true;paused=false;dirty=false;clearPending();
  applyPrepData(content);
  if(typeof initializeParticipationRoster==="function" && currentParticipationCourse)initializeParticipationRoster();
