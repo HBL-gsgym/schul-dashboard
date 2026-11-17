@@ -1,0 +1,143 @@
+import { createClient } from "npm:@supabase/supabase-js@2.57.0";
+import webpush from "npm:web-push@3.6.7";
+
+// HBL v5.5: A private cron-only Web Push dispatcher.
+// VAPID credentials and cron authentication are stored in a service-role-only table.
+const url = Deno.env.get("SUPABASE_URL");
+const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+if (!url || !serviceKey) throw new Error("Supabase service environment is missing");
+const db = createClient(url, serviceKey, { auth: { persistSession: false } });
+const lessonStarts = [["1", "08:05", "08:15"], ["2", "09:55", "10:05"], ["3", "12:10", "12:20"], ["4", "13:50", "14:00"]];
+const dutyStarts = [
+  ["breakfast", "09:35", "09:45", "Frühstückspause"],
+  ["lunch1", "11:25", "11:35", "Mittagspause · Teil 1"],
+  ["lunch2", "11:45", "11:55", "Mittagspause · Teil 2"],
+];
+const vacations = [
+  ["2026-10-19", "2026-10-30"], ["2026-12-23", "2027-01-02"],
+  ["2027-02-01", "2027-02-06"], ["2027-03-22", "2027-04-03"],
+  ["2027-05-18", "2027-05-18"], ["2027-05-07", "2027-05-07"],
+  ["2027-10-11", "2027-10-23"], ["2027-12-23", "2027-12-31"],
+  ["2028-01-31", "2028-02-05"], ["2028-04-10", "2028-04-22"],
+];
+const validYears = [["2026-08-24", "2027-06-30"], ["2027-08-16", "2028-06-28"]];
+function pad(n: number) { return String(n).padStart(2, "0"); }
+function germanTime(d: Date) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin", year: "numeric", month: "2-digit",
+    day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(d).map(x => [x.type, x.value]));
+  return { date: p.year + "-" + p.month + "-" + p.day, time: p.hour + ":" + p.minute };
+}
+function easter(year: number) {
+  const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4;
+  const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30;
+  const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k+7)%7;
+  const m=Math.floor((a+11*h+22*l)/451);
+  const month=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
+  return new Date(Date.UTC(year,month-1,day,12));
+}
+function iso(d:Date){return d.getUTCFullYear()+"-"+pad(d.getUTCMonth()+1)+"-"+pad(d.getUTCDate());}
+function isSchoolDay(date:string) {
+  if (!validYears.some(([a,b])=>date>=a&&date<=b)) return false;
+  const [y,m,d] = date.split("-").map(Number),utc=new Date(Date.UTC(y,m-1,d,12));
+  const dow=utc.getUTCDay();if(dow===0||dow===6)return false;
+  if(vacations.some(([a,b])=>date>=a&&date<=b))return false;
+  const fixed=["01-01","05-01","10-03","10-31","12-25","12-26"];
+  if(fixed.includes(date.slice(5)))return false;
+  const east=easter(y);
+  for(const offset of [-2,1,39,50]){
+    const holiday=new Date(east);holiday.setUTCDate(holiday.getUTCDate()+offset);
+    if(iso(holiday)===date)return false;
+  }
+  return true;
+}
+function weekType(date:string) {
+  const [y,m,d]=date.split("-").map(Number),u=Date.UTC(y,m-1,d);
+  const day=new Date(u).getUTCDay(),monday=u-((day+6)%7)*86400000;
+  const w=Math.round((monday-Date.UTC(2026,7,24))/604800000);
+  return ((w%2)+2)%2===0?"A":"B";
+}
+function dueEvents(snapshot:Record<string,unknown>,date:string,time:string) {
+  const [y,m,d]=date.split("-").map(Number),day=new Date(Date.UTC(y,m-1,d)).getUTCDay(),week=weekType(date);
+  const result:Array<{key:string;title:string;body:string}>=[];
+  const lessonSlots=(snapshot?.__timetableV1 as any)?.slots||{};
+  const duties=(snapshot?.__dutiesV1 as any)?.slots||{};
+  for(const [block,reminder,start] of lessonStarts) {
+    if(reminder!==time)continue;
+    const item=lessonSlots[String(day)+"-"+block]?.[week];
+    if(!item||typeof item.subject!=="string"||typeof item.group!=="string")continue;
+    const title="Unterricht in 10 Minuten";
+    const body=String(item.subject).slice(0,60)+" · "+String(item.group).slice(0,30)+(item.room?" · Raum "+String(item.room).slice(0,40):"")+" · "+start+" Uhr";
+    result.push({key:date+"|unterricht|"+block, title, body});
+  }
+  for(const [type,reminder,start,label] of dutyStarts) {
+    if(reminder!==time)continue;
+    const entry=duties[String(day)+"-"+type]?.[week];
+    if(!entry||typeof entry.place!=="string"||!entry.place.trim())continue;
+    result.push({key:date+"|aufsicht|"+type,title:"Aufsicht in 10 Minuten",body:label+" · "+entry.place.slice(0,60)+" · "+start+" Uhr"});
+  }
+  return result;
+}
+function constantEqual(a:string,b:string) {
+  if(a.length!==b.length)return false;
+  let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);
+  return diff===0;
+}
+Deno.serve(async (req:Request) => {
+  if(req.method!=="POST")return new Response("Method not allowed",{status:405});
+  try{
+    const {data:settings,error:cfgError}=await db.from("hbl_push_private_settings").select("key,value");
+    if(cfgError)throw cfgError;
+    const secrets=Object.fromEntries((settings||[]).map((s:any)=>[s.key,s.value]));
+    if(!secrets.cron_token||!constantEqual(req.headers.get("x-hbl-cron")||"",secrets.cron_token))
+      return new Response("Unauthorized",{status:401});
+    if(!secrets.vapid_public||!secrets.vapid_private)throw Error("Missing VAPID keys");
+    webpush.setVapidDetails("https://hbl-gsgym.github.io",secrets.vapid_public,secrets.vapid_private);
+    const now=germanTime(new Date());
+    if(!isSchoolDay(now.date))return Response.json({ok:true,date:now.date,sent:0,reason:"not a school day"});
+    if(!lessonStarts.some(x=>x[1]===now.time)&&!dutyStarts.some(x=>x[1]===now.time))
+      return Response.json({ok:true,date:now.date,time:now.time,sent:0});
+    const {data:subs,error:subError}=await db.from("hbl_push_subscriptions")
+      .select("id,user_id,endpoint,p256dh,auth_key").limit(1000);
+    if(subError)throw subError;
+    if(!subs?.length)return Response.json({ok:true,sent:0,subscriptions:0});
+    const ids=[...new Set(subs.map((s:any)=>s.user_id))];
+    const {data:rows,error:snapError}=await db.from("hbl_dashboard_snapshots")
+      .select("user_id,content").in("user_id",ids);
+    if(snapError)throw snapError;
+    const byUser=new Map((rows||[]).map((r:any)=>[r.user_id,r.content||{}]));
+    let sent=0,failed=0;
+    for(const sub of subs){
+      const snapshot=byUser.get(sub.user_id);
+      if(!snapshot)continue;
+      for(const event of dueEvents(snapshot,now.date,now.time)){
+        const {error:logError}=await db.from("hbl_push_sent").insert({
+          subscription_id:sub.id,user_id:sub.user_id,event_key:event.key,
+        });
+        if(logError){
+          if(logError.code==="23505")continue;
+          failed++;continue;
+        }
+        try{
+          await webpush.sendNotification(
+            {endpoint:sub.endpoint,keys:{p256dh:sub.p256dh,auth:sub.auth_key}},
+            JSON.stringify({title:event.title,body:event.body,tag:event.key,url:"./"}),
+            {TTL:600,urgency:"high"},
+          );
+          sent++;
+        }catch(err:any){
+          failed++;
+          await db.from("hbl_push_sent").delete()
+            .eq("subscription_id",sub.id).eq("event_key",event.key);
+          if(err?.statusCode===404||err?.statusCode===410)
+            await db.from("hbl_push_subscriptions").delete().eq("id",sub.id);
+        }
+      }
+    }
+    return Response.json({ok:true,sent,failed,subscriptions:subs.length,date:now.date,time:now.time});
+  }catch(e:any){
+    console.error("HBL push dispatch failed:",e?.message||"error");
+    return Response.json({ok:false,error:"Push dispatcher error"},{status:500});
+  }
+});
