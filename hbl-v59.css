@@ -1,5 +1,5 @@
 /* HBL 5.9 – Gruppenchats und Ruhezeiten */
-.hbl-chat-group-create[hidden],.hbl-chat-push-overlay[hidden]{display:none!important}
+.hbl-chat-group-create[hidden],.hbl-chat-push-overlay[hidden],.hbl-chat-members-panel[hidden]{display:none!important}
 .hbl-chat-section{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
 .hbl-chat-section button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:6px 8px;border-radius:8px;font-size:11px;font-weight:750;cursor:pointer}
 .hbl-chat-group-tools{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 0}
@@ -49,4 +49,33 @@
  .hbl-chat-push-days{gap:3px}
  .hbl-chat-push-days label{font-size:10px}
  .hbl-chat-push-launch{font-size:10px!important;padding:6px!important}
+}
+
+/* v5.9.1: Mitglieder im Gruppenkopf und geschützte Mitgliederverwaltung */
+.hbl-chat-room .hbl-chat-members-preview{display:flex;align-items:center;flex-wrap:wrap;gap:5px;max-width:100%;max-height:72px;overflow:auto;margin-top:7px;padding:1px 0}
+.hbl-chat-member-chip{display:inline-flex;gap:4px;align-items:center;max-width:100%;padding:4px 8px;background:var(--panel);border:1px solid var(--line);border-radius:30px;font-size:11px;line-height:1.2;overflow-wrap:anywhere}
+.hbl-group-owner-chip{color:var(--accent);font-weight:900}
+.hbl-chat-members-panel{position:absolute;z-index:15;inset:8% 8%;display:flex;flex-direction:column;overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 13px 55px #0008}
+.hbl-chat-members-title{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hbl-chat-members-title h3{font-size:19px;margin:0;overflow-wrap:anywhere}
+.hbl-chat-members-title button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;min-width:34px;height:34px;cursor:pointer;font-size:17px}
+.hbl-chat-members-intro{font-size:12px;line-height:1.45;color:var(--muted);margin:8px 0 13px}
+.hbl-chat-members-list{display:flex;flex-direction:column;gap:6px}
+.hbl-chat-member-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2)}
+.hbl-chat-member-avatar{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:var(--panel);font-size:17px}
+.hbl-chat-member-detail{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hbl-chat-member-detail strong{font-size:13px;overflow-wrap:anywhere}
+.hbl-chat-member-detail small{font-size:10px;color:var(--muted)}
+.hbl-chat-member-row button{flex-shrink:0;padding:7px 9px;border:1px solid #c6816b;border-radius:8px;color:#b65035;background:var(--panel);font-weight:700;font-size:11px;cursor:pointer}
+.hbl-chat-members-add{border-top:1px solid var(--line);margin-top:17px;padding-top:12px}
+.hbl-chat-members-add h4{font-size:14px;margin:0 0 11px}
+.hbl-chat-members-add .hbl-group-member-option{margin:4px 0;padding:9px}
+.hbl-chat-members-add>button{margin-top:12px;border:0;background:var(--accent);color:#fff;border-radius:9px;padding:10px 14px;font-size:12px;font-weight:800;cursor:pointer}
+.hbl-chat-members-add>button[disabled]{opacity:.5;cursor:progress}
+#hblGroupMembersStatus{color:var(--muted);font-size:12px;margin:9px 0;min-height:14px}
+@media(max-width:760px){
+ .hbl-chat-members-panel{inset:4px 3px;padding:15px;border-radius:13px}
+ .hbl-chat-room .hbl-chat-members-preview{max-height:56px;gap:4px}
+ .hbl-chat-member-chip{font-size:10px;padding:3px 6px}
+ .hbl-chat-member-row{padding:8px;gap:7px}
 }
