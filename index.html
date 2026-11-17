@@ -2350,7 +2350,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 17. November 2026">v5.4 Cloud-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 17. November 2026">v5.5 PWA-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -3128,7 +3128,7 @@ window.hblExportSchedule=function(format){
   content='\uFEFF'+lines.map(r=>r.map(hblScheduleCsvCell).join(';')).join('\r\n');
   name='HBL-Stundenplan.csv';type='text/csv;charset=utf-8';
  }else{
-  content=JSON.stringify({format:'hbl-stundenplan',version:1,exportedAt:new Date().toISOString(),slots},null,2);
+  content=JSON.stringify({format:'hbl-stundenplan',version:2,exportedAt:new Date().toISOString(),slots,duties:prepDone.__dutiesV1?.slots||{}},null,2);
   name='HBL-Stundenplan.json';type='application/json';
  }
  const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');
@@ -3157,11 +3157,24 @@ function hblDayNumber(v){
  return map[x]||Number(x);
 }
 function hblParseScheduleFile(filename,contents){
- let slots={};
+ let slots={},duties=null;
  if(/\.json$/i.test(filename)){
   const data=JSON.parse(contents);
   if(data?.format&&data.format!=='hbl-stundenplan')throw Error('Dies ist keine HBL-Stundenplan-Datei.');
-  if(data?.version&&data.version!==1)throw Error('Unbekannte Stundenplan-Version.');
+  if(data?.version&&![1,2].includes(data.version))throw Error('Unbekannte Stundenplan-Version.');
+  if(data?.duties&&typeof data.duties==='object'&&!Array.isArray(data.duties)){
+   duties={};
+   for(const [key,entry] of Object.entries(data.duties)){
+    if(!/^([1-5])-(breakfast|lunch1|lunch2)$/.test(key)||!entry||typeof entry!=='object')throw Error('Ungültige Aufsicht: '+key);
+    const item={};
+    for(const w of ['A','B'])if(entry[w]!=null){
+     const place=String(entry[w]?.place||'').trim();
+     if(!place||place.length>60)throw Error('Ungültiger Aufsichtsort bei '+key+' / '+w);
+     item[w]={place};
+    }
+    if(item.A||item.B)duties[key]=item;
+   }
+  }
   const raw=data?.slots||data?.__timetableV1?.slots;
   if(!raw||typeof raw!=='object'||Array.isArray(raw))throw Error('Keine gültigen Stundenplan-Blöcke gefunden.');
   for(const [key,slot] of Object.entries(raw)){
@@ -3199,20 +3212,23 @@ function hblParseScheduleFile(filename,contents){
   }
  }else throw Error('Bitte eine JSON- oder CSV-Datei auswählen.');
  if(!hblScheduleRows(slots).length)throw Error('Die Datei enthält keinen belegten Unterrichtsblock.');
- return slots;
+ return {slots,duties};
 }
 window.hblImportScheduleFile=async function(input){
  const file=input.files?.[0];input.value='';if(!file)return;
  if(file.size>2000000){alert('Die Datei ist zu groß (maximal 2 MB).');return;}
  try{
-  const slots=hblParseScheduleFile(file.name,await file.text());
+  const imported=hblParseScheduleFile(file.name,await file.text()),slots=imported.slots;
   const rows=hblScheduleRows(slots);
   const unique=new Set(rows.map(r=>lower(r.subject)+'|'+lower(r.group))).size;
   const existing=hblScheduleRows(slotsCopy()).length;
   const example=rows.slice(0,6).map(r=>WORKDAYS[r.day]+' '+r.block+'. Block · '+r.week+' · '+r.subject+' '+r.group).join('\n');
   const message='Import-Vorschau: '+file.name+'\n\n'+rows.length+' Wochenbelegungen in '+Object.keys(slots).length+' Blöcken\n'+unique+' verschiedene Kurse\n\n'+example+(rows.length>6?'\n…':'')+'\n\nACHTUNG: Der bisherige Stundenplan ('+existing+' Wochenbelegungen) wird ersetzt. Bereits gespeicherte Bewertungen bleiben erhalten.\n\nJetzt importieren?';
   if(!confirm(message))return;
-  if(await persistSchedule(slots)){hblOpenPlanManager(true);alert('Stundenplan importiert.');}
+  const previous=prepDone.__dutiesV1;
+  if(imported.duties!==null)prepDone.__dutiesV1={version:1,slots:imported.duties};
+  if(await persistSchedule(slots)){hblOpenPlanManager(true);alert('Stundenplan importiert'+(imported.duties!==null?' – Aufsichten übernommen.':'.'));}
+  else {prepDone.__dutiesV1=previous;renderTimetable();renderToday();}
  }catch(e){alert('Import nicht möglich: '+e.message);}
 };
 
@@ -3226,7 +3242,7 @@ window.hblOpenPlanManager=function(force){
  if(!panel){
   panel=document.createElement('div');panel.id='hblPlanManager';panel.className='hbl-plan-manager';panel.hidden=true;
   panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke oder auf eine der drei Aufsichtszeiten. Trage bei Unterricht Fach, Klasse/Kurs und Raum ein; bei Aufsichten den frei wählbaren Aufsichtsort. Wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
-   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="document.getElementById('hblScheduleFile').click()">📥 Stundenplan importieren</button><input id="hblScheduleFile" type="file" accept=".json,.csv,application/json,text/csv" hidden onchange="hblImportScheduleFile(this)"><button type="button" onclick="hblExportSchedule('json')">📤 Export JSON</button><button type="button" onclick="hblExportSchedule('csv')">📤 Export CSV</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
+   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="document.getElementById('hblScheduleFile').click()">📥 Stundenplan importieren</button><input id="hblScheduleFile" type="file" accept=".json,.csv,application/json,text/csv" hidden onchange="hblImportScheduleFile(this)"><button type="button" onclick="hblExportSchedule('json')">📤 Export JSON inkl. Aufsichten</button><button type="button" onclick="hblExportSchedule('csv')">📤 Export CSV</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
   host.appendChild(panel);
  }
  managerOpen=typeof force==='boolean'?force:!managerOpen;window.hblTimetableEditing=managerOpen;panel.hidden=!managerOpen;renderTimetable();
