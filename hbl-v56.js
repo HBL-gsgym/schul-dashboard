@@ -190,7 +190,7 @@ window.hblDecorateSchoolMilestones=function(aside,year){
     (isAdmin?'<button type="button" data-edit-event="'+safe(e.id)+'" class="hbl-school-event-button">'+content+'</button>':'<div class="hbl-school-event-text">'+content+'</div>')+
    '</div>';
  }).join(""):'<p class="hbl-school-events-empty">Für gemeinsame Schultermine bitte anmelden oder als Administrator Termine hinzufügen.</p>')+'</div>'+
- (isOwner?'<button type="button" id="hblAdminOpen" class="hbl-admin-launch">⚙ Administratoren verwalten</button>':'');
+ (isOwner?'<button type="button" id="hblAdminOpen" class="hbl-admin-launch">⚙ Benutzer verwalten</button>':'');
  aside.appendChild(section);
  byId("hblEventAdd")?.addEventListener("click",()=>openEventEditor());
  section.querySelectorAll("[data-edit-event]").forEach(x=>x.addEventListener("click",()=>openEventEditor(x.dataset.editEvent)));
@@ -284,8 +284,8 @@ async function openAdminUsers(){
   overlay=document.createElement("div");overlay.id="hblAdminsOverlay";overlay.className="hbl-v56-overlay";overlay.hidden=true;
   overlay.innerHTML='<div class="hbl-v56-dialog" role="dialog" aria-modal="true" aria-labelledby="hblAdminsTitle">'+
    '<button type="button" id="hblAdminsClose" class="hbl-v56-close" aria-label="Schließen">✕</button>'+
-   '<h2 id="hblAdminsTitle">Administratoren verwalten</h2>'+
-   '<p class="hbl-v56-note">Neue Lehrkräfte erscheinen hier nach ihrer Registrierung. Nur du kannst ihnen Bearbeitungsrechte für den gemeinsamen Kalender geben.</p>'+
+   '<h2 id="hblAdminsTitle">Benutzer- und Chatverwaltung</h2>'+
+   '<p class="hbl-v56-note">Registrierte Lehrkräfte erhalten hier getrennte Rechte für den Schulkalender und den Kollegium-Chat. Nur du kannst diese Freigaben ändern.</p>'+
    '<div id="hblAdminsList">Lädt …</div><p id="hblAdminsStatus" role="status"></p></div>';
   document.body.appendChild(overlay);
   byId("hblAdminsClose").onclick=()=>overlay.hidden=true;
@@ -309,15 +309,34 @@ async function reloadAdminUsers(){
   const data=await callAdmin({action:"list"});
   adminUsers=data.users||[];
   root.innerHTML=adminUsers.map(u=>
-   '<div class="hbl-admin-person"><div><strong>'+safe(u.email)+'</strong><small>'+(u.is_owner?"Hauptadministrator":u.is_admin?"Administrator":"Lehrkraft")+'</small></div>'+
-   (u.is_owner?"":'<button type="button" data-user="'+safe(u.id)+'" data-next="'+(!u.is_admin)+'">'+(u.is_admin?"Rechte entziehen":"Adminrechte vergeben")+'</button>')+'</div>'
+   '<div class="hbl-admin-person"><div><strong>'+safe(u.email)+'</strong><small>'+
+    (u.is_owner?"Hauptadministrator":u.is_admin?"Kalenderadministrator":"Lehrkraft")+
+    ' · '+(u.is_chat?"Chat freigegeben":"Chat gesperrt")+'</small></div>'+
+    '<div class="hbl-admin-person-buttons">'+
+    (u.is_owner?'<span class="hbl-admin-owner-label">Kalender: Hauptadmin</span>':
+      '<button type="button" data-user="'+safe(u.id)+'" data-next="'+(!u.is_admin)+'">'+
+      (u.is_admin?"Adminrechte entziehen":"Kalenderadmin vergeben")+'</button>')+
+    (u.is_owner?'<span class="hbl-admin-owner-label">Chat: freigegeben</span>':
+      '<button type="button" data-chat-user="'+safe(u.id)+'" data-chat-next="'+(!u.is_chat)+'">'+
+      (u.is_chat?"Chat-Zugang entziehen":"Chat freigeben")+'</button>')+
+    '</div></div>'
   ).join("")||"<p>Keine Konten vorhanden.</p>";
   root.querySelectorAll("[data-user]").forEach(button=>button.onclick=async()=>{
    const item=adminUsers.find(u=>u.id===button.dataset.user),next=button.dataset.next==="true";
-   if(!item||!confirm((next?"Adminrechte für ":"Adminrechte entziehen: ")+item.email+"?"))return;
+   if(!item||!confirm((next?"Kalender-Administratorrechte erteilen: ":"Kalender-Administratorrechte entziehen: ")+item.email+"?"))return;
    button.disabled=true;
    try{await callAdmin({action:"set",user_id:item.id,is_admin:next});await reloadAdminUsers();}
    catch(e){status.textContent=e.message;button.disabled=false;}
+  });
+  root.querySelectorAll("[data-chat-user]").forEach(button=>button.onclick=async()=>{
+   const item=adminUsers.find(u=>u.id===button.dataset.chatUser),next=button.dataset.chatNext==="true";
+   if(!item||!confirm((next?"Chat für ":"Chat-Zugang entziehen: ")+item.email+"?"))return;
+   button.disabled=true;
+   try{
+    await callAdmin({action:"set_chat",user_id:item.id,is_chat:next});
+    await reloadAdminUsers();
+    window.dispatchEvent(new Event("hbl-chat-access-changed"));
+   }catch(e){status.textContent=e.message;button.disabled=false;}
   });
  }catch(e){root.textContent="Benutzerliste nicht verfügbar.";status.textContent=e.message;}
 }
