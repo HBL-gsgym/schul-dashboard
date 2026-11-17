@@ -58,13 +58,17 @@ function weekType(date:string) {
   const w=Math.round((monday-Date.UTC(2026,7,24))/604800000);
   return ((w%2)+2)%2===0?"A":"B";
 }
-function dueEvents(snapshot:Record<string,unknown>,date:string,time:string) {
+type SchoolEvent={starts_on:string;ends_on:string;cancellation_mode:string;cancelled_blocks:number[]};
+function dueEvents(snapshot:Record<string,unknown>,date:string,time:string,schoolEvents:SchoolEvent[]) {
+  const cancelled=(block:number)=>schoolEvents.some(e=>date>=e.starts_on&&date<=e.ends_on&&(
+    e.cancellation_mode==="all"||(e.cancellation_mode==="blocks"&&e.cancelled_blocks?.includes(block))
+  ));
   const [y,m,d]=date.split("-").map(Number),day=new Date(Date.UTC(y,m-1,d)).getUTCDay(),week=weekType(date);
   const result:Array<{key:string;title:string;body:string}>=[];
   const lessonSlots=(snapshot?.__timetableV1 as any)?.slots||{};
   const duties=(snapshot?.__dutiesV1 as any)?.slots||{};
   for(const [block,reminder,start] of lessonStarts) {
-    if(reminder!==time)continue;
+    if(reminder!==time||cancelled(Number(block)))continue;
     const item=lessonSlots[String(day)+"-"+block]?.[week];
     if(!item||typeof item.subject!=="string"||typeof item.group!=="string")continue;
     const title="Unterricht in 10 Minuten";
@@ -72,7 +76,8 @@ function dueEvents(snapshot:Record<string,unknown>,date:string,time:string) {
     result.push({key:date+"|unterricht|"+block, title, body});
   }
   for(const [type,reminder,start,label] of dutyStarts) {
-    if(reminder!==time)continue;
+    const afterBlock=type==="breakfast"?1:2;
+    if(reminder!==time||cancelled(afterBlock))continue;
     const entry=duties[String(day)+"-"+type]?.[week];
     if(!entry||typeof entry.place!=="string"||!entry.place.trim())continue;
     result.push({key:date+"|aufsicht|"+type,title:"Aufsicht in 10 Minuten",body:label+" · "+entry.place.slice(0,60)+" · "+start+" Uhr"});
@@ -102,6 +107,10 @@ Deno.serve(async (req:Request) => {
       .select("id,user_id,endpoint,p256dh,auth_key").limit(1000);
     if(subError)throw subError;
     if(!subs?.length)return Response.json({ok:true,sent:0,subscriptions:0});
+    const {data:schoolEvents,error:eventsError}=await db.from("hbl_school_events")
+      .select("starts_on,ends_on,cancellation_mode,cancelled_blocks")
+      .lte("starts_on",now.date).gte("ends_on",now.date);
+    if(eventsError)throw eventsError;
     const ids=[...new Set(subs.map((s:any)=>s.user_id))];
     const {data:rows,error:snapError}=await db.from("hbl_dashboard_snapshots")
       .select("user_id,content").in("user_id",ids);
@@ -111,7 +120,7 @@ Deno.serve(async (req:Request) => {
     for(const sub of subs){
       const snapshot=byUser.get(sub.user_id);
       if(!snapshot)continue;
-      for(const event of dueEvents(snapshot,now.date,now.time)){
+      for(const event of dueEvents(snapshot,now.date,now.time,schoolEvents||[])){
         const {error:logError}=await db.from("hbl_push_sent").insert({
           subscription_id:sub.id,user_id:sub.user_id,event_key:event.key,
         });
