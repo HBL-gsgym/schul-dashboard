@@ -84,6 +84,100 @@ function dueEvents(snapshot:Record<string,unknown>,date:string,time:string,schoo
   }
   return result;
 }
+
+type ChatPref={user_id:string;enabled:boolean;days:number[];start_time:string;end_time:string;preview:boolean};
+type ChatMsg={id:string;channel:string;sender_id:string;recipient_id?:string|null;group_id?:string;body:string;created_at:string};
+function pushWindowActive(p:ChatPref,local:{date:string;time:string}){
+ const dow=new Date(local.date+"T12:00:00Z").getUTCDay()||7;
+ const yesterday=dow===1?7:dow-1;
+ const start=String(p.start_time).slice(0,5),end=String(p.end_time).slice(0,5);
+ const days=p.days||[];
+ if(start<end)return days.includes(dow)&&local.time>=start&&local.time<end;
+ return (days.includes(dow)&&local.time>=start)||(days.includes(yesterday)&&local.time<end);
+}
+async function dispatchChatPush(now:Date):Promise<{sent:number;failed:number}>{
+ const local=germanTime(now);
+ const {data:prefs,error:prefError}=await db.from("hbl_chat_push_preferences")
+  .select("user_id,enabled,days,start_time,end_time,preview").eq("enabled",true).limit(1000);
+ if(prefError)throw prefError;
+ const active=new Map((prefs||[]).filter((p:ChatPref)=>pushWindowActive(p,local)).map((p:ChatPref)=>[p.user_id,p]));
+ if(!active.size)return {sent:0,failed:0};
+ const {data:subs,error:subsError}=await db.from("hbl_push_subscriptions")
+  .select("id,user_id,endpoint,p256dh,auth_key").in("user_id",[...active.keys()]).limit(1000);
+ if(subsError)throw subsError;
+ if(!subs?.length)return {sent:0,failed:0};
+ const cutoff=new Date(now.getTime()-105000).toISOString();
+ const [plain,groupChat,allowed,groupMembers,groups,profiles,dashboardMembers]=await Promise.all([
+  db.from("hbl_chat_messages").select("id,channel,sender_id,recipient_id,body,created_at")
+   .gte("created_at",cutoff).lte("created_at",now.toISOString()).order("created_at",{ascending:false}).limit(300),
+  db.from("hbl_chat_group_messages").select("id,group_id,sender_id,body,created_at")
+   .gte("created_at",cutoff).lte("created_at",now.toISOString()).order("created_at",{ascending:false}).limit(300),
+  db.from("hbl_chat_members").select("user_id").limit(1000),
+  db.from("hbl_chat_group_members").select("group_id,user_id").limit(5000),
+  db.from("hbl_chat_groups").select("id,name").limit(1000),
+  db.from("hbl_user_profiles").select("user_id,username").limit(1000),
+  db.from("hbl_dashboard_members").select("user_id,enabled").limit(1000)
+ ]);
+ for(const q of [plain,groupChat,allowed,groupMembers,groups,profiles,dashboardMembers])if(q.error)throw q.error;
+ const permitted=new Set((allowed.data||[]).map((x:any)=>x.user_id));
+ const dashboardEnabled=new Set((dashboardMembers.data||[]).filter((x:any)=>x.enabled).map((x:any)=>x.user_id));
+ const members=new Map<string,Set<string>>();
+ for(const m of groupMembers.data||[]){
+  const set=members.get(m.group_id)||new Set<string>();
+  set.add(m.user_id);members.set(m.group_id,set);
+ }
+ const groupNames=new Map((groups.data||[]).map((g:any)=>[g.id,g.name]));
+ const names=new Map((profiles.data||[]).map((p:any)=>[p.user_id,p.username]));
+ const messages:ChatMsg[]=[
+  ...(plain.data||[]),
+  ...(groupChat.data||[]).map((x:any)=>({...x,channel:"group"}))
+ ].sort((a,b)=>b.created_at.localeCompare(a.created_at));
+ if(!messages.length)return {sent:0,failed:0};
+ let sent=0,failed=0;
+ for(const sub of subs){
+  const pref=active.get(sub.user_id) as ChatPref|undefined;
+  if(!pref||!permitted.has(sub.user_id)||!dashboardEnabled.has(sub.user_id))continue;
+  const candidates=messages.filter(m=>m.sender_id!==sub.user_id&&(
+   m.channel==="lounge" ||
+   (m.channel==="direct"&&m.recipient_id===sub.user_id) ||
+   (m.channel==="group"&&m.group_id&&members.get(m.group_id)?.has(sub.user_id))
+  )).slice(0,60);
+  if(!candidates.length)continue;
+  const newly:ChatMsg[]=[];
+  for(const m of candidates){
+   const {error}=await db.from("hbl_chat_push_sent").insert({
+    subscription_id:sub.id,user_id:sub.user_id,
+    kind:m.channel,message_id:m.id
+   });
+   if(!error)newly.push(m);
+   else if(error.code!=="23505")failed++;
+  }
+  if(!newly.length)continue;
+  const recent=newly[0],sender=String(names.get(recent.sender_id)||"Kollegium");
+  const where=recent.channel==="group"?String(groupNames.get(recent.group_id)||"Gruppe"):
+   recent.channel==="lounge"?"Lehrerzimmer":"Direktnachricht";
+  const title=newly.length>1?newly.length+" neue Chat-Nachrichten":"Chat · "+where;
+  const body=pref.preview?
+   sender+": "+String(recent.body).slice(0,130):
+   "Neue Nachricht von "+sender+" · "+where;
+  try{
+   await webpush.sendNotification(
+    {endpoint:sub.endpoint,keys:{p256dh:sub.p256dh,auth:sub.auth_key}},
+    JSON.stringify({title,body,tag:"hbl-chat-"+recent.channel+"-"+(recent.group_id||recent.sender_id),url:"./"}),
+    {TTL:120,urgency:"normal"}
+   );
+   sent++;
+  }catch(e:any){
+   failed++;
+   for(const m of newly)await db.from("hbl_chat_push_sent").delete()
+    .eq("subscription_id",sub.id).eq("kind",m.channel).eq("message_id",m.id);
+   if(e?.statusCode===404||e?.statusCode===410)
+    await db.from("hbl_push_subscriptions").delete().eq("id",sub.id);
+  }
+ }
+ return {sent,failed};
+}
+
 function constantEqual(a:string,b:string) {
   if(a.length!==b.length)return false;
   let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);
@@ -99,14 +193,16 @@ Deno.serve(async (req:Request) => {
       return new Response("Unauthorized",{status:401});
     if(!secrets.vapid_public||!secrets.vapid_private)throw Error("Missing VAPID keys");
     webpush.setVapidDetails("https://hbl-gsgym.github.io",secrets.vapid_public,secrets.vapid_private);
-    const now=germanTime(new Date());
-    if(!isSchoolDay(now.date))return Response.json({ok:true,date:now.date,sent:0,reason:"not a school day"});
+    const current=new Date(),now=germanTime(current);
+    // Chat-Push läuft unabhängig von Schultagen und immer nur in den selbst gewählten Zeiten.
+    const chat=await dispatchChatPush(current);
+    if(!isSchoolDay(now.date))return Response.json({ok:true,date:now.date,sent:0,chat,reason:"not a school day"});
     if(!lessonStarts.some(x=>x[1]===now.time)&&!dutyStarts.some(x=>x[1]===now.time))
-      return Response.json({ok:true,date:now.date,time:now.time,sent:0});
+      return Response.json({ok:true,date:now.date,time:now.time,sent:0,chat});
     const {data:subs,error:subError}=await db.from("hbl_push_subscriptions")
       .select("id,user_id,endpoint,p256dh,auth_key").limit(1000);
     if(subError)throw subError;
-    if(!subs?.length)return Response.json({ok:true,sent:0,subscriptions:0});
+    if(!subs?.length)return Response.json({ok:true,sent:0,subscriptions:0,chat});
     const {data:schoolEvents,error:eventsError}=await db.from("hbl_school_events")
       .select("starts_on,ends_on,cancellation_mode,cancelled_blocks")
       .lte("starts_on",now.date).gte("ends_on",now.date);
@@ -144,7 +240,7 @@ Deno.serve(async (req:Request) => {
         }
       }
     }
-    return Response.json({ok:true,sent,failed,subscriptions:subs.length,date:now.date,time:now.time});
+    return Response.json({ok:true,sent,failed,chat,subscriptions:subs.length,date:now.date,time:now.time});
   }catch(e:any){
     console.error("HBL push dispatch failed:",e?.message||"error");
     return Response.json({ok:false,error:"Push dispatcher error"},{status:500});
