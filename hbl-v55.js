@@ -26,10 +26,18 @@ function decorateTable(host){
  for(let block=1;block<=4;block++){
   for(const el of old.slice(5+(block-1)*5,5+block*5))fragment.appendChild(el);
   for(const type of DUTIES.filter(d=>d.after===block)){
+   const editing=!!window.hblTimetableEditing;
+   const hasAny=[1,2,3,4,5].some(day=>{
+    const v=dutyStore()[day+"-"+type.id];
+    return !!(v?.A?.place||v?.B?.place);
+   });
+   if(!editing&&!hasAny)continue;
    for(let day=1;day<=5;day++){
+    const filled=!!(dutyStore()[day+"-"+type.id]?.A?.place||dutyStore()[day+"-"+type.id]?.B?.place);
     const parent=document.createElement("div");
-    parent.className="hbl-duty-container";
-    parent.innerHTML='<span class="hbl-duty-caption">'+safe(type.label)+'<small>'+type.start+'–'+type.end+'</small></span>'+dutyCell(day,type.id);
+    parent.className="hbl-duty-container"+(!editing&&!filled?" hbl-duty-placeholder":"");
+    parent.innerHTML='<span class="hbl-duty-caption">'+safe(type.label)+'<small>'+type.start+'–'+type.end+'</small></span>'+
+      (editing||filled?dutyCell(day,type.id):'<span class="hbl-duty-spacer" aria-hidden="true"></span>');
     fragment.appendChild(parent);
    }
   }
