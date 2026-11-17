@@ -94,6 +94,15 @@ async function startSession(session){
    status("Lokale Änderungen vorhanden – bitte prüfen",true);
    return;
   }
+  const membership=await client.from("hbl_dashboard_members").select("enabled").eq("user_id",user.id).maybeSingle();
+  if(membership.error)throw membership.error;
+  if(!membership.data?.enabled){
+   active=false;
+   status("Konto nicht freigeschaltet – bitte Administrator kontaktieren",true);
+   showModal(false);
+   window.dispatchEvent(new Event("hbl-cloud-status"));
+   return;
+  }
   await loadRemote();
   showModal(false);
   window.dispatchEvent(new Event("hbl-cloud-status"));
@@ -102,7 +111,7 @@ async function startSession(session){
 async function initializeAuth(){
  const modal=document.createElement("div");
  modal.id="hblCloudModal";modal.className="hbl-cloud-overlay";modal.hidden=true;
- modal.innerHTML='<section class="hbl-cloud-dialog" role="dialog" aria-modal="true" aria-label="Cloud-Anmeldung"><button type="button" id="hblCloudClose" class="hbl-cloud-close" aria-label="Schließen">✕</button><h2>☁️ Dashboard-Synchronisierung</h2><p>Nur anonymisierte Testdaten! Dein Supabase-Konto für die Verwaltung ist <b>nicht</b> automatisch dein Dashboard-Login.</p><form id="hblCloudForm"><label>E-Mail<input id="hblCloudEmail" type="email" autocomplete="email" required></label><label>Passwort<input id="hblCloudPassword" type="password" autocomplete="current-password" minlength="8" required></label><div class="hbl-cloud-actions"><button type="submit">Anmelden</button><button type="button" id="hblCloudSignup">Konto erstellen</button></div></form><p id="hblCloudMessage" role="status"></p><small>Ein neu angelegtes Konto muss möglicherweise per E-Mail bestätigt werden. Verwende hier keine echten Schülerdaten.</small></section>';
+ modal.innerHTML='<section class="hbl-cloud-dialog" role="dialog" aria-modal="true" aria-label="Cloud-Anmeldung"><button type="button" id="hblCloudClose" class="hbl-cloud-close" aria-label="Schließen">✕</button><h2>☁️ Dashboard-Anmeldung</h2><p>Der Zugang ist nur mit persönlicher Einladung möglich. Melde dich mit E-Mail-Adresse und Passwort an.</p><form id="hblCloudForm"><label>E-Mail<input id="hblCloudEmail" type="email" autocomplete="email" required></label><label>Passwort<input id="hblCloudPassword" type="password" autocomplete="current-password" minlength="8" required></label><div class="hbl-cloud-actions"><button type="submit">Anmelden</button></div></form><p id="hblCloudMessage" role="status"></p><small>Du hast noch keinen Zugang? Bitte den Hauptadministrator um eine persönliche Einladung. Keine echten Schülerdaten in dieser Pilotversion speichern.</small></section>';
  const bar=document.createElement("section");
  bar.className="hbl-cloud-bar";bar.id="hblCloudControls";
  bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
@@ -117,14 +126,6 @@ async function initializeAuth(){
   message("Anmeldung läuft …");
   const {data,error}=await client.auth.signInWithPassword({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value});
   if(error)message(error.message,true);else {message("Angemeldet ✓");await startSession(data.session);}
- };
- el("hblCloudSignup").onclick=async()=>{
-  if(!client)return message("Supabase-Anmeldung konnte nicht geladen werden.",true);
-  if(!confirm("Neues Testkonto mit dieser E-Mail anlegen?"))return;
-  const {data,error}=await client.auth.signUp({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value,options:{emailRedirectTo:PAGE}});
-  if(error)message(error.message,true);
-  else if(data.session)await startSession(data.session);
-  else message("Bitte E-Mail-Bestätigungslink öffnen. Falls er auf localhost zeigt: in Supabase die Auth Redirect URL auf die GitHub-Pages-Adresse einstellen.");
  };
  el("hblCloudLogout").onclick=async()=>{
   if(dirty||getPending()){if(!confirm("Auf diesem Gerät liegen ungesicherte Änderungen. Wirklich abmelden?"))return;}
@@ -166,6 +167,9 @@ async function initializeAuth(){
  window.hblCloudUser=()=>user;
  client.auth.onAuthStateChange((event,session)=>{
   if(event==="SIGNED_OUT"){user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
+  if(event==="SIGNED_IN"&&session?.user&&session.user.id!==user?.id){
+   setTimeout(()=>{if(session?.user)void startSession(session);},0);
+  }
   // TOKEN_REFRESHED does not replace the current state.
  });
  const {data,error}=await client.auth.getSession();
