@@ -286,12 +286,43 @@ async function openAdminUsers(){
    '<button type="button" id="hblAdminsClose" class="hbl-v56-close" aria-label="Schließen">✕</button>'+
    '<h2 id="hblAdminsTitle">Benutzer- und Chatverwaltung</h2>'+
    '<p class="hbl-v56-note">Registrierte Lehrkräfte erhalten hier getrennte Rechte für den Schulkalender und den Kollegium-Chat. Nur du kannst diese Freigaben ändern.</p>'+
-   '<div id="hblAdminsList">Lädt …</div><p id="hblAdminsStatus" role="status"></p></div>';
+   '<section class="hbl-invite-box"><h3>Kollegen einladen</h3>'+
+    '<p>Den persönlichen Einladungslink verschickst du über dein normales E-Mail-Programm.</p>'+
+    '<form id="hblInviteForm"><label for="hblInviteEmail">E-Mail-Adresse</label>'+
+    '<div class="hbl-invite-controls"><input id="hblInviteEmail" type="email" maxlength="254" autocomplete="off" placeholder="kollege@schule.de" required>'+
+    '<button type="submit" id="hblInviteGenerate">Einladungslink erzeugen</button></div></form>'+
+    '<div id="hblInviteResult" hidden><label for="hblInviteLink">Persönlicher Link – nur an die genannte Person senden</label>'+
+    '<textarea id="hblInviteLink" readonly rows="3"></textarea><button type="button" id="hblInviteCopy">Link kopieren</button></div>'+
+    '<p id="hblInviteStatus" role="status"></p></section>'+
+    '<div id="hblAdminsList">Lädt …</div><p id="hblAdminsStatus" role="status"></p></div>';
   document.body.appendChild(overlay);
   byId("hblAdminsClose").onclick=()=>overlay.hidden=true;
+   byId("hblInviteForm").onsubmit=e=>{e.preventDefault();void makeManualLink("invite",byId("hblInviteEmail").value.trim());};
+   byId("hblInviteCopy").onclick=async()=>{
+    const link=byId("hblInviteLink").value;
+    if(!link)return;
+    try{await navigator.clipboard.writeText(link);byId("hblInviteStatus").textContent="Link kopiert – persönlich weiterleiten.";}
+    catch(e){byId("hblInviteLink").focus();byId("hblInviteLink").select();byId("hblInviteStatus").textContent="Link markieren und mit Strg+C kopieren.";}
+   };
   overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.hidden=true;});
  }
  overlay.hidden=false;await reloadAdminUsers();
+}
+async function makeManualLink(action,emailOrUser){
+ const status=byId("hblInviteStatus"),result=byId("hblInviteResult"),button=byId("hblInviteGenerate");
+ if(!status||!result)return;
+ status.textContent="Link wird erzeugt …";result.hidden=true;
+ if(button)button.disabled=true;
+ try{
+  const data=await callAdmin(action==="invite"?{action:"invite",email:emailOrUser}:{action:"recovery",user_id:emailOrUser});
+  if(!data?.action_link)throw Error("Kein Link vom Server erhalten.");
+  byId("hblInviteLink").value=data.action_link;result.hidden=false;
+  status.textContent=action==="invite"
+   ?"Einladung für "+data.email+" erstellt. Link kopieren und persönlich weiterleiten. Wer den Link erhält, kann das Konto aktivieren."
+   :"Passwort-Link für "+data.email+" erstellt. Nur persönlich weiterleiten.";
+  if(action==="invite")await reloadAdminUsers();
+ }catch(e){status.textContent="Fehler: "+e.message;}
+ finally{if(button)button.disabled=false;}
 }
 async function callAdmin(body){
  const sb=client();
@@ -309,18 +340,21 @@ async function reloadAdminUsers(){
   const data=await callAdmin({action:"list"});
   adminUsers=data.users||[];
   root.innerHTML=adminUsers.map(u=>
-   '<div class="hbl-admin-person"><div><strong>'+safe(u.email)+'</strong><small>'+
-    (u.is_owner?"Hauptadministrator":u.is_admin?"Kalenderadministrator":"Lehrkraft")+
-    ' · '+(u.is_chat?"Chat freigegeben":"Chat gesperrt")+'</small></div>'+
-    '<div class="hbl-admin-person-buttons">'+
-    (u.is_owner?'<span class="hbl-admin-owner-label">Kalender: Hauptadmin</span>':
-      '<button type="button" data-user="'+safe(u.id)+'" data-next="'+(!u.is_admin)+'">'+
-      (u.is_admin?"Adminrechte entziehen":"Kalenderadmin vergeben")+'</button>')+
-    (u.is_owner?'<span class="hbl-admin-owner-label">Chat: freigegeben</span>':
-      '<button type="button" data-chat-user="'+safe(u.id)+'" data-chat-next="'+(!u.is_chat)+'">'+
-      (u.is_chat?"Chat-Zugang entziehen":"Chat freigeben")+'</button>')+
-    '</div></div>'
-  ).join("")||"<p>Keine Konten vorhanden.</p>";
+    '<div class="hbl-admin-person"><div><strong>'+safe(u.username||u.email)+'</strong>'+
+     (u.username?'<small>'+safe(u.email)+'</small>':'')+
+     '<small>'+(u.is_owner?"Hauptadministrator":u.is_admin?"Kalenderadministrator":"Lehrkraft")+
+     ' · '+(u.is_chat?"Chat freigegeben":"Chat gesperrt")+
+     ' · '+(u.username?"Profil eingerichtet":u.invited_at?"Einladung ausstehend":"Benutzername fehlt")+'</small></div>'+
+     '<div class="hbl-admin-person-buttons">'+
+     (u.is_owner?'<span class="hbl-admin-owner-label">Kalender: Hauptadmin</span>':
+       '<button type="button" data-user="'+safe(u.id)+'" data-next="'+(!u.is_admin)+'">'+
+       (u.is_admin?"Adminrechte entziehen":"Kalenderadmin vergeben")+'</button>')+
+     (u.is_owner?'<span class="hbl-admin-owner-label">Chat: freigegeben</span>':
+       '<button type="button" data-chat-user="'+safe(u.id)+'" data-chat-next="'+(!u.is_chat)+'">'+
+       (u.is_chat?"Chat-Zugang entziehen":"Chat freigeben")+'</button>')+
+     '<button type="button" data-recovery-user="'+safe(u.id)+'">Passwort-Link</button>'+
+     '</div></div>'
+   ).join("")||"<p>Keine Konten vorhanden.</p>";
   root.querySelectorAll("[data-user]").forEach(button=>button.onclick=async()=>{
    const item=adminUsers.find(u=>u.id===button.dataset.user),next=button.dataset.next==="true";
    if(!item||!confirm((next?"Kalender-Administratorrechte erteilen: ":"Kalender-Administratorrechte entziehen: ")+item.email+"?"))return;
@@ -328,6 +362,12 @@ async function reloadAdminUsers(){
    try{await callAdmin({action:"set",user_id:item.id,is_admin:next});await reloadAdminUsers();}
    catch(e){status.textContent=e.message;button.disabled=false;}
   });
+  root.querySelectorAll("[data-recovery-user]").forEach(button=>button.onclick=async()=>{
+    const item=adminUsers.find(u=>u.id===button.dataset.recoveryUser);
+    if(!item||!confirm("Passwort-Link für "+item.email+" erstellen?"))return;
+    await makeManualLink("recovery",item.id);
+    byId("hblInviteResult")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+   });
   root.querySelectorAll("[data-chat-user]").forEach(button=>button.onclick=async()=>{
    const item=adminUsers.find(u=>u.id===button.dataset.chatUser),next=button.dataset.chatNext==="true";
    if(!item||!confirm((next?"Chat für ":"Chat-Zugang entziehen: ")+item.email+"?"))return;
