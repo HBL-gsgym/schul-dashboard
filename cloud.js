@@ -96,6 +96,7 @@ async function startSession(session){
   }
   await loadRemote();
   showModal(false);
+  window.dispatchEvent(new Event("hbl-cloud-status"));
  }catch(e){status("Cloud-Laden fehlgeschlagen: "+e.message,true);message(e.message,true);}
 }
 async function initializeAuth(){
@@ -127,6 +128,7 @@ async function initializeAuth(){
  };
  el("hblCloudLogout").onclick=async()=>{
   if(dirty||getPending()){if(!confirm("Auf diesem Gerät liegen ungesicherte Änderungen. Wirklich abmelden?"))return;}
+  if(typeof window.hblPushOnLogout==="function")await window.hblPushOnLogout();
   await client.auth.signOut();
   user=null;active=false;paused=false;revision=0;dirty=false;
   location.reload();
@@ -160,14 +162,16 @@ async function initializeAuth(){
  };
  if(!window.supabase?.createClient){status("Cloud-Bibliothek nicht geladen – bitte Seite neu öffnen",true);return;}
  client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ window.hblCloudClient=client;
+ window.hblCloudUser=()=>user;
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT"){user=null;active=false;controls();}
+  if(event==="SIGNED_OUT"){user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
   // TOKEN_REFRESHED does not replace the current state.
  });
  const {data,error}=await client.auth.getSession();
  if(error)status("Anmeldung konnte nicht gelesen werden: "+error.message,true);
  else if(data.session)await startSession(data.session);
- else controls();
+ else {controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();});
  setInterval(()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();},45000);
 }
