@@ -103,6 +103,39 @@ Deno.serve(async(req:Request)=>{
     if(!actionLink)return reply({error:"Kein Passwort-Link erhalten."},500);
     return reply({ok:true,email:existing.user.email,action_link:actionLink});
   }
+
+  if(payload.action==="set_access" || payload.action==="delete_user"){
+    const target=payload.user_id;
+    if(!goodId(target)||target===actor.id)return reply({error:"Hauptadministrator kann nicht verändert werden."},403);
+    const {data:ownerRole,error:ownerErr}=await client.from("hbl_dashboard_admins")
+      .select("is_owner").eq("user_id",target).maybeSingle();
+    if(ownerErr)throw ownerErr;
+    if(ownerRole?.is_owner)return reply({error:"Ein Hauptadministrator darf nicht entfernt werden."},403);
+    const {data:existing,error:accountErr}=await client.auth.admin.getUserById(target);
+    if(accountErr||!existing?.user?.email)return reply({error:"Konto nicht gefunden."},404);
+    if(payload.action==="delete_user"){
+      // Irreversible Löschung nur nach erneuter Bestätigung mit exakter E-Mail.
+      if(payload.confirm_email!==existing.user.email)return reply({error:"Bitte die genaue E-Mail-Adresse zur Bestätigung eingeben."},400);
+      const {error}=await client.auth.admin.deleteUser(target);
+      if(error)return reply({error:"Konto konnte nicht gelöscht werden: "+error.message},400);
+      return reply({ok:true,deleted:true});
+    }
+    if(typeof payload.enabled!=="boolean")return reply({error:"Ungültiger Status."},400);
+    const enabled=payload.enabled;
+    const {error:accessErr}=await client.from("hbl_dashboard_members").upsert({
+      user_id:target,invited_by:actor.id,enabled
+    },{onConflict:"user_id"});
+    if(accessErr)throw accessErr;
+    if(!enabled){
+      // An diesem Punkt sind alle RLS-geschützten Dashboarddaten sofort nicht mehr erreichbar.
+      const {error:chatErr}=await client.from("hbl_chat_members").delete().eq("user_id",target);
+      if(chatErr)throw chatErr;
+      const {error:pushErr}=await client.from("hbl_push_subscriptions").delete().eq("user_id",target);
+      if(pushErr)throw pushErr;
+      await client.auth.admin.signOut(target,"global");
+    }
+    return reply({ok:true,enabled});
+  }
   if(payload.action==="set_chat"){
     const target=payload.user_id,allowed=payload.is_chat;
     if(!goodId(target)||typeof allowed!=="boolean")return reply({error:"Ungültige Auswahl"},400);
@@ -114,6 +147,10 @@ Deno.serve(async(req:Request)=>{
     if(roleErr)throw roleErr;
     if(ownerRole?.is_owner&&!allowed)return reply({error:"Der Hauptadministrator behält Chat-Zugang."},403);
     if(allowed){
+      const {data:enabledMember,error:enabledError}=await client.from("hbl_dashboard_members")
+        .select("enabled").eq("user_id",target).maybeSingle();
+      if(enabledError)throw enabledError;
+      if(!enabledMember?.enabled)return reply({error:"Zugang ist gesperrt. Bitte zuerst reaktivieren."},403);
       const {error}=await client.from("hbl_chat_members").upsert({
         user_id:target,email:account.email,approved_by:actor.id
       },{onConflict:"user_id"});
