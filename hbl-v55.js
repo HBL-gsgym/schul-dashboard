@@ -128,6 +128,8 @@ function upcomingEvents(){
   }
   const day=date.getDay(),week=weekCycle(date);
   for(const type of DUTIES){
+   const afterBlock=type.id==="breakfast"?1:2;
+   if(typeof window.hblCancelled==="function"&&window.hblCancelled(taskDateString(date),afterBlock))continue;
    const v=dutyStore()[day+"-"+type.id]?.[week];
    if(!v||!v.place||!v.place.trim())continue;
    const s=tmin(type.start),e=tmin(type.end);
