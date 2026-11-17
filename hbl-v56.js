@@ -344,6 +344,7 @@ async function reloadAdminUsers(){
      (u.username?'<small>'+safe(u.email)+'</small>':'')+
      '<small>'+(u.is_owner?"Hauptadministrator":u.is_admin?"Kalenderadministrator":"Lehrkraft")+
      ' · '+(u.is_chat?"Chat freigegeben":"Chat gesperrt")+
+     ' · '+(u.is_member?"Zugang aktiv":"Zugang gesperrt")+
      ' · '+(u.username?"Profil eingerichtet":u.invited_at?"Einladung ausstehend":"Benutzername fehlt")+'</small></div>'+
      '<div class="hbl-admin-person-buttons">'+
      (u.is_owner?'<span class="hbl-admin-owner-label">Kalender: Hauptadmin</span>':
@@ -352,6 +353,10 @@ async function reloadAdminUsers(){
      (u.is_owner?'<span class="hbl-admin-owner-label">Chat: freigegeben</span>':
        '<button type="button" data-chat-user="'+safe(u.id)+'" data-chat-next="'+(!u.is_chat)+'">'+
        (u.is_chat?"Chat-Zugang entziehen":"Chat freigeben")+'</button>')+
+     (u.is_owner?'<span class="hbl-admin-owner-label">Konto geschützt</span>':
+       '<button type="button" data-access-user="'+safe(u.id)+'" data-access-next="'+(!u.is_member)+'">'+
+       (u.is_member?"Zugang sperren":"Zugang freigeben")+'</button>'+
+       '<button type="button" data-delete-user="'+safe(u.id)+'" class="hbl-admin-delete">Endgültig löschen</button>')+
      '<button type="button" data-recovery-user="'+safe(u.id)+'">Passwort-Link</button>'+
      '</div></div>'
    ).join("")||"<p>Keine Konten vorhanden.</p>";
@@ -360,6 +365,24 @@ async function reloadAdminUsers(){
    if(!item||!confirm((next?"Kalender-Administratorrechte erteilen: ":"Kalender-Administratorrechte entziehen: ")+item.email+"?"))return;
    button.disabled=true;
    try{await callAdmin({action:"set",user_id:item.id,is_admin:next});await reloadAdminUsers();}
+   catch(e){status.textContent=e.message;button.disabled=false;}
+  });
+
+  root.querySelectorAll("[data-access-user]").forEach(button=>button.onclick=async()=>{
+   const item=adminUsers.find(u=>u.id===button.dataset.accessUser),next=button.dataset.accessNext==="true";
+   if(!item||item.is_owner||!confirm((next?"Zugang wieder freischalten: ":"Dashboard- und Chat-Zugriff sperren: ")+item.email+"?"))return;
+   button.disabled=true;
+   try{await callAdmin({action:"set_access",user_id:item.id,enabled:next});await reloadAdminUsers();window.dispatchEvent(new Event("hbl-chat-access-changed"));}
+   catch(e){status.textContent=e.message;button.disabled=false;}
+  });
+  root.querySelectorAll("[data-delete-user]").forEach(button=>button.onclick=async()=>{
+   const item=adminUsers.find(u=>u.id===button.dataset.deleteUser);
+   if(!item||item.is_owner)return;
+   const typed=prompt("ACHTUNG: Konto und persönliche Daten werden unwiderruflich gelöscht.\nGib zur Bestätigung die vollständige E-Mail-Adresse ein:\n"+item.email,"");
+   if(typed!==item.email){if(typed!==null)status.textContent="Löschung abgebrochen: E-Mail stimmt nicht überein.";return;}
+   if(!confirm("Letzte Bestätigung: Konto "+item.email+" endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden."))return;
+   button.disabled=true;
+   try{await callAdmin({action:"delete_user",user_id:item.id,confirm_email:typed});await reloadAdminUsers();status.textContent="Konto gelöscht: "+item.email;}
    catch(e){status.textContent=e.message;button.disabled=false;}
   });
   root.querySelectorAll("[data-recovery-user]").forEach(button=>button.onclick=async()=>{
