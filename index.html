@@ -2565,9 +2565,13 @@ function renderParticipationOverview(){
  if(!PARTICIPATION_COURSES.length){host.innerHTML=`<div class="hbl-empty-courses">Noch keine Kurse eingerichtet. <button type="button" onclick="hblOpenPlanManager()">Stundenplan gestalten</button></div>`;return;}
  host.innerHTML=PARTICIPATION_COURSES.map(c=>{
   const data=root[c.id];
+  const progress=typeof window.hblCourseProgress==='function'?window.hblCourseProgress(c.id):null;
+  const percent=progress&&progress.total?Math.round(progress.past/progress.total*100):0;
+  const progressHtml=progress?'<div class="pcourse-remaining"><strong>'+progress.remaining+' Blöcke offen</strong><small>'+progress.past+' von '+progress.total+' geplanten Blöcken vorbei</small><span class="pcourse-progress"><i style="width:'+percent+'%"></i></span></div>':'';
   return `<a class="participation-course-link" data-subject="${c.subject}" href="?mitarbeit=${c.id}" target="_blank" rel="noopener">
    <span class="pcourse-top"><strong>${partEsc(c.short)}</strong><span class="pcourse-icon">${c.icon}</span></span>
    <span class="pcourse-info">${partEsc(participationInfo(data))}</span>
+   ${progressHtml}
    <span class="pcourse-action">Mitarbeit öffnen →</span></a>`;
  }).join("");
 }
