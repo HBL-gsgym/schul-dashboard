@@ -62,6 +62,15 @@ function mount(){
    '<div id="hblGroupMemberChoices"></div><div class="hbl-chat-group-buttons">'+
    '<button type="submit" id="hblGroupCreateSave">Gruppe erstellen</button>'+
    '<button type="button" id="hblGroupCreateCancel">Abbrechen</button></div></form></div>'+
+   '<section class="hbl-chat-members-panel" id="hblGroupMembersPanel" role="dialog" aria-modal="true" aria-labelledby="hblGroupMembersTitle" hidden>'+
+   '<div class="hbl-chat-members-title"><h3 id="hblGroupMembersTitle">Gruppenmitglieder</h3>'+
+   '<button type="button" id="hblGroupMembersClose" aria-label="Mitgliederansicht schließen">✕</button></div>'+
+   '<p class="hbl-chat-members-intro" id="hblGroupMembersHint"></p>'+
+   '<div id="hblGroupMembersList" class="hbl-chat-members-list"></div>'+
+   '<div id="hblGroupAddArea" class="hbl-chat-members-add" hidden>'+
+   '<h4>Kollegen hinzufügen</h4><div id="hblGroupAvailableMembers"></div>'+
+   '<button type="button" id="hblGroupAddSubmit">Ausgewählte hinzufügen</button></div>'+
+   '<p id="hblGroupMembersStatus" role="status"></p></section>'+
    '<footer class="hbl-chat-footnote">Nur für freigeschaltete Lehrkräfte. Keine Schülerdaten oder vertraulichen Angaben versenden. Nachrichten sind nicht Ende-zu-Ende-verschlüsselt.</footer>'+
    '</section>';
   document.body.appendChild(overlay);
@@ -71,6 +80,8 @@ function mount(){
   el("hblChatForm").addEventListener("submit",event=>{event.preventDefault();void sendMessage();});
   el("hblGroupCreateForm").onsubmit=event=>{event.preventDefault();void createGroup();};
   el("hblGroupCreateCancel").onclick=()=>showGroupCreate(false);
+  el("hblGroupMembersClose").onclick=()=>showMembersPanel(false);
+  el("hblGroupAddSubmit").onclick=()=>void addGroupMembers();
   el("hblChatInput").addEventListener("keydown",event=>{
    if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();void sendMessage();}
   });
@@ -112,20 +123,39 @@ function paintThreads(){
   const selected=btn.dataset.thread;
   if(selected!=="lounge"&&!isGroup(selected)&&!member(selected))return;
   if(isGroup(selected)&&!group(selected))return;
+  showMembersPanel(false);
   S.thread=selected;S.messages=[];S.more=false;
   paintThreads();paintRoom();el("hblChatInput").value="";
   void loadConversation();
  }));
+}
+function groupParticipants(g){
+ if(!g)return [];
+ return S.groupMembers.filter(m=>m.group_id===g.id).sort((a,b)=>{
+  if(a.user_id===g.created_by)return -1;
+  if(b.user_id===g.created_by)return 1;
+  return label(a.user_id).localeCompare(label(b.user_id),"de");
+ });
+}
+function groupParticipantsPreview(g){
+ return '<div class="hbl-chat-members-preview" aria-label="Mitglieder dieser Chatgruppe">'+
+ groupParticipants(g).map(m=>'<span class="hbl-chat-member-chip" title="'+
+  esc(label(m.user_id)+(m.user_id===g.created_by?" (Ersteller)":""))+'">'+
+  esc(label(m.user_id))+(m.user_id===g.created_by?' <span class="hbl-group-owner-chip">★</span>':'')+
+  '</span>').join("")+'</div>';
 }
 function paintRoom(){
  const root=el("hblChatRoom");if(!root)return;
  const current=group(S.thread),owner=current&&current.created_by===S.uid;
  root.innerHTML='<strong>'+(S.thread==="lounge"?"👥 Lehrerzimmer":current?"👥 "+esc(current.name):"👤 "+esc(label(S.thread)))+'</strong>'+
  '<small>'+(S.thread==="lounge"?"Gemeinsamer Chat für das Kollegium":current?
- "Geschlossene Gruppe · "+S.groupMembers.filter(x=>x.group_id===current.id).length+" Mitglieder":"Privater Chat – nur die beiden Gesprächspartner können mitlesen")+'</small>'+
- (current?'<div class="hbl-chat-group-tools">'+
+ "Geschlossene Gruppe · "+groupParticipants(current).length+" Mitglieder":"Privater Chat – nur die beiden Gesprächspartner können mitlesen")+'</small>'+
+ (current?groupParticipantsPreview(current)+
+ '<div class="hbl-chat-group-tools">'+
+ '<button id="hblGroupMembersOpen" type="button">'+(owner?"👥 Mitglieder verwalten":"👥 Mitglieder anzeigen")+'</button>'+
  (owner?'<button id="hblGroupRename" type="button">✎ Umbenennen</button><button id="hblGroupDelete" type="button">Gruppe löschen</button>':
  '<button id="hblGroupLeave" type="button">Gruppe verlassen</button>')+'</div>':'');
+ el("hblGroupMembersOpen")?.addEventListener("click",()=>void showMembersPanel(true));
  el("hblGroupRename")?.addEventListener("click",()=>void renameGroup());
  el("hblGroupDelete")?.addEventListener("click",()=>void deleteGroup());
  el("hblGroupLeave")?.addEventListener("click",()=>void leaveGroup());
@@ -237,6 +267,7 @@ function openChat(open){
  if(open){
   paintThreads();paintRoom();void loadConversation();void reloadInbox();el("hblChatInput")?.focus();
  }else{
+  showMembersPanel(false);showGroupCreate(false);
   S.request++;el("hblChatToggle")?.focus();
  }
 }
@@ -248,6 +279,7 @@ function clearAccess(){
  releaseChannel();S.request++;
  S.uid=null;S.allowed=false;S.members=[];S.names.clear();S.groups=[];S.groupMembers=[];S.inbox=[];S.read.clear();S.thread="lounge";
  S.messages=[];S.open=false;S.more=false;S.checked=0;
+ showMembersPanel(false);
  if(el("hblChatOverlay"))el("hblChatOverlay").hidden=true;
  paintBadge();
 }
@@ -316,6 +348,86 @@ async function createGroup(){
  }catch(e){setStatus("Gruppe konnte nicht erstellt werden: "+e.message);}
  finally{save.disabled=false;}
 }
+// Die Mitgliederansicht zeigt immer alle aktuellen Namen; ausschließlich der Ersteller
+// darf andere bereits freigeschaltete Lehrkräfte hinzufügen oder entfernen.
+function membersStatus(text){const target=el("hblGroupMembersStatus");if(target)target.textContent=text||"";}
+function showMembersPanel(open){
+ const panel=el("hblGroupMembersPanel");
+ if(!panel)return;
+ const current=group(S.thread);
+ if(!open||!current){panel.hidden=true;membersStatus("");return;}
+ panel.hidden=false;
+ renderMembersPanel(current);
+ el("hblGroupMembersClose")?.focus();
+}
+function renderMembersPanel(g){
+ const live=group(g.id);
+ if(!live){showMembersPanel(false);return;}
+ const owner=live.created_by===S.uid;
+ const members=groupParticipants(live);
+ el("hblGroupMembersTitle").textContent=live.name+" · Mitglieder";
+ el("hblGroupMembersHint").textContent=owner?
+  "Als Ersteller kannst du Kollegen hinzufügen und entfernen.":
+  "Alle Mitglieder der Gruppe. Nur der Ersteller kann die Zusammensetzung ändern.";
+ const list=el("hblGroupMembersList");
+ list.innerHTML=members.map(m=>{
+  const own=m.user_id===live.created_by;
+  return '<div class="hbl-chat-member-row"><span class="hbl-chat-member-avatar">👤</span>'+
+   '<span class="hbl-chat-member-detail"><strong>'+esc(label(m.user_id))+'</strong>'+
+   (own?'<small>★ Gruppenersteller</small>':m.user_id===S.uid?'<small>Du</small>':'')+
+   '</span>'+(owner&&!own?'<button type="button" data-remove-member="'+esc(m.user_id)+'">Entfernen</button>':'')+
+   '</div>';
+ }).join("");
+ list.querySelectorAll("[data-remove-member]").forEach(button=>button.onclick=()=>void removeGroupMember(live.id,button.dataset.removeMember));
+ const area=el("hblGroupAddArea");
+ area.hidden=!owner;
+ if(!owner)return;
+ const have=new Set(members.map(m=>m.user_id));
+ const available=S.members.filter(m=>m.user_id!==S.uid&&!have.has(m.user_id))
+  .sort((a,b)=>label(a.user_id).localeCompare(label(b.user_id),"de"));
+ el("hblGroupAvailableMembers").innerHTML=available.length?available.map(m=>
+  '<label class="hbl-group-member-option"><input type="checkbox" value="'+esc(m.user_id)+'"> '+esc(label(m.user_id))+'</label>'
+ ).join(""):'<p class="hbl-chat-members-intro">Alle freigeschalteten Kollegen sind bereits Mitglied.</p>';
+ el("hblGroupAddSubmit").hidden=!available.length;
+}
+async function updateMembersPanel(groupId,notice){
+ await loadGroups();
+ if(S.open){paintThreads();paintRoom();paintBadge();}
+ if(el("hblGroupMembersPanel")&&!el("hblGroupMembersPanel").hidden){
+  const current=group(groupId);
+  if(current)renderMembersPanel(current);
+  else showMembersPanel(false);
+ }
+ if(notice)membersStatus(notice);
+}
+async function addGroupMembers(){
+ const current=group(S.thread);
+ if(!current||current.created_by!==S.uid||!db())return;
+ const ids=[...el("hblGroupAvailableMembers").querySelectorAll("input:checked")]
+  .map(input=>input.value).filter(value=>uuid.test(value));
+ if(!ids.length){membersStatus("Bitte mindestens einen Kollegen auswählen.");return;}
+ const button=el("hblGroupAddSubmit");button.disabled=true;membersStatus("Mitglieder werden hinzugefügt …");
+ try{
+  const {error}=await db().from("hbl_chat_group_members")
+   .insert(ids.map(user_id=>({group_id:current.id,user_id})));
+  if(error)throw error;
+  await updateMembersPanel(current.id,ids.length===1?"Kollege hinzugefügt ✓":ids.length+" Kollegen hinzugefügt ✓");
+ }catch(e){membersStatus("Hinzufügen fehlgeschlagen: "+e.message);}
+ finally{button.disabled=false;}
+}
+async function removeGroupMember(groupId,userId){
+ const current=group(groupId);
+ if(!current||current.created_by!==S.uid||userId===current.created_by||!uuid.test(userId)||!db())return;
+ if(!confirm(label(userId)+" aus der Gruppe „"+current.name+"“ entfernen? Der Zugang zu den Gruppennachrichten endet damit."))return;
+ membersStatus("Mitglied wird entfernt …");
+ try{
+  const {error}=await db().from("hbl_chat_group_members").delete()
+   .eq("group_id",current.id).eq("user_id",userId);
+  if(error)throw error;
+  await updateMembersPanel(groupId,label(userId)+" entfernt ✓");
+ }catch(e){membersStatus("Entfernen fehlgeschlagen: "+e.message);}
+}
+
 async function renameGroup(){
  const current=group(S.thread);
  if(!current||current.created_by!==S.uid)return;
@@ -361,7 +473,16 @@ async function refreshAccess(force=false){
   const {data:profiles,error:profileError}=await client.from("hbl_user_profiles")
    .select("user_id,username").limit(300);
   if(!profileError)S.names=new Map((profiles||[]).map(p=>[p.user_id,p.username]));
+  const previousThread=S.thread;
   await loadGroups();
+  if(previousThread!==S.thread&&S.open){
+   showMembersPanel(false);
+   paintRoom();
+   void loadConversation();
+  }else if(S.open&&isGroup(S.thread)){
+   paintRoom();
+   if(!el("hblGroupMembersPanel")?.hidden)renderMembersPanel(group(S.thread));
+  }
   paintBadge();startChannel();
   if(switched)await reloadInbox();
   if(S.open)paintThreads();
