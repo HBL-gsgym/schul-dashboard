@@ -164,9 +164,13 @@ async function reloadInbox(){
   if(uid!==S.uid)return;
   if(messages.error)throw messages.error;
   if(reads.error)throw reads.error;
+  const previousNewest=S.inbox[0]?.id;
   S.inbox=messages.data||[];
   S.read=new Map((reads.data||[]).map(r=>[r.thread_key,r.last_read_at]));
   paintBadge();if(S.open)paintThreads();
+  const newest=S.inbox[0];
+  if(S.open&&newest&&newest.id!==previousNewest&&belongs(newest,S.thread)&&
+     !S.messages.some(m=>m.id===newest.id))void loadConversation();
  }catch(e){if(S.open)setStatus("Nachrichtenabgleich fehlgeschlagen: "+e.message);}
  finally{S.loading=false;}
 }
@@ -236,6 +240,7 @@ async function refreshAccess(force=false){
   const approved=(data||[]).some(m=>m.user_id===logged.id);
   if(!approved){if(S.uid)clearAccess();return;}
   const switched=S.uid!==logged.id;
+  if(switched&&S.uid)clearAccess();
   S.uid=logged.id;S.allowed=true;S.members=data||[];S.checked=Date.now();
   paintBadge();startChannel();
   if(switched)await reloadInbox();
@@ -254,7 +259,7 @@ function init(){
  setInterval(()=>{
   if(document.hidden)return;
   void refreshAccess();
-  if(S.allowed){void reloadInbox();if(S.open)void loadConversation();}
+  if(S.allowed)void reloadInbox();
  },20000);
  void refreshAccess(true);
 }
