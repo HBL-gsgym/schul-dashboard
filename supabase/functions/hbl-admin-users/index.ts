@@ -132,7 +132,7 @@ Deno.serve(async(req:Request)=>{
       if(chatErr)throw chatErr;
       const {error:pushErr}=await client.from("hbl_push_subscriptions").delete().eq("user_id",target);
       if(pushErr)throw pushErr;
-      await client.auth.admin.signOut(target,"global");
+      // Das Konto bleibt in Auth erhalten; RLS entzieht den Datenzugriff unabhängig von bestehenden Tokens.
     }
     return reply({ok:true,enabled});
   }
