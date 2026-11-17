@@ -1,12 +1,32 @@
 {
-  "name": "Schul-Dashboard HBL – Testversion",
+  "name": "Schul-Dashboard HBL",
   "short_name": "HBL Dashboard",
-  "description": "Schul-Dashboard HBL – mobile Testversion mit anonymen Beispieldaten",
+  "description": "Schul-Dashboard für Stundenplan, Aufsichten und Erinnerungen – nur anonymisierte Testdaten",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#11151a",
+  "background_color": "#152238",
   "theme_color": "#253b60",
   "lang": "de",
-  "icons": [{"src":"./hbl-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+  "icons": [
+    {
+      "src": "./hbl-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./hbl-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./hbl-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }
