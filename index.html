@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · PWA & Aufsichten v5.5</title>
+<title>Schul-Dashboard HBL · Schulkalender & Link-Zentrale v5.6</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1312,6 +1312,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 
 </style>
 <link rel="stylesheet" href="./hbl-v55.css?v=5.5">
+<link rel="stylesheet" href="./hbl-v56.css?v=5.6">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1323,7 +1324,8 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=4.0"></script>
-<script defer src="./hbl-v55.js?v=5.5"></script>
+<script defer src="./hbl-v55.js?v=5.6"></script>
+<script defer src="./hbl-v56.js?v=5.6"></script>
 </head>
 <body>
 <script>
@@ -1646,6 +1648,7 @@ function applyPrepData(data){
  renderTasks();
  renderParticipationOverview();
  renderParticipationTable();
+ if(typeof window.hblAfterPrepLoad==="function")window.hblAfterPrepLoad();
  if(typeof window.hblScheduleAfterLoad==='function')window.hblScheduleAfterLoad();
  if(typeof window.hblDutyAfterLoad==='function')window.hblDutyAfterLoad();
 }
@@ -1690,11 +1693,14 @@ function weekId(date){
 }
 function dayBlocks(date){
  const day=date.getDay(),cycle=weekCycle(date),plan=(TIMETABLE[cycle][day]||{});
+ const year=currentSchoolYear(date),key=taskDateString(date);
+ if(day<1||day>5||key<year.start||key>year.end||
+    schoolDateDescription(key,year,publicHolidays(date.getFullYear())).kind!=="school")return [];
  return BLOCKS.map(b=>{
   const entries=b.hours.map(h=>plan[h]).filter(Boolean);
   const unique=entries.filter((v,i,a)=>a.findIndex(w=>w.join("|")===v.join("|"))===i);
   return {...b,entries:unique,s:tmin(b.start),e:tmin(b.end)};
- }).filter(b=>b.entries.length);
+ }).filter(b=>b.entries.length&&!(typeof window.hblCancelled==="function"&&window.hblCancelled(key,b.n)));
 }
 function renderToday(){
  const el=document.getElementById("todayLessons");if(!el)return;
@@ -2033,7 +2039,7 @@ function renderSchoolCalendar(){
   for(let i=0;i<5;i++){
    const day=dayOffset(date,i),key=taskDateString(day),valid=key>=year.start&&key<=year.end;
    const info=valid?schoolDateDescription(key,year,holidays):{kind:"empty",label:""};
-   if(info.kind==="school"){total++;if(key<today)completed++;}
+   if(info.kind==="school"&&!(typeof window.hblFullDayCancelled==="function"&&window.hblFullDayCancelled(key))){total++;if(key<today)completed++;}
    cells.push({key,date:day,valid,kind:info.kind,label:info.label,past:key<today,now:key===today});
   }
   weeks.push({date:new Date(date),cells});
@@ -2066,10 +2072,11 @@ function renderSchoolCalendar(){
    const col=document.createElement("div");col.className="schoolweek";
    for(const cell of week.cells){
      const dot=document.createElement("span");
-     const kind=cell.kind==="school"?(cell.past?"done":"pending"):cell.kind;
+     const schoolEvents=(cell.valid&&typeof window.hblSchoolEventsForDate==="function")?window.hblSchoolEventsForDate(cell.key):[];
+   const kind=schoolEvents.length?"event":cell.kind==="school"?(cell.past?"done":"pending"):cell.kind;
      dot.className="schooldot "+kind+(cell.now?" is-today":"");
      const dateText=cell.date.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
-     dot.title=dateText+" · "+(cell.kind==="school"&&cell.past?"Erledigter Schultag":cell.label||"Außerhalb des Schuljahrs");
+     dot.title=dateText+" · "+(schoolEvents.length?"Schulveranstaltung: "+schoolEvents.map(e=>e.title).join(" / "):cell.kind==="school"&&cell.past?"Erledigter Schultag":cell.label||"Außerhalb des Schuljahrs");
      col.appendChild(dot);
    }
    grid.appendChild(col);
@@ -2095,7 +2102,7 @@ function renderSchoolCalendar(){
    if(today<next.start){
      for(let day=parseSchoolDate(today);taskDateString(day)<next.start;day=dayOffset(day,1)){
        const dateKey=taskDateString(day);
-       if(day.getDay()>=1&&day.getDay()<=5&&schoolDateDescription(dateKey,year,holidays).kind==="school")remaining++;
+       if(day.getDay()>=1&&day.getDay()<=5&&schoolDateDescription(dateKey,year,holidays).kind==="school"&&!(typeof window.hblFullDayCancelled==="function"&&window.hblFullDayCancelled(dateKey)))remaining++;
      }
    }
    const countdown=document.createElement("div");countdown.className="school-countdown";
@@ -2121,6 +2128,7 @@ function renderSchoolCalendar(){
    minilist.appendChild(el);
  }
  aside.appendChild(minilist);
+ if(typeof window.hblDecorateSchoolMilestones==="function")window.hblDecorateSchoolMilestones(aside,year);
 }
 
 function renderTimetable(){
@@ -2152,10 +2160,8 @@ const HBL_TILE_SPECS=[
  {id:"vorbereitung-diese",selector:".planninggrid > .planningpanel:nth-child(3)",title:"Vorbereitung – diese Woche",span:3},
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
  {id:"kalender",selector:".schoolyear-card",title:"Schuljahreskalender",span:12},
- {id:"organisation",selector:"main.grid > .card:nth-child(1)",title:"Organisation",span:2},
- {id:"ki",selector:"main.grid > .card:nth-child(2)",title:"KI",span:2},
- {id:"tools",selector:"main.grid > .card:nth-child(3)",title:"Digitale Tools",span:2},
- {id:"stundenplan",selector:"main.grid > .card:nth-child(4)",title:"Wochenstundenplan",span:6},
+ {id:"links",selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
+ {id:"stundenplan",selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
  {id:"mitarbeit",selector:"section.participation-overview",title:"Mitarbeit",span:12}
 ];
@@ -2350,7 +2356,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 17. November 2026">v5.5 PWA-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 17. November 2026">v5.6 PWA-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2442,7 +2448,7 @@ function renderHome(){
       <div class="schooldots-axis" id="schoolMonths"></div>
       <div class="schoolweeklabels" id="schoolWeekLabels" aria-label="Kalenderwochen und A-/B-Wochen"></div>
       <div class="schooldots-layout"><div class="schooldots-weekdays"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span></div><div class="schooldots" id="schoolDots" aria-label="Schuljahreskalender als Punkt-Raster"></div></div>
-      <div class="schooldots-legend"><span><i class="legenddot done"></i>erledigt</span><span><i class="legenddot pending"></i>kommt noch</span><span><i class="legenddot vacation"></i>Ferien</span><span><i class="legenddot free"></i>schulfrei / Feiertag</span></div>
+      <div class="schooldots-legend"><span><i class="legenddot done"></i>erledigt</span><span><i class="legenddot pending"></i>kommt noch</span><span><i class="legenddot vacation"></i>Ferien</span><span><i class="legenddot free"></i>schulfrei / Feiertag</span><span><i class="legenddot event"></i>Schulveranstaltung</span></div>
     </div>
     <aside class="schoolyear-milestones" id="schoolMilestones"></aside>
   </div>
@@ -2451,18 +2457,7 @@ function renderHome(){
 <div class="preptools"><span id="prepStorageStatus" role="status" aria-live="polite">Verbinde mit Speicherdatei …</span></div>
 
     <main class="grid">
-      <section class="card">
-        <div class="card-title" onclick="openGroup('organisation')" title="Alle Organisationsseiten öffnen"><h2>Organisation</h2><span class="openall">Alle öffnen ↗</span></div>
-        <div class="links">${CONFIG.links.organisation.map(mkBtn).join("")}</div>
-      </section>
-      <section class="card">
-        <div class="card-title" onclick="openGroup('ki')" title="Alle KI-Seiten öffnen"><h2>KI</h2><span class="openall">Alle öffnen ↗</span></div>
-        <div class="links">${CONFIG.links.ki.map(mkBtn).join("")}</div>
-      </section>
-      <section class="card">
-        <div class="card-title" onclick="openGroup('tools')" title="Alle digitalen Tools öffnen"><h2>Digitale Tools</h2><span class="openall">Alle öffnen ↗</span></div>
-        <div class="links">${CONFIG.links.tools.map(mkBtn).join("")}</div>
-      </section>
+      <section class="card hbl-links-card"><div class="card-title"><h2>Meine Links</h2></div><div id="hblLinksRoot"></div></section>
 <section class="card timetablecard"><div class="hbl-plan-heading"><h2>Wochenstundenplan</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenPlanManager()">✎ Bearbeiten</button></div><div class="timetablegrid" id="weeklyTimetable"></div><div class="timetablelegend">Grau: A und B · Grün: nur A · Blau: nur B · Zwei Fächer im selben Block erscheinen nebeneinander.</div><div id="hblPlanHint" class="hbl-plan-hint"></div></section>
     </main>
 
@@ -2940,7 +2935,7 @@ function hblApplyTimetable(){
  renderTimetable();renderToday();renderPreparationWeeks();renderParticipationOverview();hblUpdateCurrentCourse();
 }
 function plannedSlots(course){
- const year=SCHOOL_YEARS[0], holidays=new Map([...publicHolidays(2026),...publicHolidays(2027)]),result=[];
+ const year=currentSchoolYear(new Date()),holidays=new Map([...publicHolidays(new Date(year.start+"T12:00:00").getFullYear()),...publicHolidays(new Date(year.end+"T12:00:00").getFullYear())]),result=[];
  if(!year)return result;
  for(let date=parseSchoolDate(year.start);taskDateString(date)<=year.end;date=dayOffset(date,1)){
   const day=date.getDay();if(day<1||day>5)continue;
@@ -2949,7 +2944,7 @@ function plannedSlots(course){
   const plan=TIMETABLE[weekCycle(date)]?.[day]||{};
   for(const block of BLOCKS){
    const matched=block.hours.some(h=>{const arr=plan[h];return arr&&courseId({subject:arr[0],group:arr[1]})===course;});
-   if(matched)result.push({date:dateKey,block:block.n});
+   if(matched&&!(typeof window.hblCancelled==="function"&&window.hblCancelled(dateKey,block.n)))result.push({date:dateKey,block:block.n});
   }
  }
  return result;
