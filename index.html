@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · Stundenplan-Editor v5.4</title>
+<title>Schul-Dashboard HBL · PWA & Aufsichten v5.5</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1311,14 +1311,18 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 }
 
 </style>
+<link rel="stylesheet" href="./hbl-v55.css?v=5.5">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HBL Dashboard">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="./hbl-icon.svg" type="image/svg+xml">
 <script defer src="./mobile.js?v=3.3"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=4.0"></script>
+<script defer src="./hbl-v55.js?v=5.5"></script>
 </head>
 <body>
 <script>
@@ -1642,6 +1646,7 @@ function applyPrepData(data){
  renderParticipationOverview();
  renderParticipationTable();
  if(typeof window.hblScheduleAfterLoad==='function')window.hblScheduleAfterLoad();
+ if(typeof window.hblDutyAfterLoad==='function')window.hblDutyAfterLoad();
 }
 const HBL_DEMO_KEY = "hbl-github-pages-demo-v1";
 async function loadPrepFromServer(){
@@ -2129,18 +2134,11 @@ function renderTimetable(){
   html+=`<button type="button" class="blockcell hbl-slot-cell ${cls}" ${window.hblTimetableEditing?'onclick="hblOpenSlotEditor('+day+','+block+')"':''} ${window.hblTimetableEditing?'':'disabled'} title="${window.hblTimetableEditing?'Block bearbeiten':'Ansichtsmodus'}"><span class="blocknum">${block}. Block ${window.hblTimetableEditing?'<span>✎</span>':''}</span><span class="hbl-slot-parts">${same?content(A,'shared'):(content(A,'A')+content(B,'B'))||(window.hblTimetableEditing?'<span class="hbl-empty-label">+ Belegung hinzufügen</span>':'<span class="hbl-empty-label">Freiblock</span>')}</span></button>`;
  }
  host.innerHTML=html;
+ if(typeof window.hblDecorateDutyTable==='function')window.hblDecorateDutyTable(host);
  const toggle=document.querySelector('.hbl-plan-manage');if(toggle)toggle.textContent=window.hblTimetableEditing?'✓ Bearbeiten beenden':'✎ Bearbeiten';
  const note=document.getElementById('hblPlanHint');
  if(note){const amount=Object.values(TIMETABLE.A).reduce((n,d)=>n+Object.keys(d).length,0)+Object.values(TIMETABLE.B).reduce((n,d)=>n+Object.keys(d).length,0);note.textContent=window.hblTimetableEditing?'Bearbeitungsmodus aktiv: Klicke auf einen Block, um die Belegung zu ändern.':'Ansichtsmodus · Änderungen sind gesperrt.';}
 }
-
-
-// Nur vordefinierte Ordner-IDs werden ueber den lokalen PowerShell-Server geoeffnet.
-async function openLocalFolder(folderId,button){
- const status=document.getElementById("folderStatus");
- if(status){status.textContent="Online-Testversion: Netzwerkordner können nur mit der Schul-BAT geöffnet werden.";status.classList.add("error");}
-}
-
 
 
 /* HBL v3.1: Kacheln frei anordnen und ein-/ausklappen.
@@ -2158,8 +2156,7 @@ const HBL_TILE_SPECS=[
  {id:"tools",selector:"main.grid > .card:nth-child(3)",title:"Digitale Tools",span:2},
  {id:"stundenplan",selector:"main.grid > .card:nth-child(4)",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
- {id:"mitarbeit",selector:"section.participation-overview",title:"Mitarbeit",span:12},
- {id:"ordner",selector:"section.folders",title:"Lokale Ordner",span:6}
+ {id:"mitarbeit",selector:"section.participation-overview",title:"Mitarbeit",span:12}
 ];
 const HBL_TILE_WIDTHS=[2,3,4,6,12];
 let hblDraggedTile=null;
@@ -2485,14 +2482,6 @@ function renderHome(){
       <div class="participation-grid" id="participationOverview"></div>
     </section>
 
-    <section class="folders" aria-label="Lokale Ordner">
-      <div class="section-title"><h2>Lokale Ordner</h2><span class="mini-note">öffnet im Windows-Explorer</span></div>
-      <div class="folder-row">
-        <button type="button" class="btn folder-open" onclick="openLocalFolder('home',this)"><span class="icon">📁</span><span>Home</span><span class="folderpath">H:\</span></button>
-        <button type="button" class="btn folder-open" onclick="openLocalFolder('nachschreiber',this)"><span class="icon">📁</span><span>Nachschreiberliste</span><span class="folderpath">L:\Nachschreiber</span></button>
-      </div>
-      <div id="folderStatus" class="folder-hint" role="status" aria-live="polite"></div>
-    </section>
 
 
   </div>`;
@@ -3235,7 +3224,7 @@ window.hblOpenPlanManager=function(force){
  let panel=byId('hblPlanManager');
  if(!panel){
   panel=document.createElement('div');panel.id='hblPlanManager';panel.className='hbl-plan-manager';panel.hidden=true;
-  panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke. Trage Fach, Klasse/Kurs und Raum ein und wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
+  panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke oder auf eine der drei Aufsichtszeiten. Trage bei Unterricht Fach, Klasse/Kurs und Raum ein; bei Aufsichten den frei wählbaren Aufsichtsort. Wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
    <div class="hbl-plan-manager-actions"><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="document.getElementById('hblScheduleFile').click()">📥 Stundenplan importieren</button><input id="hblScheduleFile" type="file" accept=".json,.csv,application/json,text/csv" hidden onchange="hblImportScheduleFile(this)"><button type="button" onclick="hblExportSchedule('json')">📤 Export JSON</button><button type="button" onclick="hblExportSchedule('csv')">📤 Export CSV</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
   host.appendChild(panel);
  }
