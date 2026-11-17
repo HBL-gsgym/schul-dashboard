@@ -168,7 +168,7 @@ async function initializeAuth(){
  client.auth.onAuthStateChange((event,session)=>{
   if(event==="SIGNED_OUT"){user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
   if(event==="SIGNED_IN"&&session?.user&&session.user.id!==user?.id){
-   setTimeout(()=>{if(session?.user)void startSession(session);},0);
+   setTimeout(()=>{if(session?.user&&session.user.id!==user?.id)void startSession(session);},0);
   }
   // TOKEN_REFRESHED does not replace the current state.
  });
