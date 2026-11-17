@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · Stundenplan-Editor v5.2</title>
+<title>Schul-Dashboard HBL · Stundenplan-Editor v5.3</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1720,18 +1720,41 @@ function taskDateString(date){
  return `${y}-${m}-${d}`;
 }
 function taskCourses(){
- const found=new Map();
- for(const cycle of ["A","B"]){
-  for(const day of [1,2,3,4,5]){
-   for(const value of Object.values(TIMETABLE[cycle][day]||{})){
-    if(!value)continue;
-    const [fach,klasse]=value;
-    const normalized=fach.toLowerCase().includes("astro")?"Astro · 10":`${fach} · ${klasse}`;
-    found.set(normalized,normalized);
+ const found=new Set();
+ const add=(fach,klasse)=>{
+  const f=String(fach||"").trim(),k=String(klasse||"").trim();
+  if(f&&k)found.add(f+" · "+k);
+ };
+ // Die tatsächlich gespeicherten Stundenplan-Blöcke sind die maßgebliche Quelle.
+ const slots=prepDone?.__timetableV1?.slots;
+ if(slots&&typeof slots==="object"){
+  for(const slot of Object.values(slots||{})){
+   if(!slot||typeof slot!=="object")continue;
+   for(const cycle of ["A","B"]){
+    const entry=slot[cycle];
+    if(entry)add(entry.subject,entry.group);
    }
   }
  }
- return [...found.keys()].sort((a,b)=>a.localeCompare(b,"de"));
+ // Fallback für vorhandene Stundenpläne ohne eigene Speicherung.
+ if(!found.size)for(const cycle of ["A","B"]){
+  for(const day of [1,2,3,4,5]){
+   for(const value of Object.values(TIMETABLE?.[cycle]?.[day]||{})){
+    if(Array.isArray(value))add(value[0],value[1]);
+   }
+  }
+ }
+ return [...found].sort((a,b)=>a.localeCompare(b,"de"));
+}
+function refreshTaskCourses(){
+ const sel=document.getElementById("taskCourse");if(!sel)return;
+ const previous=sel.value;
+ const names=taskCourses();
+ if(previous&&!names.includes(previous))names.push(previous);
+ sel.replaceChildren(...names.map(name=>{
+  const opt=document.createElement("option");opt.value=name;opt.textContent=name;return opt;
+ }));
+ if(previous)sel.value=previous;
 }
 let editingTaskId=null;
 function initTaskForm(){
@@ -1760,6 +1783,7 @@ function updateTaskForm(){
  document.getElementById("taskText").required=other;
 }
 function toggleTaskForm(force){
+ refreshTaskCourses();
  const form=document.getElementById("taskForm");
  if(!form)return;
  if(force===false){form.hidden=true;resetTaskForm();return;}
@@ -1770,6 +1794,7 @@ function getTasks(){
  return Array.isArray(prepDone.__tasks)?prepDone.__tasks:[];
 }
 function editTask(id){
+ refreshTaskCourses();
  const t=getTasks().find(t=>t&&t.id===id&&!t.done);
  if(!t)return;
  editingTaskId=id;
@@ -2327,7 +2352,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 17. November 2026">v5.2 Cloud-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 17. November 2026">v5.3 Cloud-Test<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2913,6 +2938,7 @@ function hblApplyTimetable(){
   }
  }
  TIMETABLE=timetable;
+ refreshTaskCourses();
  const courses=activeEntries(data);
  const stored=prepDone.__participation?.classes||{};
  for(const [id,c] of Object.entries(stored)){
