@@ -265,7 +265,7 @@ function openChat(open){
  S.open=!!open;el("hblChatOverlay").hidden=!open;
  el("hblChatToggle")?.setAttribute("aria-expanded",String(S.open));
  if(open){
-  paintThreads();paintRoom();void loadConversation();void reloadInbox();el("hblChatInput")?.focus();
+  paintThreads();paintRoom();void loadConversation();void reloadInbox();void refreshAccess(true);el("hblChatInput")?.focus();
  }else{
   showMembersPanel(false);showGroupCreate(false);
   S.request++;el("hblChatToggle")?.focus();
@@ -500,7 +500,7 @@ function init(){
  window.addEventListener("online",()=>{void refreshAccess(true);if(S.allowed)void reloadInbox();});
  setInterval(()=>{
   if(document.hidden)return;
-  void refreshAccess();
+  void refreshAccess(S.open);
   if(S.allowed)void reloadInbox();
  },20000);
  void refreshAccess(true);
