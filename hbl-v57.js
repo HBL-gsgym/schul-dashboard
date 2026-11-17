@@ -6,10 +6,10 @@ const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const db=()=>window.hblCloudClient||null;
 const account=()=>typeof window.hblCloudUser==="function"?window.hblCloudUser():null;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const S={uid:null,allowed:false,members:[],inbox:[],read:new Map(),thread:"lounge",messages:[],more:false,open:false,channel:null,checking:false,loading:false,sending:false,request:0,checked:0};
+const S={uid:null,allowed:false,members:[],names:new Map(),inbox:[],read:new Map(),thread:"lounge",messages:[],more:false,open:false,channel:null,checking:false,loading:false,sending:false,request:0,checked:0};
 const nick=email=>String(email||"Lehrkraft").split("@")[0].replace(/[._-]+/g," ");
 const member=id=>S.members.find(x=>x.user_id===id);
-const label=id=>nick(member(id)?.email||"Lehrkraft");
+const label=id=>S.names.get(id)||nick(member(id)?.email||"Lehrkraft");
 function belongs(m,thread){
  return thread==="lounge"?m.channel==="lounge":
  m.channel==="direct"&&((m.sender_id===S.uid&&m.recipient_id===thread)||
@@ -88,7 +88,7 @@ function paintThreads(){
  root.innerHTML='<div class="hbl-chat-category">GEMEINSAM</div>'+
   option("lounge","Lehrerzimmer","Alle freigeschalteten Lehrkräfte","👥")+
   '<div class="hbl-chat-category">DIREKTNACHRICHTEN</div>'+
-  (contacts.length?contacts.map(x=>option(x.user_id,nick(x.email),x.email,"👤")).join(""):'<p class="hbl-chat-empty">Noch keine weiteren Kollegen freigeschaltet.</p>');
+  (contacts.length?contacts.map(x=>option(x.user_id,label(x.user_id),"Privater Chat","👤")).join(""):'<p class="hbl-chat-empty">Noch keine weiteren Kollegen freigeschaltet.</p>');
  root.querySelectorAll("[data-thread]").forEach(btn=>btn.addEventListener("click",()=>{
   const selected=btn.dataset.thread;
   if(selected!=="lounge"&&!member(selected))return;
@@ -209,7 +209,7 @@ function releaseChannel(){
 }
 function clearAccess(){
  releaseChannel();S.request++;
- S.uid=null;S.allowed=false;S.members=[];S.inbox=[];S.read.clear();S.thread="lounge";
+ S.uid=null;S.allowed=false;S.members=[];S.names.clear();S.inbox=[];S.read.clear();S.thread="lounge";
  S.messages=[];S.open=false;S.more=false;S.checked=0;
  if(el("hblChatOverlay"))el("hblChatOverlay").hidden=true;
  paintBadge();
@@ -242,6 +242,9 @@ async function refreshAccess(force=false){
   const switched=S.uid!==logged.id;
   if(switched&&S.uid)clearAccess();
   S.uid=logged.id;S.allowed=true;S.members=data||[];S.checked=Date.now();
+  const {data:profiles,error:profileError}=await client.from("hbl_user_profiles")
+   .select("user_id,username").limit(300);
+  if(!profileError)S.names=new Map((profiles||[]).map(p=>[p.user_id,p.username]));
   paintBadge();startChannel();
   if(switched)await reloadInbox();
   if(S.open)paintThreads();
@@ -252,6 +255,7 @@ function init(){
  if(!mount())return;
  window.addEventListener("hbl-cloud-status",()=>void refreshAccess(true));
  window.addEventListener("hbl-chat-access-changed",()=>void refreshAccess(true));
+ window.addEventListener("hbl-profile-changed",()=>void refreshAccess(true));
  document.addEventListener("visibilitychange",()=>{
   if(!document.hidden){void refreshAccess(true);if(S.allowed){void reloadInbox();if(S.open)void loadConversation();}}
  });
