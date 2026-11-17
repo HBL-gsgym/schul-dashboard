@@ -37,14 +37,14 @@ Deno.serve(async(req:Request)=>{
   const payload=await req.json();
   if(!payload||typeof payload!=="object")return reply({error:"Ungültige Anfrage"},400);
   if(payload.action==="list"){
-   const users:Array<{id:string,email:string,created_at:string,is_admin:boolean,is_owner:boolean}>=[];
+   const users:Array<{id:string,email:string,created_at:string,is_admin:boolean,is_owner:boolean,is_chat:boolean}>=[];
    for(let page=1;page<=10;page++){
     const {data,error}=await client.auth.admin.listUsers({page,perPage:100});
     if(error)throw error;
     const entries=data?.users||[];
     for(const user of entries){
      users.push({id:user.id,email:user.email||"(ohne E-Mail)",created_at:user.created_at,
-       is_admin:false,is_owner:false});
+       is_admin:false,is_owner:false,is_chat:false});
     }
     if(entries.length<100)break;
    }
@@ -53,8 +53,33 @@ Deno.serve(async(req:Request)=>{
    if(rolesError)throw rolesError;
    const roleMap=new Map((roles||[]).map(x=>[x.user_id,x]));
    for(const u of users){const r=roleMap.get(u.id);u.is_admin=!!r;u.is_owner=!!r?.is_owner;}
+   const {data:members,error:membersError}=await client.from("hbl_chat_members").select("user_id");
+   if(membersError)throw membersError;
+   const membersSet=new Set((members||[]).map(x=>x.user_id));
+   for(const u of users)u.is_chat=membersSet.has(u.id);
    users.sort((a,b)=>a.email.localeCompare(b.email,"de"));
    return reply({users,actor:actor.id});
+  }
+  if(payload.action==="set_chat"){
+    const target=payload.user_id,allowed=payload.is_chat;
+    if(!goodId(target)||typeof allowed!=="boolean")return reply({error:"Ungültige Auswahl"},400);
+    const {data:targetUser,error:targetError}=await client.auth.admin.getUserById(target);
+    const account=targetUser?.user;
+    if(targetError||!account?.email)return reply({error:"Konto nicht gefunden"},404);
+    const {data:ownerRole,error:roleErr}=await client.from("hbl_dashboard_admins")
+      .select("is_owner").eq("user_id",target).maybeSingle();
+    if(roleErr)throw roleErr;
+    if(ownerRole?.is_owner&&!allowed)return reply({error:"Der Hauptadministrator behält Chat-Zugang."},403);
+    if(allowed){
+      const {error}=await client.from("hbl_chat_members").upsert({
+        user_id:target,email:account.email,approved_by:actor.id
+      },{onConflict:"user_id"});
+      if(error)throw error;
+    }else{
+      const {error}=await client.from("hbl_chat_members").delete().eq("user_id",target);
+      if(error)throw error;
+    }
+    return reply({ok:true});
   }
   if(payload.action==="set"){
    const target=payload.user_id,allowed=payload.is_admin;
