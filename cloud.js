@@ -26,7 +26,7 @@ function message(value,error=false){
 function controls(){
  const panel=el("hblCloudControls");if(!panel)return;
  const signed=!!user;
- el("hblCloudAccount").textContent=signed ? ("Angemeldet: "+user.email) : "Nur lokal · Testmodus";
+ el("hblCloudAccount").textContent=signed ? ("Angemeldet: "+(window.hblCurrentUsername||user.email)) : "Nur lokal · Testmodus";
  el("hblCloudLogin").hidden=signed;
  el("hblCloudLogout").hidden=!signed;
  el("hblCloudRefresh").hidden=!signed;
@@ -176,6 +176,7 @@ async function initializeAuth(){
  if(error)status("Anmeldung konnte nicht gelesen werden: "+error.message,true);
  else if(data.session)await startSession(data.session);
  else {controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
+ window.addEventListener("hbl-profile-changed",controls);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();});
  setInterval(()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();},45000);
 }
