@@ -247,6 +247,8 @@ async function disablePush(){
  }catch(e){pushUi("Deaktivieren fehlgeschlagen: "+(e?.message||e),true);}
  finally{pushWorking=false;await updatePushUi();}
 }
+window.hblEnablePush=enablePush;
+window.hblUpdatePushUi=updatePushUi;
 window.hblPushOnLogout=async()=>{
  try{
   const reg=await readyWorker(),subscription=await reg.pushManager.getSubscription();
