@@ -189,7 +189,7 @@ window.hblDecorateSchoolMilestones=function(aside,year){
   return '<div class="hbl-school-event '+(past?"hbl-event-past":"")+'" title="'+safe(e.description||e.title)+'">'+
     (isAdmin?'<button type="button" data-edit-event="'+safe(e.id)+'" class="hbl-school-event-button">'+content+'</button>':'<div class="hbl-school-event-text">'+content+'</div>')+
    '</div>';
- }).join(""):'<p class="hbl-school-events-empty">Noch keine Schulveranstaltungen eingetragen.</p>')+'</div>'+
+ }).join(""):'<p class="hbl-school-events-empty">Für gemeinsame Schultermine bitte anmelden oder als Administrator Termine hinzufügen.</p>')+'</div>'+
  (isOwner?'<button type="button" id="hblAdminOpen" class="hbl-admin-launch">⚙ Administratoren verwalten</button>':'');
  aside.appendChild(section);
  byId("hblEventAdd")?.addEventListener("click",()=>openEventEditor());
@@ -323,9 +323,12 @@ async function reloadAdminUsers(){
 }
 function init(){
  renderLinks();
+ if(byId("schoolDots"))renderSchoolCalendar();
+ if(byId("participationOverview"))renderParticipationOverview();
  window.addEventListener("hbl-cloud-status",()=>void refreshSession());
  window.addEventListener("visibilitychange",()=>{if(!document.hidden)void refreshSession();});
  setInterval(()=>{if(!document.hidden&&user())void refreshSession();},60000);
+ setInterval(()=>{if(!document.hidden&&byId("participationOverview"))renderParticipationOverview();},60000);
  void refreshSession();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
