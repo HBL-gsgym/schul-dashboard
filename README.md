@@ -23,23 +23,23 @@ Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag
 
 - **Frontend:** Vanilla HTML, CSS, JavaScript; GitHub Pages; kein Bundler/Framework.
 - **Daten:** Supabase Auth, PostgreSQL mit Row Level Security (RLS), Realtime und Edge Functions.
-- **PWA:** \`manifest.webmanifest\` und \`sw.js\` (App-Shell-Cache, Push).
+- **PWA:** `manifest.webmanifest` und `sw.js` (App-Shell-Cache, Push).
 - **Sicherheit:** Keine echten Schülerdaten für den Pilotbetrieb; der öffentliche Repository-Code darf keine privilegierten API-Keys oder anderen Geheimnisse enthalten.
 
 ## Entwickeln und prüfen
 
 Voraussetzung: Node.js 20+; für die lokale Vorschau optional Python 3.
 
-\`\`\`bash
+```bash
 git clone https://github.com/HBL-gsgym/schul-dashboard.git
 cd schul-dashboard
 npm test
 python3 -m http.server 8000
-\`\`\`
+```
 
 Danach ist die **statische Oberfläche** unter http://localhost:8000 sichtbar. Die Anmeldung ist aktuell auf die bereitgestellte Supabase-/GitHub-Pages-Konfiguration ausgelegt; **keine produktiven Konten oder echten Daten für lokale Tests verwenden**. Einen getrennten Test-Backend-Zugang gibt es nicht im Repository.
 
-\`npm test\` führt einen **statischen Offline-Check ohne zusätzliche npm-Pakete** aus (JavaScript-Syntax, lokale Referenzen, Service-Worker-App-Shell). Er ist **kein** Browser-, Auth-, RLS- oder Push-End-to-End-Test.
+`npm test` führt einen **statischen Offline-Check ohne zusätzliche npm-Pakete** aus (JavaScript-Syntax, lokale Referenzen, Service-Worker-App-Shell). Er ist **kein** Browser-, Auth-, RLS- oder Push-End-to-End-Test.
 
 ## Dokumentation für Codex
 
@@ -56,7 +56,7 @@ Danach ist die **statische Oberfläche** unter http://localhost:8000 sichtbar. D
 
 ## Verzeichnis
 
-\`\`\`text
+```text
 index.html                  Hauptanwendung (inkl. Inline-JS/CSS)
 cloud.js / cloud.css        Supabase-Login und persönlicher Snapshot
 mobile.js / mobile.css      Mobile Navigation/Ansicht
@@ -71,6 +71,6 @@ stundenplan-editor.html     Separates Stundenplan-Editor-/Hilfsdokument
 supabase/functions/         Edge Functions (separat zu deployen)
 scripts/check-static.mjs    Statischer Offline-Check
 docs/                       Architektur, Sicherheit und Codex-Einstieg
-\`\`\`
+```
 
 **Hinweis zu Datenbankänderungen:** Das vollständige bestehende Supabase-Schema ist noch nicht als versionierte Migrationen im Repository abgelegt. Bei Schemaaufgaben zuerst Ist-Stand in einer getrennten Testumgebung erfassen, dann reviewbare Migrationen erstellen. Produktive Änderungen nicht ohne gesonderte Freigabe.
