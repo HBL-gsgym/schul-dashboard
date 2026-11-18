@@ -1,6 +1,6 @@
 # Manuelle Smoke-Tests (Pilotbetrieb)
 
-**Stand:** 18.11.2026 · Ausgangsversion v5.9.1.
+**Stand:** 18.11.2026 · Ausgangsversion v5.9.3.
 
 Diese Checkliste beschreibt **Testfälle**, keine bereits bestandenen Tests.
 
@@ -37,6 +37,7 @@ Diese Checkliste beschreibt **Testfälle**, keine bereits bestandenen Tests.
 | Sync | A bearbeitet Demo-Daten auf zwei Geräten | Revisionskonflikt sichtbar statt stillem Datenverlust | ☐ offen |
 | PWA | Browser/PWA mit neuem Cache neu öffnen | Aktuelle CSS/JS-Version ohne Altcode-Mischung | ☐ offen |
 | Push | Push nach explizitem Opt-in, erlaubtem Zeitfenster | Zustellung nur innerhalb der gewünschten Zeit | ☐ offen |
+| Push-Test v5.9.3 | Auf registriertem Testgerät aus dem Chat-Einstellungsdialog „Testbenachrichtigung senden“ auslösen | Nur das eigene Gerät kann adressiert werden; Serverannahme und tatsächlich angezeigte Systemmitteilung separat prüfen | ☐ offen |
 | Push | Ruhezeit und Wochentag wechseln | Keine unerwünschte Chat-Push in Sperrzeit | ☐ offen |
 | Push | Sperrbildschirm-Vorschautext deaktivieren | Keine vertrauliche Chatvorschau in Push | ☐ offen |
 

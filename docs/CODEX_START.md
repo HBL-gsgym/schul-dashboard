@@ -1,6 +1,6 @@
 # Erster Codex-Auftrag: Bestandsaufnahme ohne Änderungen
 
-**Empfohlener Einstieg nach Verbindung von `HBL-gsgym/schul-dashboard` mit Codex.** Stand der Dokumentation: 18.11.2026, Version v5.9.1.
+**Empfohlener Einstieg nach Verbindung von `HBL-gsgym/schul-dashboard` mit Codex.** Stand der Dokumentation: 18.11.2026, Version v5.9.3.
 
 ## Diesen Prompt in Codex verwenden
 
@@ -13,7 +13,7 @@ Supabase-Projekte, Edge Functions oder Deployments. Erstelle noch keinen PR.
 1. Lies zuerst AGENTS.md, README.md und alle Dateien in docs/.
 2. Prüfe anschließend den TATSÄCHLICHEN aktuellen Repository-Stand:
    index.html, cloud.js, mobile.js, hbl-v55.js bis hbl-v59.js,
-   sw.js, die CSS-Dateien sowie die beiden Supabase-Edge-Functions.
+   sw.js, die CSS-Dateien sowie alle drei Supabase-Edge-Functions (einschließlich hbl-push-test).
 3. Ordne die Architektur und Datenflüsse ein (Supabase Auth, Dashboard-
    Freigabe, Admin/Owner, Snapshots mit Revision, A/B-Stundenpläne,
    Kalender/Ausfallblöcke, Mitarbeit, Lehrerzimmer, Direkt- und Gruppenchat,
@@ -23,7 +23,8 @@ Supabase-Projekte, Edge Functions oder Deployments. Erstelle noch keinen PR.
      RLS-Schema aus der Dokumentation ist nur Ausgangspunkt, nicht Beweis.
    - Einladungslinks, Passwort-Ersteinrichtung, Kontosperre/Löschung.
    - Gruppenrollen, Aufnahme/Entfernen, Verlaufssichtbarkeit, Realtime,
-     ungelesene Nachrichten und Chat-Push.
+     ungelesene Nachrichten und Chat-Push, einschließlich des neuen
+     authentifizierten Geräte-Push-Tests (v5.9.3).
    - Speicherung bei parallelen Geräten, Datenkonflikte, Datenverlustrisiken.
    - A/B-Wochen, Ferien/Feiertage, Blockausfälle, Erhalt von Bewertungen.
    - Script-Ladereihenfolge, globale Hooks, PWA/Service-Worker-Caching.

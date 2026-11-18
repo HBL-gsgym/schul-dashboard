@@ -1,6 +1,6 @@
 # Architektur und Datenfluss
 
-**Stand:** Repository v5.9.1, geprüft am 18.11.2026. Dies ist eine Bestandsdokumentation des tatsächlich vorhandenen Frontends sowie eine lesende Übersicht des Supabase-Schemas, keine Behauptung über abgeschlossene End-to-End-Tests.
+**Stand:** Repository v5.9.3, geprüft am 18.11.2026. Dies ist eine Bestandsdokumentation des tatsächlich vorhandenen Frontends sowie eine lesende Übersicht des Supabase-Schemas, keine Behauptung über abgeschlossene End-to-End-Tests.
 
 ## Systemüberblick
 
@@ -13,7 +13,7 @@ Browser / installierte PWA
   ├─ hbl-v56.js → gemeinsame Schulveranstaltungen + Rechteverwaltung + Links
   ├─ hbl-v57.js → Lehrerzimmer / 1:1 / Gruppen + Realtime
   ├─ hbl-v58.js → Benutzerprofil / Passwort-Ersteinrichtung
-  ├─ hbl-v59.js → Chat-Push-Präferenzen
+  ├─ hbl-v59.js → Chat-Push-Präferenzen und gerätespezifischer Push-Test
   └─ sw.js → Cache der App-Shell + Systembenachrichtigungen
                       │ HTTPS
                       ▼
@@ -24,6 +24,7 @@ Supabase
   └─ Edge Functions:
        hbl-admin-users     (owner-only: Nutzer/Einladungen/Rechte)
        hbl-push-dispatch   (serverseitige Push-Verteilung)
+       hbl-push-test       (authentifizierter Testversand ans eigene Gerät)
 ```
 
 Hosting der statischen App: GitHub Pages. Edge Functions und Supabase-Datenbank sind **nicht** Teil des GitHub-Pages-Deployments. Es existiert kein klassischer Node-Server im Repository.
@@ -38,7 +39,7 @@ Hosting der statischen App: GitHub Pages. Edge Functions und Supabase-Datenbank 
 | `hbl-v56.js` | Schulweite Ereignisse und Block-Ausfälle, Benutzer- und Rollenverwaltung, Link-Zentrale, Unterrichtsblockfortschritt |
 | `hbl-v57.js` | Chat-Freigabe, Lehrerzimmer, 1:1, Gruppen, Mitglieder, Nachrichten, Realtime |
 | `hbl-v58.js` | Username/Profile und initiale eigene Passwortwahl |
-| `hbl-v59.js` | Nutzerseitige Chat-Push-Einstellungen (Tage, Start/Ende, Vorschautext) |
+| `hbl-v59.js` | Nutzerseitige Chat-Push-Einstellungen (Tage, Start/Ende, Vorschautext) und Push-Verbindungstest |
 | `mobile.js` | Mobile Navigation und responsive Hilfen |
 | `sw.js` | App-Shell-Cache, Push-Empfang, Benachrichtigungsklick |
 | `manifest.webmanifest` | PWA-Name, Start-URL, Icons, Standalone-Modus |
@@ -104,6 +105,7 @@ Realtime-Publikation (lesend verifiziert): `hbl_chat_messages`, `hbl_chat_group_
 - `hbl_chat_push_sent`, `hbl_push_sent`: serverseitige Duplikatkontrolle.
 - `hbl_push_private_settings`: private Serverkonfiguration.
 - `hbl-push-dispatch`: serverseitige Funktion für Unterrichts-/Aufsichtshinweise und Chatnachrichten; Zeitberechnung für Deutschland.
+- `hbl-push-test`: separate Edge Function (v5.9.3). Prüft das Benutzer-JWT serverseitig sowie die Eigentümerschaft am registrierten Push-Endpunkt und sendet eine Testnachricht an genau dieses Gerät. Ein angenommener Web-Push-Versand beweist nicht die Anzeige auf dem Gerät. Quelle unter `supabase/functions/hbl-push-test/index.ts`.
 - `sw.js`: Anzeige/Bearbeitung eingehender Push-Nachrichten.
 
 Datenbank und Service Worker allein beweisen **keine** zuverlässige Push-Zustellung: Browser-Berechtigung, Gerätesupport, Abonnement, VAPID/Serversecrets, Cron-Aufruf und Timezone müssen gesondert geprüft werden. Besonders Android/iOS-PWA und Ruhezeiten testen.

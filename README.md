@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.1 · Pilotprojekt · 18.11.2026**
+**Stand: v5.9.3 · Pilotprojekt · 18.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -17,7 +17,7 @@ Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag
 - Mitarbeitserfassung mit aus dem Stundenplan geplanten Terminen und Schutz bereits erfasster Bewertungen.
 - Supabase-Login mit administrativ verwalteten Lehrkräfte-Zugängen; manuell weitergeleitete Einladungs- und Recovery-Links; Benutzerprofile und Passwortvergabe.
 - Kollegium-Chat: Lehrerzimmer, Direktnachrichten, selbst angelegte Gruppenchats, Mitgliederverwaltung, Ungelesen-Anzeige und Echtzeit.
-- Progressive Web App (PWA) mit responsiver Oberfläche und optionalen Push-Benachrichtigungen einschließlich einstellbarer Chat-Zeitfenster.
+- Progressive Web App (PWA) mit responsiver Oberfläche und optionalen Push-Benachrichtigungen einschließlich einstellbarer Chat-Zeitfenster und einem gerätespezifischen Push-Verbindungstest (v5.9.3).
 
 ## Technologie / Betrieb
 
@@ -64,11 +64,11 @@ hbl-v55.js / .css           Aufsichten, PWA, Push-Basis
 hbl-v56.js / .css           Schulkalender, Rollen, Benutzerverwaltung, Links
 hbl-v57.js / .css           Lehrerzimmer, Direktnachrichten, Gruppenchats
 hbl-v58.js / .css           Profile, erste Passwortvergabe
-hbl-v59.js / .css           Chat-Push-Einstellungen und Ruhezeiten
+hbl-v59.js / .css           Chat-Push-Einstellungen, Ruhezeiten und Push-Test
 sw.js                       PWA-App-Shell und Push-Event-Verarbeitung
 manifest.webmanifest        PWA-Metadaten
 stundenplan-editor.html     Separates Stundenplan-Editor-/Hilfsdokument
-supabase/functions/         Edge Functions (separat zu deployen)
+supabase/functions/         Edge Functions: hbl-admin-users, hbl-push-dispatch, hbl-push-test (separat zu deployen)
 scripts/check-static.mjs    Statischer Offline-Check
 docs/                       Architektur, Sicherheit und Codex-Einstieg
 ```

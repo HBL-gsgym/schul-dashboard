@@ -3,7 +3,7 @@
 > Diese Datei gilt für das gesamte Repository. Zuerst lesen, danach `README.md` und die Dokumentation unter `docs/`. Sprache für Kommunikation und sichtbare Benutzeroberfläche: Deutsch.
 
 ## Zweck und aktueller Stand
-Dies ist ein **öffentliches GitHub-Repository** für den **Pilotbetrieb** einer schulischen Lehrer-Dashboard-Web-App. Der im Repository vorgefundene Stand ist **v5.9.1** (18.11.2026). Die tatsächlich ausgecheckten Dateien sind immer maßgeblich; Dokumentation kann veralten. Das Projekt liegt unter `HBL-gsgym/schul-dashboard`; der Produktions-Frontend-Link ist https://hbl-gsgym.github.io/schul-dashboard/.
+Dies ist ein **öffentliches GitHub-Repository** für den **Pilotbetrieb** einer schulischen Lehrer-Dashboard-Web-App. Der im Repository vorgefundene Stand ist **v5.9.3** (18.11.2026). Die tatsächlich ausgecheckten Dateien sind immer maßgeblich; Dokumentation kann veralten. Das Projekt liegt unter `HBL-gsgym/schul-dashboard`; der Produktions-Frontend-Link ist https://hbl-gsgym.github.io/schul-dashboard/.
 
 Funktionen: individuelle A/B-Stundenpläne, Pausenaufsichten, Aufgaben/Korrekturen/Vorbereitung, Brandenburg-Schuljahreskalender und Schulveranstaltungen/Unterrichtsausfälle, Mitarbeitserfassung, individuelle Links und Kachel-Layout, Supabase-Login und Benutzerverwaltung mit manuellen Einladungs-/Passwortlinks, Lehrerzimmer, Direkt- und Gruppenchats, Web-Push/PWA.
 
@@ -21,8 +21,9 @@ Funktionen: individuelle A/B-Stundenpläne, Pausenaufsichten, Aufgaben/Korrektur
 - **Frontend**: Vanilla HTML/CSS/JS ohne Build-System. `index.html` enthält große Teile von Datenmodell, UI und Logik. Weitere IIFE-Skripte: `cloud.js`, `mobile.js`, `hbl-v55.js` bis `hbl-v59.js`. CSS entsprechend.
 - **Hosting**: GitHub Pages aus dem Repository; Service Worker `sw.js` cached die App-Shell. `manifest.webmanifest` liefert PWA-Metadaten.
 - **Backend**: Supabase Auth, PostgreSQL mit RLS, Realtime, Edge Functions. Öffentliche Supabase-Projektkennung im Frontend; privilegierte Schlüssel ausschließlich serverseitig.
-- **Edge Functions**: `supabase/functions/hbl-admin-users/index.ts` (Einladungslinks, Account- und Rechteverwaltung) und `supabase/functions/hbl-push-dispatch/index.ts` (Web-Push). Änderungen an Dateien deployen Edge Functions **nicht automatisch**.
+- **Edge Functions**: `supabase/functions/hbl-admin-users/index.ts` (Einladungslinks, Account- und Rechteverwaltung) und `supabase/functions/hbl-push-dispatch/index.ts` (Web-Push) und `supabase/functions/hbl-push-test/index.ts` (authentifizierter Testversand an das eigene registrierte Gerät). Änderungen an Dateien deployen Edge Functions **nicht automatisch**.
 - **Datenbank**: Tabellen/Funktionen sind produktiv vorhanden, aber zum Stand dieser Dokumentation **nicht durch ein vollständiges Migrationsverzeichnis im Repository reproduzierbar**. Vor Schemaänderungen zuerst Ist-Schema in sicherer Umgebung dokumentieren und Migrationen entwerfen.
+- **Beachte**: Der Push-Test wurde in v5.9.3 ergänzt. Die Supabase-Funktion `hbl-push-test` ist separat deployed und verlangt eine gültige Sitzung sowie ein Push-Abonnement des angemeldeten Nutzers. Ein bestätigter Versand bedeutet noch keine angezeigte Benachrichtigung am Gerät.
 - **Beachte**: Module verwenden globale `window.hbl...`-Hooks und Events; die Lade-Reihenfolge ist wichtig. Nicht stillschweigend globale Schnittstellen oder PWA-Caching ändern.
 
 Weitere Details: `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/SECURITY.md`.

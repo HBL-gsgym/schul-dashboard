@@ -1,6 +1,6 @@
 # Entwicklung, Tests und Veröffentlichung
 
-**Stand:** 18.11.2026 · Ausgangsversion v5.9.1.
+**Stand:** 18.11.2026 · Ausgangsversion v5.9.3.
 
 ## Voraussetzungen
 
@@ -74,6 +74,7 @@ Der Worker ist derzeit **cache-first** für statische App-Ressourcen und **netwo
 Für Supabase-Edge-Functions liegen die Quellen unter:
 - `supabase/functions/hbl-admin-users/index.ts`
 - `supabase/functions/hbl-push-dispatch/index.ts`
+- `supabase/functions/hbl-push-test/index.ts` (v5.9.3: Server-Push-Test für ein eigenes registriertes Gerät)
 
 Keine Service-Keys, SMTP-/VAPID-Private-Secrets, Cron-Tokens oder Zugangslinks in GitHub Actions, Browsercode oder PR-Beschreibungen speichern.
 

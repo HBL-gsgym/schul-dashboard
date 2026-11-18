@@ -63,6 +63,8 @@ Frontend-Sichtbarkeit allein reicht nicht. Alle Datenbank-Reads und Writes müss
 - Nicht ohne Freigabe in das bestehende Supabase-Projekt schreiben, auch nicht für „kurze“ Tests.
 
 **Push**:
+- Die zusätzliche Edge Function `hbl-push-test` verlangt ein gültiges Benutzer-JWT und muss vor einem Versand sicherstellen, dass der Push-Endpunkt dem eingeloggten Nutzer gehört. Die Gateway-Option `verify_jwt=false` ersetzt diese Prüfung nicht; im vorhandenen Funktionscode wird das JWT selbst verifiziert.
+- Für den manuellen Testversand Rate-Limits/Missbrauchsschutz gesondert prüfen, damit wiederholte Aufrufe nicht zum unerwünschten Benachrichtigungsversand führen.
 - Push-Endpunkte und Auth-Keys sind sensible Abonnementdaten; nicht in Logs veröffentlichen.
 - Browser-Permission nur nach Nutzerinteraktion erfragen.
 - Chat-Push-Vorschautexte können vertraulichen Inhalt auf Sperrbildschirmen sichtbar machen. Privacy-Default und Aktivierung bewusst prüfen.
