@@ -42,7 +42,7 @@ Diese Checkliste beschreibt **Testfälle**, keine bereits bestandenen Tests.
 
 ## Protokoll je Testdurchlauf
 
-\`\`\`text
+```text
 Datum:
 Commit / Version:
 Testinstanz / Browser / OS:
@@ -52,6 +52,6 @@ Ergebnis je Fall (bestanden / fehlgeschlagen / nicht geprüft):
 Fehlerbild und reproduzierbare Schritte:
 DevTools-Fehler ohne Token-/Personendaten:
 Bearbeitender PR / Issue:
-\`\`\`
+```
 
 **Keine echten Einladungslinks, Session-Tokens, Push-Endpunkte, Schülerdaten oder persönliche Chat-Nachrichten in Testprotokolle kopieren.**
