@@ -35,6 +35,7 @@ function mount(){
  '</form><div class="hbl-chat-push-device"><strong>Dieses Gerät</strong>'+
  '<p>Damit Benachrichtigungen auch bei geschlossener Seite erscheinen, musst du Push auf diesem Gerät erlauben.</p>'+
  '<button type="button" id="hblChatPushDevice">Handy-/Browser-Push aktivieren</button>'+
+ '<button type="button" id="hblChatPushTest">🔔 Testbenachrichtigung senden</button>'+
  '<p id="hblChatPushDeviceState"></p></div>'+
  '<p id="hblChatPushStatus" role="status"></p>'+
  '<p class="hbl-chat-push-tip">iPhone: Dashboard in Safari zum Home-Bildschirm hinzufügen und anschließend die installierte App öffnen. Android: Browserberechtigung für Benachrichtigungen erteilen.</p>'+
@@ -45,6 +46,7 @@ function mount(){
  overlay.addEventListener("keydown",e=>{if(e.key==="Escape")showSettings(false);});
  el("hblChatPushForm").onsubmit=e=>{e.preventDefault();void save();};
  el("hblChatPushDevice").onclick=()=>void activateDevice();
+ el("hblChatPushTest").onclick=()=>void testNotification();
  el("hblChatPushDays").innerHTML=weekdays.map((name,i)=>
   '<label><input type="checkbox" value="'+(i+1)+'" '+(i<5?"checked":"")+'> '+name+'</label>').join("");
  return true;
@@ -77,6 +79,37 @@ async function activateDevice(){
   message("Bitte Gerätestatus oben prüfen.");
  }catch(e){message("Aktivierung fehlgeschlagen: "+e.message,true);}
  finally{btn.disabled=false;}
+}
+async function testNotification(){
+ const btn=el("hblChatPushTest");
+ if(!btn||btn.disabled)return;
+ btn.disabled=true;message("Teste Push-Verbindung …");
+ try{
+  if(!db()||!user())throw Error("Bitte am Dashboard anmelden.");
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))
+   throw Error("Web Push wird von diesem Gerät nicht unterstützt.");
+  if(Notification.permission!=="granted")
+   throw Error("Mitteilungen nicht erlaubt. Bitte zuerst auf diesem Gerät aktivieren.");
+  const worker=await navigator.serviceWorker.ready;
+  const subscription=await worker.pushManager.getSubscription();
+  if(!subscription)throw Error("Dieses Gerät hat noch kein Push-Abonnement. Bitte Push aktivieren.");
+  const {data:registered,error:checkError}=await db().from("hbl_push_subscriptions")
+    .select("id").eq("endpoint",subscription.endpoint).eq("user_id",user().id).maybeSingle();
+  if(checkError)throw Error("Gerätedaten nicht prüfbar: "+checkError.message);
+  if(!registered)throw Error("Dieses Gerät ist noch nicht beim Dashboard registriert. Push erneut aktivieren.");
+  const {data,error}=await db().functions.invoke("hbl-push-test",{body:{endpoint:subscription.endpoint}});
+  if(error){
+   let detail=error.message||"Unbekannter Fehler";
+   try{
+    const payload=await error.context?.json();
+    if(payload?.error)detail=payload.error;
+   }catch(_){}
+   throw Error(detail);
+  }
+  if(!data?.ok)throw Error(data?.error||"Test wurde vom Server abgelehnt.");
+  message("✓ Push-Dienst hat den Test angenommen. Prüfe jetzt die Geräte-Mitteilungen. Falls nichts erscheint: Fokusmodus und Systemeinstellungen kontrollieren.");
+ }catch(error){message("Push-Test: "+(error?.message||error),true);}
+ finally{btn.disabled=false;await deviceStatus();}
 }
 async function showSettings(open){
  if(!mount())return;
