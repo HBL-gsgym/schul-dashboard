@@ -1,0 +1,22 @@
+name: Static checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+      - name: Node.js bereitstellen
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Statischen Offline-Check ausführen
+        run: npm test
