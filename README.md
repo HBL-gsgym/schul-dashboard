@@ -9,6 +9,14 @@ Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag
 
 > **Testbetrieb:** Das Projekt ist noch keine freigegebene schulische Produktivanwendung. Ausschließlich synthetische/Testdaten verwenden – keine echten Schülernamen, Noten, Bewertungen oder sonstigen personenbezogenen Schuldaten.
 
+## Leitidee: Software folgt dem Menschen
+
+> **Unsere aktuelle Software bestimmt unsere Arbeitsabläufe. Wir brauchen eine Software, die sich optimal an unsere individuellen Arbeitsabläufe anpassen kann.**
+
+Das Schul-Dashboard HBL soll nicht den Arbeitsalltag der Lehrkräfte in starre Vorgaben pressen. Stattdessen passt sich die Oberfläche an die Arbeitsweisen der einzelnen Kolleginnen und Kollegen an. Lehrkräfte können persönliche Links und Werkzeuge frei wählen, Kategorien und Kacheln organisieren und ihren Stundenplan individuell gestalten. Schulweit notwendige Funktionen wie Kalender, organisatorische Informationen und Kollegiumskommunikation bleiben dabei gemeinsam nutzbar.
+
+**Produktprinzip:** So viel gemeinsame Struktur wie nötig, so viel individuelle Anpassbarkeit wie möglich. Neue Funktionen sollen diese Freiheit erhalten oder sinnvoll erweitern, ohne Nutzende mit unnötiger Konfiguration zu überfordern.
+
 ## Funktionsumfang
 
 - Persönliches Dashboard: verschiebbare Kacheln, Links (Orga, KI, digitale Tools, Materialien), Aufgaben/Korrekturen und Unterrichtsvorbereitung.
