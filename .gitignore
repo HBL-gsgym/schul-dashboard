@@ -1,0 +1,13 @@
+# Lokale Entwicklungsdaten, Zugangsdaten und Dumps – niemals committen
+node_modules/
+.env
+.env.*
+!.env.example
+.local/
+tmp/
+backups/
+*.log
+*.dump
+*.sql.gz
+.DS_Store
+Thumbs.db
