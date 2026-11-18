@@ -7,6 +7,12 @@ Dies ist ein **öffentliches GitHub-Repository** für den **Pilotbetrieb** einer
 
 Funktionen: individuelle A/B-Stundenpläne, Pausenaufsichten, Aufgaben/Korrekturen/Vorbereitung, Brandenburg-Schuljahreskalender und Schulveranstaltungen/Unterrichtsausfälle, Mitarbeitserfassung, individuelle Links und Kachel-Layout, Supabase-Login und Benutzerverwaltung mit manuellen Einladungs-/Passwortlinks, Lehrerzimmer, Direkt- und Gruppenchats, Web-Push/PWA.
 
+## Leitbild und Produktentscheidung
+
+> **Unsere aktuelle Software bestimmt unsere Arbeitsabläufe. Wir brauchen eine Software, die sich optimal an unsere individuellen Arbeitsabläufe anpassen kann.**
+
+Dies ist die zentrale Produktvision. **Software folgt dem Arbeitsablauf der Lehrkraft – nicht umgekehrt.** Bei Produktentscheidungen Personalisierung und selbstbestimmte Arbeitsweisen erhalten: frei wählbare Links, individuell geordnete Kategorien und Kacheln, persönliche Werkzeuge und Stundenpläne. Gemeinsame schulische Grundfunktionen dürfen sinnvoll standardisiert sein, aber individuelle Anpassungen nicht grundlos blockieren. Keine starren, herstellerdefinierten Linklisten, erzwungenen Workflows oder unnötige zentrale Abhängigkeiten einführen. Neue Funktionen nach dem Prinzip „gemeinsamer Kern + persönliche Freiheit“ entwerfen; Anpassungen einfach und zugänglich halten.
+
 ## Unverhandelbare Regeln
 1. **Keine echten Schülerdaten in Tests oder Demos**: keine Schülernamen, Bewertungen, Beobachtungen, Gesundheitsdaten oder sonstige personenbezogene Schuldaten in Supabase, GitHub, Logs, Beispieldateien oder Screenshots verwenden. Bis zur schulischen Freigabe ausdrücklich Demo-/Testbetrieb.
 2. **Produktivsystem schützen**: Ohne gesonderte ausdrückliche Genehmigung des Nutzers **keine** produktiven Supabase-SQL-/RLS-/Auth-/Edge-Function-/Cron-/Secret-Änderungen, keine Datenmanipulationen und keine produktiven Zugangstests. Insbesondere keine echten Konten anlegen, sperren oder löschen. Bei Prüfaufträgen standardmäßig nur lesend arbeiten.
