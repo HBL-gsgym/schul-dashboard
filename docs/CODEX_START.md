@@ -1,10 +1,10 @@
 # Erster Codex-Auftrag: Bestandsaufnahme ohne Änderungen
 
-**Empfohlener Einstieg nach Verbindung von \`HBL-gsgym/schul-dashboard\` mit Codex.** Stand der Dokumentation: 18.11.2026, Version v5.9.1.
+**Empfohlener Einstieg nach Verbindung von `HBL-gsgym/schul-dashboard` mit Codex.** Stand der Dokumentation: 18.11.2026, Version v5.9.1.
 
 ## Diesen Prompt in Codex verwenden
 
-\`\`\`text
+```text
 Du übernimmst das bestehende Projekt "Schul-Dashboard HBL" im Repository
 HBL-gsgym/schul-dashboard. Bitte beginne ausschließlich mit einer LESENDEN
 Bestandsaufnahme. Verändere KEINE Dateien, Daten, Benutzerkonten, Einstellungen,
@@ -44,7 +44,7 @@ Supabase-Projekte, Edge Functions oder Deployments. Erstelle noch keinen PR.
 Die Anwendung ist eine Pilotversion für Lehrkräfte. Bitte keine großflächigen
 Refactorings, keine neuen Frameworks, keine studentischen Echtdaten und keine
 Behauptungen über erfolgreiche Produktivtests ohne entsprechende Nachweise.
-\`\`\`
+```
 
 ## Nach dem Audit
 
@@ -53,7 +53,7 @@ Codex soll zuerst Rückfragen oder einen kleinen PR-Vorschlag liefern – **nich
 1. Kritische Sicherheits-/Datenverlustfehler nach verifizierten Befunden beseitigen.
 2. Reproduzierbare automatisierte Kernlogik- und Browser-Smoketests ergänzen.
 3. Datenbankschema kontrolliert exportieren und in einer **separaten** Supabase-Testinstanz reproduzierbar machen.
-4. \`index.html\` in kleinen, getesteten Schritten modularisieren (nur nach Freigabe).
+4. `index.html` in kleinen, getesteten Schritten modularisieren (nur nach Freigabe).
 5. Neue Funktionen erst danach umsetzen.
 
 **Codex und Produktionssystem sind nicht dasselbe:** Ein GitHub-Pull-Request deployed keine Edge Functions und keine SQL-Migrationen.
