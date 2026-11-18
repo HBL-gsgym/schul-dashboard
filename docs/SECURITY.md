@@ -15,7 +15,7 @@ Auch Mitarbeiter-E-Mail-Adressen, Chatverläufe und Benutzernamen sind personenb
 ## Öffentlicher Code und Geheimnisse
 
 Das GitHub-Repository ist **public**. Niemals einchecken:
-- Supabase \`service_role\`-, secret- oder andere privilegierte API-Keys
+- Supabase `service_role`-, secret- oder andere privilegierte API-Keys
 - VAPID private key, Cron-Authentifizierung, SMTP-Passwörter
 - Zugangstokens, JWTs, Cookies, Auth-Session-Inhalte
 - Einmalige Einladungs-/Recovery-Links
@@ -23,7 +23,7 @@ Das GitHub-Repository ist **public**. Niemals einchecken:
 
 Im Frontend dürfen nur explizit für öffentliche Clients gedachte Schlüssel liegen (Supabase Publishable Key, VAPID **Public** Key). Privilegierte Aktionen erfolgen ausschließlich serverseitig. Edge-Function-Secrets in Supabase-Secrets/Umgebungsvariablen; öffentliches JavaScript darf sie nicht kennen.
 
-\`AGENTS.md\` verlangt außerdem, dass Codex Secrets in Logs und PRs entfernt/zensiert.
+`AGENTS.md` verlangt außerdem, dass Codex Secrets in Logs und PRs entfernt/zensiert.
 
 ## Rollen und Zugriff
 
@@ -32,19 +32,19 @@ Unterschiedliche Berechtigungen nicht miteinander vermischen:
 | Mechanismus | Bedeutung |
 | --- | --- |
 | Supabase Auth | Eine Person besitzt eine gültige Session |
-| \`hbl_dashboard_members.enabled\` | Erlaubnis für das persönliche Dashboard |
-| \`hbl_dashboard_admins\` | Verwaltung des gemeinsamen Kalenders, Owner-Sonderrolle |
-| \`hbl_chat_members\` | Gesonderte Freigabe für Lehrerzimmer und Chat |
-| \`hbl_chat_group_members\` | Mitgliedschaft in einem bestimmten Gruppenchat |
-| \`hbl_user_profiles\` | Sichtbarer Name, **keine** Autorisierungsquelle |
+| `hbl_dashboard_members.enabled` | Erlaubnis für das persönliche Dashboard |
+| `hbl_dashboard_admins` | Verwaltung des gemeinsamen Kalenders, Owner-Sonderrolle |
+| `hbl_chat_members` | Gesonderte Freigabe für Lehrerzimmer und Chat |
+| `hbl_chat_group_members` | Mitgliedschaft in einem bestimmten Gruppenchat |
+| `hbl_user_profiles` | Sichtbarer Name, **keine** Autorisierungsquelle |
 
 Frontend-Sichtbarkeit allein reicht nicht. Alle Datenbank-Reads und Writes müssen per RLS/gesichertem Backend beschränkt sein. Bei gesperrten Konten keine bloße UI-Sperrung; Zugriff auf Datensätze über Mitgliedschaft und RLS prüfen. Bereits ausgestellte Sitzungen können bis zur tatsächlichen serverseitigen Prüfung existieren.
 
 ## Besonders sicherheitskritische Vorgänge
 
-**Admin-Edge-Function** \`hbl-admin-users\`:
+**Admin-Edge-Function** `hbl-admin-users`:
 - Jede Admin-Aktion muss eine gültige Session *serverseitig* und die Hauptadministratorrolle prüfen.
-- Vor dem Rückgeben von \`action_link\` jede Besitzerfreigabe, Authentifizierung und Ziel-E-Mail prüfen.
+- Vor dem Rückgeben von `action_link` jede Besitzerfreigabe, Authentifizierung und Ziel-E-Mail prüfen.
 - Einladungs- und Passwortwiederherstellungslinks sind **Bearer-Tokens**. Nur unmittelbar an den bestimmten Empfänger weitergeben. Nicht in Logs speichern oder in öffentlichen Tickets zitieren.
 - Benutzer sperren/löschen nur nach expliziter administrativer Bestätigung; Datenfolgen und RLS-Policy beachten.
 
@@ -57,8 +57,8 @@ Frontend-Sichtbarkeit allein reicht nicht. Alle Datenbank-Reads und Writes müss
 - Kein unkontrolliertes HTML in Nachrichten rendern.
 
 **PostgreSQL**:
-- Alle öffentlich exponierten Tabellen mit RLS und passenden \`GRANT\`-/\`POLICY\`-Regeln.
-- Private \`SECURITY DEFINER\`-Funktionen unter \`hbl_private\` existieren. Vor Änderungen Definition, \`search_path\`, Ausführungsrechte und RLS-Auswirkungen prüfen. Keine Freigabe für \`PUBLIC\` ohne begründete Notwendigkeit.
+- Alle öffentlich exponierten Tabellen mit RLS und passenden `GRANT`-/`POLICY`-Regeln.
+- Private `SECURITY DEFINER`-Funktionen unter `hbl_private` existieren. Vor Änderungen Definition, `search_path`, Ausführungsrechte und RLS-Auswirkungen prüfen. Keine Freigabe für `PUBLIC` ohne begründete Notwendigkeit.
 - DB-Änderungen nur als explizit reviewte, getestete Migration in einer separaten Testumgebung vorbereiten.
 - Nicht ohne Freigabe in das bestehende Supabase-Projekt schreiben, auch nicht für „kurze“ Tests.
 
