@@ -40,6 +40,7 @@ export function harness({ pending, read, write, confirm = () => true } = {}) {
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     prepDone: {}, applyPrepData: data => { ctx.prepDone = data; },
     confirm, Event: class {}, setTimeout, setInterval() {},
+    alert: text => { ctx.alerts.push(text); }, alerts: [],
     location: { reload() { ctx.reloaded = true; } }, console,
   };
   // Expose lexical entry points only inside the test VM; production code is unchanged.

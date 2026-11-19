@@ -250,12 +250,21 @@ async function disablePush(){
 window.hblEnablePush=enablePush;
 window.hblUpdatePushUi=updatePushUi;
 window.hblPushOnLogout=async()=>{
+ if(!("serviceWorker" in navigator)||!("PushManager" in window))return;
+ const reg=await navigator.serviceWorker.getRegistration("./");
+ if(!reg)return;
+ const subscription=await reg.pushManager.getSubscription();
+ if(!subscription)return;
+ let failed=false;
  try{
-  const reg=await readyWorker(),subscription=await reg.pushManager.getSubscription();
-  if(!subscription)return;
-  if(client()&&user())await client().from("hbl_push_subscriptions").delete().eq("endpoint",subscription.endpoint);
-  await subscription.unsubscribe();
- }catch(e){console.warn("Push-Abmeldung konnte nicht abgeschlossen werden",e);}
+  if(client()&&user()){
+   const {error}=await client().from("hbl_push_subscriptions").delete().eq("endpoint",subscription.endpoint);
+   if(error)failed=true;
+  }
+ }catch(_){failed=true;}
+ // Auch bei einem Serverfehler das lokale Geräte-Abonnement aufheben.
+ try{if(!await subscription.unsubscribe())failed=true;}catch(_){failed=true;}
+ if(failed)throw Error("Push-Abmeldung konnte nicht vollständig bestätigt werden.");
 };
 function mountPushSettings(){
  const table=byId("weeklyTimetable");if(!table||byId("hblPushPanel"))return;
