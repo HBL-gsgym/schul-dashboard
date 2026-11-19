@@ -44,6 +44,10 @@ Weitere Details: `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/SECURITY.m
 7. Bei Auth/Chat/PostgreSQL zusätzlich RLS-Negativtests mit *synthetischen* Konten in einer **separaten Testdatenbank** planen. Ohne Genehmigung nicht in Produktion ausführen.
 8. Abschluss: geänderte Dateien, geprüfte Tests, nicht geprüfte Risiken sowie benötigte Deploy-/Migrationsschritte genau benennen; niemals ungetestete Funktionen als verifiziert darstellen.
 
+## Übergabe des ChatGPT-Projektwissens
+
+Lies auch `docs/CHATGPT_TO_CODEX.md`. Diese Datei bündelt Entscheidungen zu Produktvision, freien Links, A/B-Stundenplänen, Mitarbeitserhalt, geschlossenem Kollegiumszugang, Gruppenchats, Push und offenen Tests. Sie ist eine Kontextübergabe und kein automatischer Import des gesamten Chatverlaufs. Im Konfliktfall ist der tatsächliche Code der maßgebliche technische Ist-Stand.
+
 ## Prioritäten für die erste Codex-Sitzung
 **Zuerst nur Lesemodus**: technische Bestandsaufnahme, Sicherheits-/Funktionsrisiken priorisieren, fehlende Tests aufzeigen und einen kleinen PR-Plan vorlegen. Einstieg: `docs/CODEX_START.md`.
 
