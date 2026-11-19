@@ -58,6 +58,7 @@ Danach ist die **statische Oberfläche** unter http://localhost:8000 sichtbar. D
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Lokaler Start, Tests, Branches, Deploy-Checkliste |
 | [docs/SECURITY.md](docs/SECURITY.md) | Zugriff, RLS, Geheimnisse, Datenschutz und Risiken |
 | [docs/CODEX_START.md](docs/CODEX_START.md) | Sofort verwendbarer erster Prüfauftrag an Codex |
+| [docs/CHATGPT_TO_CODEX.md](docs/CHATGPT_TO_CODEX.md) | Übergabe der bisher in ChatGPT getroffenen Entscheidungen an Codex |
 | [docs/SMOKE_TESTS.md](docs/SMOKE_TESTS.md) | Manuelle Funktionstests mit synthetischen Konten |
 
 **Empfohlener Einstieg:** Repository mit Codex verbinden, [docs/CODEX_START.md](docs/CODEX_START.md) öffnen und den dortigen Prüfauftrag senden. **Zuerst nur auditieren, nichts deployen.**
