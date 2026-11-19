@@ -8,6 +8,7 @@ const el=(id)=>document.getElementById(id);
 let client=null,user=null,revision=0,active=false,paused=false,dirty=false,queue=Promise.resolve(),lastError="";
 const originalSave=window.savePrepFile;
 let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
+let loggingOut=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
 function validDemoData(data){return data&&typeof data==="object"&&!Array.isArray(data);}
 function status(message,issue=false){
@@ -86,6 +87,7 @@ async function cloudWrite(snapshot){
  status("Cloud synchronisiert · Stand "+revision+" ✓");
 }
 window.savePrepFile=function(){
+ if(loggingOut)return Promise.reject(Error("Abmeldung läuft. Bitte kurz warten."));
  if(restoring)return Promise.resolve();
  if(!active)return originalSave();
  const snapshot=JSON.parse(JSON.stringify(prepDone));
@@ -130,6 +132,28 @@ async function startSession(session){
   window.dispatchEvent(new Event("hbl-cloud-status"));
  }catch(e){status("Cloud-Laden fehlgeschlagen: "+e.message,true);message(e.message,true);}
 }
+window.hblLogout=async function(){
+ if(loggingOut||!client)return false;
+ if((dirty||getPending())&&!confirm("Auf diesem Gerät liegen ungesicherte Änderungen. Wirklich abmelden? Die lokale Sicherung bleibt erhalten."))return false;
+ loggingOut=true;
+ try{
+  await queue.catch(()=>{});
+  let pushWarning=false;
+  if(typeof window.hblPushOnLogout==="function"){
+   try{await window.hblPushOnLogout();}catch(_){pushWarning=true;}
+  }
+  const {error}=await client.auth.signOut();
+  if(error)throw error;
+  sessionVersion++;user=null;active=false;paused=false;revision=0;dirty=false;
+  if(pushWarning)alert("Du bist abgemeldet. Die Push-Abmeldung konnte nicht vollständig bestätigt werden. Auf diesem Gerät können noch Mitteilungen erscheinen; deaktiviere sie bei Bedarf in den Browsereinstellungen.");
+  location.reload();
+  return true;
+ }catch(e){
+  const text="Abmeldung fehlgeschlagen: "+e.message;
+  status(text,true);message(text,true);alert(text);
+  return false;
+ }finally{loggingOut=false;}
+};
 async function initializeAuth(){
  const modal=document.createElement("div");
  modal.id="hblCloudModal";modal.className="hbl-cloud-overlay";modal.hidden=true;
@@ -149,13 +173,7 @@ async function initializeAuth(){
   const {data,error}=await client.auth.signInWithPassword({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value});
   if(error)message(error.message,true);else {message("Angemeldet ✓");await startSession(data.session);}
  };
- el("hblCloudLogout").onclick=async()=>{
-  if(dirty||getPending()){if(!confirm("Auf diesem Gerät liegen ungesicherte Änderungen. Wirklich abmelden?"))return;}
-  if(typeof window.hblPushOnLogout==="function")await window.hblPushOnLogout();
-  await client.auth.signOut();
-  user=null;active=false;paused=false;revision=0;dirty=false;
-  location.reload();
- };
+ el("hblCloudLogout").onclick=()=>window.hblLogout();
  el("hblCloudRefresh").onclick=async()=>{
   try{await loadRemote({force:true});}catch(e){status("Abgleich fehlgeschlagen: "+e.message,true);}
  };
