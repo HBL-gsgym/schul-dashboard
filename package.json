@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Statischer Check des Schul-Dashboard-HBL-Piloten",
   "scripts": {
-    "test": "node scripts/check-static.mjs",
+    "test": "node scripts/check-static.mjs && node --test tests/*.test.mjs",
     "check": "node scripts/check-static.mjs"
   },
   "engines": {

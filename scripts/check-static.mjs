@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Statischer Offline-Check für das HBL-Dashboard; keine Supabase-/Netzwerkzugriffe. */
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Script } from "node:vm";
 
@@ -24,7 +24,7 @@ const checkResource = (url, context) => {
   if (!isLocal(url)) return;
   const relative = localPath(url);
   const target = resolve(root, relative);
-  if (!(target === root || target.startsWith(root + "/"))) {
+  if (!(target === root || target.startsWith(root + sep))) {
     error(context + ": unzulässiger lokaler Pfad " + url);
     return;
   }
