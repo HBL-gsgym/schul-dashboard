@@ -7,6 +7,7 @@ const PAGE="https://hbl-gsgym.github.io/schul-dashboard/";
 const el=(id)=>document.getElementById(id);
 let client=null,user=null,revision=0,active=false,paused=false,dirty=false,queue=Promise.resolve(),lastError="";
 const originalSave=window.savePrepFile;
+let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
 function validDemoData(data){return data&&typeof data==="object"&&!Array.isArray(data);}
 function status(message,issue=false){
@@ -46,7 +47,14 @@ function getPending(){
 async function loadRemote({force=false}={}){
  if(!client||!user)return;
  if(!force && (dirty||paused||getPending())){status("Ungesicherte lokale Änderungen – zuerst synchronisieren",true);return;}
+ const session=sessionVersion,changes=changeVersion,request=++readVersion;
+ await queue.catch(()=>{});
+ if(session!==sessionVersion||changes!==changeVersion)return;
  const {data,error}=await client.from("hbl_dashboard_snapshots").select("content,revision").eq("user_id",user.id).maybeSingle();
+ if(session!==sessionVersion||request!==readVersion)return;
+ if(changes!==changeVersion||(!force&&(dirty||paused||getPending()))){
+  status("Lokale Änderungen bleiben erhalten – Cloud-Abgleich zurückgestellt",true);return;
+ }
  if(error)throw error;
  const content=data?.content||{};
  if(!validDemoData(content))throw Error("Ungültige Daten in der Cloud.");
@@ -61,7 +69,10 @@ async function loadRemote({force=false}={}){
 async function cloudWrite(snapshot){
  if(!active||!client||!user)throw Error("Nicht angemeldet");
  if(paused)throw Error("Cloud-Synchronisierung pausiert. Bitte Konflikt lösen.");
+ const session=sessionVersion;
  const {data,error}=await client.rpc("hbl_save_snapshot",{p_content:snapshot,p_expected_revision:revision});
+ if(session!==sessionVersion)throw Error("Sitzung wurde gewechselt. Lokale Sicherung bleibt erhalten.");
+ changeVersion++;
  if(error){
   paused=true;lastError=error.message||"Synchronisierung fehlgeschlagen";
   status(/VERSION_CONFLICT/.test(lastError)?"Anderes Gerät hat neuere Daten – bitte prüfen":("Cloud nicht gespeichert: "+lastError),true);
@@ -75,26 +86,28 @@ async function cloudWrite(snapshot){
  status("Cloud synchronisiert · Stand "+revision+" ✓");
 }
 window.savePrepFile=function(){
+ if(restoring)return Promise.resolve();
  if(!active)return originalSave();
  const snapshot=JSON.parse(JSON.stringify(prepDone));
+ const session=sessionVersion;
+ changeVersion++;
  dirty=true;rememberPending(snapshot);
  status("Speichert in der Cloud …");
- queue=queue.catch(()=>{}).then(()=>cloudWrite(snapshot));
+ queue=queue.catch(()=>{}).then(()=>{
+  if(session!==sessionVersion)throw Error("Sitzung wurde gewechselt. Lokale Sicherung bleibt erhalten.");
+  return cloudWrite(snapshot);
+ });
  return queue;
 };
 async function startSession(session){
+ const version=++sessionVersion;
  user=session?.user||null;
+ active=false;paused=false;dirty=false;revision=0;
  if(!user){active=false;paused=false;dirty=false;revision=0;controls();return;}
  controls();
  try{
-  const pending=getPending();
-  if(pending){
-   paused=true;dirty=true;
-   message("Auf diesem Gerät gibt es ungesicherte Cloud-Änderungen. Lade sie nicht ungeprüft neu.");
-   status("Lokale Änderungen vorhanden – bitte prüfen",true);
-   return;
-  }
   const membership=await client.from("hbl_dashboard_members").select("enabled").eq("user_id",user.id).maybeSingle();
+  if(version!==sessionVersion)return;
   if(membership.error)throw membership.error;
   if(!membership.data?.enabled){
    active=false;
@@ -103,7 +116,16 @@ async function startSession(session){
    window.dispatchEvent(new Event("hbl-cloud-status"));
    return;
   }
-  await loadRemote();
+  const pending=getPending();
+  if(pending){
+   if(!validDemoData(pending.content)||!Number.isFinite(pending.expectedRevision))throw Error("Lokale Sicherung ist ungültig. Bitte nicht überschreiben.");
+   revision=pending.expectedRevision;active=true;paused=true;dirty=true;
+   restoring=true;
+   try{applyPrepData(pending.content);}finally{restoring=false;}
+   rememberPending(JSON.parse(JSON.stringify(prepDone)));
+   status("Lokale Änderungen wiederhergestellt – bitte exportieren oder erneut speichern",true);
+  }else await loadRemote();
+  if(version!==sessionVersion)return;
   showModal(false);
   window.dispatchEvent(new Event("hbl-cloud-status"));
  }catch(e){status("Cloud-Laden fehlgeschlagen: "+e.message,true);message(e.message,true);}
@@ -139,17 +161,21 @@ async function initializeAuth(){
  };
  el("hblCloudRetry").onclick=async()=>{
   if(!user)return;
+  const session=sessionVersion,changes=changeVersion;
+  await queue.catch(()=>{});
+  if(session!==sessionVersion||changes!==changeVersion)return;
   const pending=getPending();
   if(!pending){status("Keine ausstehenden Änderungen");return;}
   try{
    const {data,error}=await client.from("hbl_dashboard_snapshots").select("revision").eq("user_id",user.id).maybeSingle();
+   if(session!==sessionVersion||changes!==changeVersion)return;
    if(error)throw error;
    if(Number(data?.revision||0)!==Number(pending.expectedRevision)){
     status("Konflikt: Cloud wurde geändert. Bitte lokale Daten als JSON exportieren, bevor du neu lädst.",true);return;
    }
    revision=Number(pending.expectedRevision);paused=false;active=true;
-   await cloudWrite(pending.content);
-   applyPrepData(pending.content);
+   queue=cloudWrite(pending.content);
+   await queue;
   }catch(e){status("Erneut speichern fehlgeschlagen: "+e.message,true);}
  };
  el("hblCloudImport").onclick=async()=>{
@@ -166,7 +192,7 @@ async function initializeAuth(){
  window.hblCloudClient=client;
  window.hblCloudUser=()=>user;
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT"){user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
+  if(event==="SIGNED_OUT"){sessionVersion++;user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
   if((event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")&&session?.user&&session.user.id!==user?.id){
    setTimeout(()=>{if(session?.user&&session.user.id!==user?.id)void startSession(session);},0);
   }
