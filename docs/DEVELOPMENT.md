@@ -1,13 +1,15 @@
 # Entwicklung, Tests und Veröffentlichung
 
-**Stand:** 18.11.2026 · Ausgangsversion v5.9.3.
+**Workflow aktualisiert:** 20.11.2026 · veröffentlichter Ausgangsstand v5.9.4.
+
+Maßgeblich ist der aktuelle Pilot-Arbeitsmodus in `AGENTS.md`: beauftragte Routineänderungen direkt in GitHub und Supabase veröffentlichen, Prüfaufwand angemessen halten. Gesonderte PR-/Abnahmeverfahren bei Meilensteinen oder auf ausdrücklichen Wunsch. Ältere Checklisten sind Hilfsmittel und keine Pflicht vor jeder kleinen Änderung.
 
 ## Voraussetzungen
 
 - Git und Node.js **20 oder neuer**
 - Optional Python 3 für einen lokalen HTTP-Server
 - Browser mit Entwicklertools
-- Für Backend-Arbeit separate, ausdrücklich freigegebene Supabase-Testumgebung; **nicht** automatisch die produktive Projektverbindung verwenden
+- Backend: vor Änderungen Zielprojekt und aktuellen Stand prüfen. Beauftragte Routineänderungen dürfen direkt im bestehenden Projekt erfolgen; die getrennte Testumgebung ist bei Bedarf verfügbar.
 
 Das Frontend ist eine statische App **ohne Bundler und ohne npm-Abhängigkeiten**. Keine `npm install`-Schritte nötig, um den statischen Test auszuführen.
 
@@ -20,19 +22,16 @@ python3 -m http.server 8000
 
 Browser: http://localhost:8000/
 
-**Wichtig:** Der JavaScript-Client in `cloud.js` zeigt auf das bestehende Supabase-Projekt; die Auth-Redirect-URL ist für GitHub Pages angelegt. Nicht mit echten Produktivkonten gegen die lokale Vorschau testen. Für realistische Auth- und RLS-Tests zuerst eine **separate Testinstanz und passende Redirect-URLs** konfigurieren.
+**Wichtig:** Der JavaScript-Client in `cloud.js` zeigt auf das bestehende Supabase-Projekt; die Auth-Redirect-URL ist für GitHub Pages angelegt. Nicht mit echten Produktivkonten gegen die lokale Vorschau testen. Für umfangreiche Auth-/RLS-Tests die vorhandene getrennte Testinstanz mit synthetischen Konten und passenden Redirect-URLs verwenden. Solche Testserien sind bei Routineänderungen keine pauschale Veröffentlichungsvoraussetzung.
 
 ## Architektur- und Änderungsworkflow
 
-1. Mit `docs/CODEX_START.md` den Ausgangszustand nur **lesend** prüfen.
-2. Für jede Funktion eigenen Branch anlegen, z. B. `fix/chat-unread-counter`.
-3. Betroffene Module und `index.html`-Hooks lesen; mögliche Auswirkungen auf `cloud.js`, `hbl-v57.js`, `hbl-v59.js`, `sw.js` und DB-/RLS-Regeln identifizieren.
-4. Testfall vor der Änderung formulieren. Bei Sicherheitsfunktionen Positiv- **und** Negativfall.
-5. Klein ändern; keine generelle Reformatierung/Framework-Migration als Nebenwirkung.
-6. `npm test` ausführen; UI im Browser inkl. Mobilansicht und Debug-Konsole prüfen. Für Backend-Änderungen Testdatenbank mit *synthetischen* Nutzern verwenden.
-7. Pull Request mit Ursache, Änderungen, Testergebnissen, Risiken und ggf. Supabase-Deployplan erstellen.
-8. Review und Freigabe durch den Projektverantwortlichen; erst danach `main` aktualisieren.
-9. Nach Deploy Desktop, Smartphone/PWA, Login und relevante Hauptfunktion mit Testkonten prüfen.
+1. Ausdrücklich beauftragte Aufgabe eingrenzen; tatsächlichen Code und bei Backend-Arbeit den relevanten Supabase-Stand prüfen. Reine Audit-Aufträge bleiben lesend.
+2. Kleine Änderung umsetzen; bestehende Konten, Rechte und Daten erhalten. Keine neuen Roadmap-Etappen eigenständig beginnen.
+3. Nach Bedarf gezielt prüfen; bei Codeänderungen den vorhandenen schnellen `npm test`-Check nutzen. Browser-, Mehrgeräte-, Push- und RLS-Testserien nur passend zur Änderung, bei Meilensteinen oder auf Nutzerwunsch. Bereits bestandene Checks nicht ohne Anlass wiederholen.
+4. Versionierung und Service-Worker-Assets synchron halten. Kleine nachvollziehbare Commits erstellen und Routineänderungen direkt auf `main`/GitHub Pages sowie nötige Edge-Functions und überschaubare DB-Anpassungen direkt in Supabase veröffentlichen. Keine zusätzliche Bestätigung für jeden Teilschritt.
+5. Bei Meilensteinen (neue Hauptversion, Mandantentrennung, grundlegender Rollen-/Datenmodellumbau) vor Umsetzung einen technischen Plan und angemessene Abnahme abstimmen; PRs bei diesen Schritten oder auf Wunsch nutzen.
+6. Veröffentlichung und betroffene Funktion gezielt kontrollieren, Ergebnis und offene Grenzen verständlich berichten. Datenlöschung, Reset und Kostenpflichtiges benötigen weiterhin einen konkreten Auftrag.
 
 ## Statischer Test
 
@@ -69,7 +68,7 @@ Der Worker ist derzeit **cache-first** für statische App-Ressourcen und **netwo
 2. **Supabase Edge Functions** – Quellcode liegt im Repository; die Funktionen müssen separat deployed und geprüft werden.
 3. **Supabase PostgreSQL/Auth/RLS/Cron/Secrets** – werden nicht durch einen GitHub-Push verändert.
 
-**Aktueller Stand:** SQL-Struktur/Migrationshistorie ist nicht vollständig im Repository versioniert. Nicht aus den JS-Aufrufen eine scheinbar vollständige Schema-Migration „rekonstruieren“ und ungeprüft auf das Live-Projekt ausführen. Vor Änderungen Schema, Indizes, Grants, Trigger, RLS und Funktionsdefinitionen read-only exportieren, in einer separaten Datenbank testen und den Produktionsdeploy ausdrücklich genehmigen lassen.
+**Aktueller Stand:** SQL-Struktur/Migrationshistorie ist nicht vollständig im Repository versioniert. Nicht aus den JS-Aufrufen eine scheinbar vollständige Schema-Migration „rekonstruieren“ und ungeprüft auf das Live-Projekt ausführen. Vor Änderungen Schema, Indizes, Grants, Trigger, RLS und Funktionsdefinitionen read-only exportieren, angemessen prüfen und innerhalb des beauftragten Umfangs veröffentlichen. Bei grundlegenden Migrationen gilt das Meilensteinverfahren aus `AGENTS.md`.
 
 Für Supabase-Edge-Functions liegen die Quellen unter:
 - `supabase/functions/hbl-admin-users/index.ts`
@@ -90,7 +89,7 @@ Priorisierte automatisierte Tests für künftige PRs:
 - Browser/PWA: DOM-Smoketests, Cache-Update, Offline-Verhalten, Push bei verschiedenen Zeitfenstern und Geräten.
 - Supabase: RLS-Tests mit mehreren synthetischen Identitäten in **separater** Testdatenbank.
 
-## Deployment-/Rollback-Checkliste
+## Deployment-/Rollback-Checkliste (für Meilensteine und nach Bedarf)
 
 Vor Freigabe:
 - [ ] Diff enthält nur beabsichtigte Dateien; keine Secrets/Testdaten.
@@ -98,7 +97,7 @@ Vor Freigabe:
 - [ ] Gefährdete Kernfunktionen manuell oder automatisiert geprüft.
 - [ ] Bei Auth/DB: Sicherheitsreview, RLS-Negativtests und nötige Migration/Edge-Function-Version dokumentiert.
 - [ ] `index.html`-Assets und `sw.js`-Assets/Cache-Version stimmen überein.
-- [ ] GitHub-Branch/PR reviewed; keine unbemerkten Datenlöschungen.
+- [ ] Änderungen nachvollziehbar; bei Meilensteinen bzw. Nutzerwunsch PR geprüft. Keine unbemerkten Datenlöschungen.
 - [ ] Abhängigkeiten der Liveversion und Rückfallplan dokumentiert.
 
 Nach Freigabe:
