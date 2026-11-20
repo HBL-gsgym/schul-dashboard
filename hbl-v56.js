@@ -4,7 +4,7 @@
 const safe = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const EVENTS_TABLE="hbl_school_events",ROLES_TABLE="hbl_dashboard_admins";
 let events=[],isAdmin=false,isOwner=false,loadedUser=null,busy=false,lastEvents=null;
-let linkCategory="orga",adminUsers=[],adminOpen=false;
+let linkCategory="orga",adminUsers=[],adminOpen=false,linkWorking=false;
 const categories=[
  {id:"orga",label:"Organisation",icon:"🏫"},
  {id:"ki",label:"KI",icon:"✨"},
@@ -309,26 +309,30 @@ async function openAdminUsers(){
  overlay.hidden=false;await reloadAdminUsers();
 }
 async function makeManualLink(action,emailOrUser){
+ if(linkWorking)return;
+ linkWorking=true;
  const status=byId("hblInviteStatus"),result=byId("hblInviteResult"),button=byId("hblInviteGenerate");
- if(!status||!result)return;
- status.textContent="Link wird erzeugt …";result.hidden=true;
+ if(!status||!result){linkWorking=false;return;}
+ status.textContent="Link wird erzeugt …";result.hidden=true;byId("hblInviteLink").value="";
  if(button)button.disabled=true;
  try{
-  const data=await callAdmin(action==="invite"?{action:"invite",email:emailOrUser}:{action:"recovery",user_id:emailOrUser});
+  const data=await callAdmin(action==="invite"?{action:"invite",email:emailOrUser}:{action,user_id:emailOrUser});
   if(!data?.action_link)throw Error("Kein Link vom Server erhalten.");
   byId("hblInviteLink").value=data.action_link;result.hidden=false;
-  status.textContent=action==="invite"
-   ?"Einladung für "+data.email+" erstellt. Link kopieren und persönlich weiterleiten. Wer den Link erhält, kann das Konto aktivieren."
-   :"Passwort-Link für "+data.email+" erstellt. Nur persönlich weiterleiten.";
-  if(action==="invite")await reloadAdminUsers();
+  status.textContent=(action==="renew_invite"?"Einladung erneuert für ":action==="invite"?"Einladung erstellt für ":"Passwort-Link erstellt für ")+data.email+". Nur persönlich weiterleiten. "+(data.expiry_notice||"Einmalig nutzbar; Gültigkeit gemäß Supabase-Auth-Konfiguration.");
+  await reloadAdminUsers();
  }catch(e){status.textContent="Fehler: "+e.message;}
- finally{if(button)button.disabled=false;}
+ finally{linkWorking=false;if(button)button.disabled=false;}
 }
 async function callAdmin(body){
  const sb=client();
  if(!sb)throw Error("Bitte anmelden.");
  const {data,error}=await sb.functions.invoke("hbl-admin-users",{body});
- if(error)throw new Error(data?.error||error.message||"Anfrage fehlgeschlagen.");
+ if(error){
+  let detail=data?.error;
+  try{const body=await error.context?.json();if(typeof body?.error==="string")detail=body.error;}catch(_){}
+  throw new Error(detail||"Anfrage fehlgeschlagen. Bitte Anmeldung und Verbindung prüfen.");
+ }
  if(data?.error)throw new Error(data.error);
  return data;
 }
@@ -345,7 +349,7 @@ async function reloadAdminUsers(){
      '<small>'+(u.is_owner?"Hauptadministrator":u.is_admin?"Kalenderadministrator":"Lehrkraft")+
      ' · '+(u.is_chat?"Chat freigegeben":"Chat gesperrt")+
      ' · '+(u.is_member?"Zugang aktiv":"Zugang gesperrt")+
-     ' · '+(u.username?"Profil eingerichtet":u.invited_at?"Einladung ausstehend":"Benutzername fehlt")+'</small></div>'+
+     ' · '+(u.confirmed_at?"Konto aktiviert":u.invited_at?"Einladung ausstehend":"Nicht aktiviert")+'</small></div>'+
      '<div class="hbl-admin-person-buttons">'+
      (u.is_owner?'<span class="hbl-admin-owner-label">Kalender: Hauptadmin</span>':
        '<button type="button" data-user="'+safe(u.id)+'" data-next="'+(!u.is_admin)+'">'+
@@ -357,7 +361,7 @@ async function reloadAdminUsers(){
        '<button type="button" data-access-user="'+safe(u.id)+'" data-access-next="'+(!u.is_member)+'">'+
        (u.is_member?"Zugang sperren":"Zugang freigeben")+'</button>'+
        '<button type="button" data-delete-user="'+safe(u.id)+'" class="hbl-admin-delete">Endgültig löschen</button>')+
-     '<button type="button" data-recovery-user="'+safe(u.id)+'">Passwort-Link</button>'+
+     (u.is_member?'<button type="button" data-recovery-user="'+safe(u.id)+'" data-link-action="'+(u.confirmed_at?'recovery':'renew_invite')+'">'+(u.confirmed_at?'Passwort-Link':'Einladungslink erneuern')+'</button>':'')+
      '</div></div>'
    ).join("")||"<p>Keine Konten vorhanden.</p>";
   root.querySelectorAll("[data-user]").forEach(button=>button.onclick=async()=>{
@@ -387,8 +391,8 @@ async function reloadAdminUsers(){
   });
   root.querySelectorAll("[data-recovery-user]").forEach(button=>button.onclick=async()=>{
     const item=adminUsers.find(u=>u.id===button.dataset.recoveryUser);
-    if(!item||!confirm("Passwort-Link für "+item.email+" erstellen?"))return;
-    await makeManualLink("recovery",item.id);
+    if(!item||!confirm((item.confirmed_at?"Passwort-Link erstellen für ":"Einladung erneuern für ")+item.email+"? Ältere Links können ungültig werden."))return;
+    await makeManualLink(item.confirmed_at?"recovery":"renew_invite",item.id);
     byId("hblInviteResult")?.scrollIntoView({behavior:"smooth",block:"nearest"});
    });
   root.querySelectorAll("[data-chat-user]").forEach(button=>button.onclick=async()=>{

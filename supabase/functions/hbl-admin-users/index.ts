@@ -1,3 +1,4 @@
+import { createAccountLink } from "./invitation-links.js";
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 
 // HBL v5.6: Only the verified primary administrator may manage administrator roles.
@@ -75,33 +76,9 @@ Deno.serve(async(req:Request)=>{
    return reply({users,actor:actor.id});
   }
 
-  if(payload.action==="invite"){
-    const email=typeof payload.email==="string"?payload.email.trim().toLowerCase():"";
-    if(!validEmail(email))return reply({error:"Bitte eine gültige E-Mail-Adresse eingeben."},400);
-    const {data:generated,error:genError}=await client.auth.admin.generateLink({
-      type:"invite",email,options:{redirectTo:siteUrl}
-    });
-    if(genError)return reply({error:genError.message||"Einladungslink konnte nicht erzeugt werden."},400);
-    const target=generated?.user?.id,actionLink=generated?.properties?.action_link;
-    if(!goodId(target)||!actionLink)return reply({error:"Unvollständige Einladungsdaten."},500);
-    const {error:memberError}=await client.from("hbl_dashboard_members").upsert({
-      user_id:target,invited_by:actor.id,enabled:true
-    },{onConflict:"user_id"});
-    if(memberError)throw memberError;
-    return reply({ok:true,email,action_link:actionLink});
-  }
-  if(payload.action==="recovery"){
-    const target=payload.user_id;
-    if(!goodId(target))return reply({error:"Ungültiges Konto."},400);
-    const {data:existing,error:lookupError}=await client.auth.admin.getUserById(target);
-    if(lookupError||!existing?.user?.email)return reply({error:"Konto nicht gefunden."},404);
-    const {data:generated,error:genError}=await client.auth.admin.generateLink({
-      type:"recovery",email:existing.user.email,options:{redirectTo:siteUrl}
-    });
-    if(genError)return reply({error:genError.message||"Passwort-Link konnte nicht erzeugt werden."},400);
-    const actionLink=generated?.properties?.action_link;
-    if(!actionLink)return reply({error:"Kein Passwort-Link erhalten."},500);
-    return reply({ok:true,email:existing.user.email,action_link:actionLink});
+  if(["invite","renew_invite","recovery"].includes(payload.action)){
+    const result=await createAccountLink(client,payload,actor.id,siteUrl);
+    return reply(result.body,result.status);
   }
 
   if(payload.action==="set_access" || payload.action==="delete_user"){
