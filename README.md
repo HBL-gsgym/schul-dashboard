@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.11 · Pilotprojekt · 20.11.2026**
+**Stand: v5.9.12 · Pilotprojekt · 20.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -24,6 +24,10 @@ Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **S
 ## Meine Kurse verwenden
 
 Unter **Mitarbeit → Meine Kurse** legst du Fach und Klasse/Kurs an, auch ohne Stundenplan. Anschließend unter **Wochenstundenplan → Bearbeiten** einen Block öffnen, den Kurs auswählen und Raum sowie A/B-Woche festlegen. Umbenennen und Archivieren erfolgen in „Meine Kurse“; ein belegter Kurs muss vor dem Archivieren aus dem Stundenplan entfernt werden.
+
+## Kursnotiz in v5.9.12
+
+In der Kurswahl unter **Mitarbeit** öffnet **+ Kursnotiz** ein kurzes Textfeld für den aktuellen Unterrichtsstand (bis zu 240 Zeichen). Nach dem Speichern steht die Notiz direkt auf der Kurskarte neben Schülerzahl und Blockfortschritt. Zum Ändern die Notiz antippen. Zum Entfernen das Feld leeren und speichern.
 
 ## Änderungen in v5.9.11
 
