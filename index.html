@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.11</title>
+<title>Schul-Dashboard HBL · v5.9.12</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1013,6 +1013,13 @@ header .music-shortcuts{padding:15px 20px !important;}
 .participation-course-link .pcourse-icon{font-size:22px}
 .participation-course-link .pcourse-info{font-size:12px;color:var(--muted);font-weight:650}
 .participation-course-link .pcourse-action{font-size:11px;color:var(--accent);font-weight:800}
+.pcourse-action::after{content:"";position:absolute;inset:0;border-radius:16px}
+.pcourse-note{position:relative;z-index:1;text-align:left;overflow-wrap:anywhere;white-space:normal;line-height:1.4;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 9px;cursor:pointer;font:inherit;font-size:12px}
+.pcourse-note-dialog{box-sizing:border-box;width:min(26rem,calc(100% - 2rem));max-height:85vh;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text)}
+.pcourse-note-dialog::backdrop{background:rgba(0,0,0,.45)}
+.pcourse-note-dialog h2{margin:0 0 12px}
+.pcourse-note-dialog input{box-sizing:border-box;width:100%;margin:6px 0 12px;padding:9px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:7px;font:inherit}
+.pcourse-note-dialog [role=status]:empty{display:none}
 .participation-course-link[data-subject="math"]{border-top:3px solid #14a37e}
 .participation-course-link[data-subject="physics"]{border-top:3px solid #467aca}
 .participation-course-link[data-subject="astro"]{border-top:3px solid #8574cc}
@@ -2390,7 +2397,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.11 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.12 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2602,12 +2609,56 @@ function renderParticipationOverview(){
   const progress=typeof window.hblCourseProgress==='function'?window.hblCourseProgress(c.id):null;
   const percent=progress&&progress.total?Math.round(progress.past/progress.total*100):0;
   const progressHtml=progress?'<div class="pcourse-remaining"><strong>'+progress.remaining+' Blöcke offen</strong><small>'+progress.past+' von '+progress.total+' geplanten Blöcken vorbei</small><span class="pcourse-progress"><i style="width:'+percent+'%"></i></span></div>':'';
-  return `<a class="participation-course-link" data-subject="${c.subject}" href="?mitarbeit=${c.id}" target="_blank" rel="noopener">
+  const note=prepDone.__coursesV1?.courses?.[c.id]?.note||"";
+  return `<article class="participation-course-link" data-subject="${c.subject}">
    <span class="pcourse-top"><strong>${partEsc(c.short)}</strong><span class="pcourse-icon">${c.icon}</span></span>
    <span class="pcourse-info">${partEsc(participationInfo(data))}</span>
    ${progressHtml}
-   <span class="pcourse-action">Mitarbeit öffnen →</span></a>`;
+   <button type="button" class="pcourse-note" data-course-id="${partEsc(c.id)}" aria-label="Kursnotiz für ${partEsc(c.short)} bearbeiten" onclick="editCourseNote(this)">${note?'<strong>Kursnotiz</strong> · '+partEsc(note):'+ Kursnotiz'}</button>
+   <a class="pcourse-action" href="?mitarbeit=${encodeURIComponent(c.id)}" target="_blank" rel="noopener" aria-label="Mitarbeit für ${partEsc(c.short)} öffnen">Mitarbeit öffnen →</a></article>`;
  }).join("");
+}
+function editCourseNote(button){
+ const id=button.dataset.courseId;
+ const course=window.hblReadCourses().catalog.courses[id];
+ if(!course)return;
+ const initialData=prepDone;
+ let expectedNote=course.note||"";
+ const dialog=document.createElement("dialog");
+ dialog.className="pcourse-note-dialog";
+ dialog.setAttribute("aria-labelledby","courseNoteTitle");
+ dialog.innerHTML='<form><h2 id="courseNoteTitle">Kursnotiz</h2><label><span></span><input maxlength="240" placeholder="z. B. Bruchgleichungen bis Seite 42" autocomplete="off"></label><p role="status"></p><div class="hbl-plan-buttons"><button type="submit" class="hbl-plan-primary">Speichern</button><button type="button">Abbrechen</button></div></form>';
+ const form=dialog.querySelector("form"),input=form.querySelector("input");
+ form.querySelector("label span").textContent=course.subject+" · "+course.group;
+ input.value=expectedNote;
+ form.querySelector('button[type="button"]').onclick=()=>dialog.close();
+ dialog.onclose=()=>{
+  dialog.remove();
+  document.querySelector('.pcourse-note[data-course-id="'+CSS.escape(id)+'"]')?.focus();
+ };
+ form.onsubmit=async event=>{
+  event.preventDefault();
+  if(input.disabled)return;
+  const controls=form.querySelectorAll("input,button");
+  try{
+   if(!serverReady||initialData!==prepDone)throw Error("Der Datenstand hat sich geändert. Bitte die Kursnotiz erneut öffnen.");
+   const {catalog}=window.hblReadCourses(),current=catalog.courses[id];
+   if(!current||current.archived||(current.note||"")!==expectedNote)throw Error("Der Kurs wurde geändert. Bitte die Kursnotiz erneut öffnen.");
+   expectedNote=input.value.trim();
+   if(expectedNote)current.note=expectedNote;
+   else delete current.note;
+   controls.forEach(el=>el.disabled=true);
+   prepDone.__coursesV1=catalog;
+   renderParticipationOverview();
+   await savePrepFile();
+   dialog.close();
+  }catch(error){form.querySelector("[role=status]").textContent="Speichern fehlgeschlagen. "+error.message;}
+  finally{controls.forEach(el=>el.disabled=false);}
+ };
+ dialog.oncancel=event=>{if(input.disabled)event.preventDefault();};
+ document.body.appendChild(dialog);
+ dialog.showModal();
+ input.focus();
 }
 function partMark(c,studentId,dateId){return c.marks?.[studentId]?.[dateId]||{};}
 function partAnalysis(c,studentId){
