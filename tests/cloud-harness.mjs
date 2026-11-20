@@ -36,7 +36,7 @@ export function harness({ pending, read, write, confirm = () => true } = {}) {
   const ctx = {
     window: { savePrepFile: async () => {}, dispatchEvent() {}, addEventListener() {}, supabase: { createClient: () => sb } },
     document: { readyState: 'loading', addEventListener() {}, getElementById: element,
-      createElement: () => ({}), body: { prepend() {}, appendChild() {} } },
+      createElement: () => ({ setAttribute() {}, appendChild() {} }), body: { prepend() {}, appendChild() {} } },
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     prepDone: {}, applyPrepData: data => { ctx.prepDone = data; },
     confirm, Event: class {}, setTimeout, setInterval() {},

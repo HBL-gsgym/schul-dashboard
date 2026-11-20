@@ -174,6 +174,23 @@ async function initializeAuth(){
  const bar=document.createElement("section");
  bar.className="hbl-cloud-bar";bar.id="hblCloudControls";
  bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblLocalBackup">Lokale Sicherung herunterladen</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
+ const more=document.createElement("button");
+ more.type="button";more.id="hblAccountMore";more.className="hbl-account-more";
+ more.textContent="Konto ▾";
+ more.setAttribute("aria-expanded","false");
+ more.setAttribute("aria-label","Weitere Kontoaktionen anzeigen");
+ more.onclick=()=>{
+  const open=bar.classList.toggle("hbl-account-expanded");
+  more.setAttribute("aria-expanded",String(open));
+  more.setAttribute("aria-label",open?"Weitere Kontoaktionen ausblenden":"Weitere Kontoaktionen anzeigen");
+  more.textContent=open?"Konto ▴":"Konto ▾";
+ };
+ bar.appendChild(more);
+ bar.onkeydown=e=>{
+  if(e.key==="Escape"&&bar.classList.contains("hbl-account-expanded")){
+   more.onclick();more.focus();
+  }
+ };
  document.body.prepend(bar);
  document.body.appendChild(modal);
  el("hblCloudClose").onclick=()=>showModal(false);
