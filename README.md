@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.13 · Pilotprojekt · 20.11.2026**
+**Stand: v5.9.14 · Pilotprojekt · 20.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -25,9 +25,15 @@ Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **S
 
 Unter **Kurse → Meine Kurse** legst du Fach und Klasse/Kurs an, auch ohne Stundenplan. Anschließend unter **Wochenstundenplan → Bearbeiten** einen Block öffnen, den Kurs auswählen und Raum sowie A/B-Woche festlegen. Umbenennen und Archivieren erfolgen in „Meine Kurse“. Ein belegter Kurs muss vor dem Archivieren aus dem Stundenplan entfernt werden.
 
+## Sitzplan verwenden (v5.9.14)
+
+Unter **Kurse → Kurs öffnen → Sitzplan einrichten** Einzel- und Doppeltische hinzufügen. Die Tafel zeigt die Vorderseite des Raums. Am Tischgriff ziehen oder den Tisch auswählen und über **Spalte**, **Reihe** und **Verschieben** positionieren. Doppeltische lassen sich drehen. Auf schmalen Bildschirmen ist der Raum seitlich scrollbar.
+
+Einen Platz antippen und eine Person aus der gemeinsamen Kursliste auswählen. Ist die Person bereits platziert, werden die Plätze getauscht. **Frei** lässt einen Platz leer. Eine Namensänderung am Platz gilt nach dem Speichern auch für Mitarbeit und Noten. **Zufällig verteilen** zeigt zuerst eine Vorschau. Die Tischpositionen bleiben erhalten. **Ohne Platz** zeigt, wer noch keinen Sitz hat. Mit **Rückgängig** den letzten Bearbeitungsschritt zurücknehmen. **Sitzplan speichern** sichert den Entwurf im persönlichen Kurs. Für den Pilotbetrieb weiterhin nur Beispieldaten verwenden.
+
 ## Kursübersicht und Noten in v5.9.13
 
-**Kurs öffnen** führt zur Übersicht mit einem Platz für den späteren Sitzplan. Über **Mitarbeit** und **Noten** öffnest du die jeweilige Seite für denselben Kurs. Die Schülerliste wird weiterhin in der Mitarbeit gepflegt. Vorhandene Mitarbeit-Direktlinks funktionieren weiter.
+**Kurs öffnen** führt zur Übersicht mit Sitzplan. Über **Mitarbeit** und **Noten** öffnest du die jeweilige Seite für denselben Kurs. Die Schülerliste wird weiterhin in der Mitarbeit gepflegt. Vorhandene Mitarbeit-Direktlinks funktionieren weiter.
 
 Unter **Noten → Bewertungsbereiche und Skala** wählst du pro Kurs Noten von 1 bis 6 oder Punkte von 0 bis 15. Lege Bereiche mit Prozentgewichten an und füge mit **+ Nachweis** einzelne Spalten hinzu. Titel und Datum sind optional. Über den Spaltenkopf kannst du einen Nachweis bearbeiten. Bereiche lassen sich umsortieren oder vorübergehend deaktivieren. Bewertete Bereiche und Spalten sind vor dem Entfernen geschützt.
 
