@@ -17,6 +17,10 @@ Das Schul-Dashboard HBL soll nicht den Arbeitsalltag der Lehrkräfte in starre V
 
 **Produktprinzip:** So viel gemeinsame Struktur wie nötig, so viel individuelle Anpassbarkeit wie möglich. Neue Funktionen sollen diese Freiheit erhalten oder sinnvoll erweitern, ohne Nutzende mit unnötiger Konfiguration zu überfordern.
 
+## Aktuelle Entwicklungsrichtung
+
+Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **Schulportal**. Zunächst manuelle Eingabe und eigenständige persönliche Kursverwaltung; Untis-Anbindung zurückgestellt. Schulzuordnungen, Schüleraccounts und Bezahlmodell sind geplant, noch nicht implementiert. Siehe [Architekturplan und nächste Schritte](docs/PRODUCT_ARCHITECTURE.md).
+
 ## Änderungen in v5.9.10
 
 - Dauerhafte persönliche Kurskennungen im Stundenplan; vorhandene Kennungen, Mitarbeit und Links bleiben erhalten.

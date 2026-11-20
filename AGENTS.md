@@ -13,6 +13,10 @@ Funktionen: individuelle A/B-Stundenpläne, Pausenaufsichten, Aufgaben/Korrektur
 
 Dies ist die zentrale Produktvision. **Software folgt dem Arbeitsablauf der Lehrkraft – nicht umgekehrt.** Bei Produktentscheidungen Personalisierung und selbstbestimmte Arbeitsweisen erhalten: frei wählbare Links, individuell geordnete Kategorien und Kacheln, persönliche Werkzeuge und Stundenpläne. Gemeinsame schulische Grundfunktionen dürfen sinnvoll standardisiert sein, aber individuelle Anpassungen nicht grundlos blockieren. Keine starren, herstellerdefinierten Linklisten, erzwungenen Workflows oder unnötige zentrale Abhängigkeiten einführen. Neue Funktionen nach dem Prinzip „gemeinsamer Kern + persönliche Freiheit“ entwerfen; Anpassungen einfach und zugänglich halten.
 
+## Produktarchitektur ab 20.11.2026
+
+Der aktuelle [Architekturplan](docs/PRODUCT_ARCHITECTURE.md) unterscheidet persönliche Lehrkräfte-Nutzung und späteren Schulbetrieb innerhalb einer Anwendung. Zunächst manuelle Eingabe; nächster vorgeschlagener Schritt ist eine persönliche Kursverwaltung unabhängig vom Stundenplan. Untis-Anbindung zurückgestellt. Persönliche und offizielle Schulkurse nicht automatisch zusammenführen; Konto-, Kurs- und Schüler-IDs erhalten. Der Plan ist keine pauschale Umsetzungsfreigabe, kein bereits vorhandenes Schulmodell und keine Freigabe für Registrierung, Schülerkonten oder Zahlungsabwicklung.
+
 ## Aktueller Arbeitsmodus im kleinen Pilotbetrieb (20.11.2026)
 
 **Ausdrückliche Vorgabe des Projektverantwortlichen:** Aktuell nutzen nur der Entwickler, sein eigener Testaccount und zwei befreundete Feedbackgeber das Dashboard. Für ausdrücklich beauftragte Aufgaben deshalb zügig und direkt arbeiten:
