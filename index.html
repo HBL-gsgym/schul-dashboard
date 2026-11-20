@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.8</title>
+<title>Schul-Dashboard HBL · v5.9.9</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1313,7 +1313,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="stylesheet" href="./hbl-v56.css?v=5.6">
 <link rel="stylesheet" href="./hbl-v57.css?v=5.9.7-chat">
 <link rel="stylesheet" href="./hbl-v58.css?v=5.8">
-<link rel="stylesheet" href="./hbl-v59.css?v=5.9.8-plan">
+<link rel="stylesheet" href="./hbl-v59.css?v=5.9.9-today">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1325,7 +1325,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.9.6-mobile"></script>
-<script defer src="./hbl-v55.js?v=5.9.8-plan"></script>
+<script defer src="./hbl-v55.js?v=5.9.9-today"></script>
 <script defer src="./hbl-v56.js?v=5.9.5-invites"></script>
 <script defer src="./hbl-v57.js?v=5.9.7-chat"></script>
 <script defer src="./hbl-v58.js?v=5.9.5"></script>
@@ -2184,7 +2184,7 @@ window.hblOpenSlotDetails=function(day,block){
  * Die Klassen-/Kursansichten werden bewusst nicht verändert.
  */
 const HBL_TILE_SPECS=[
- {id:"unterricht",selector:".planninggrid > .planningpanel:nth-child(1)",title:"Anstehender Unterricht",span:3},
+ {id:"unterricht",selector:".planninggrid > .planningpanel:nth-child(1)",title:"Heute & Ausblick",span:3},
  {id:"aufgaben",selector:".planninggrid > .planningpanel:nth-child(2)",title:"Korrekturen & Aufgaben",span:3},
  {id:"vorbereitung-diese",selector:".planninggrid > .planningpanel:nth-child(3)",title:"Vorbereitung – diese Woche",span:3},
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
@@ -2386,7 +2386,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.8 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.9 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2443,7 +2443,7 @@ function renderHome(){
     </form>
 
     <section class="planninggrid">
-  <div class="todaybox planningpanel"><div class="todayhead"><h2>Anstehender Unterricht</h2><span class="versionhint">mit Aufgabenverwaltung</span></div><div id="todayLessons"></div>
+  <div class="todaybox planningpanel"><div class="todayhead"><h2>Heute & Ausblick</h2><span class="versionhint">Unterricht und Aufsichten</span></div><div id="todayLessons"></div>
 </div>
 <div class="todaybox planningpanel taskpanel"><div class="todayhead"><h2>Korrekturen & Aufgaben</h2><button type="button" class="taskadd" onclick="toggleTaskForm()">+ Aufgabe</button></div>
 <div class="taskgroupheading">Offene Korrekturen <span id="correctionCount" class="taskcounter">0</span></div>
@@ -2460,8 +2460,8 @@ function renderHome(){
   <div class="taskformactions"><button id="taskSubmit" type="submit">Hinzufügen</button><button type="button" onclick="toggleTaskForm(false)">Abbrechen</button></div>
  </form>
 <div class="taskcompleted">
- <div class="taskcompletedhead"><h3>✓ Diese Woche erledigt</h3><span id="completedWeekCount" class="taskcounter">0</span></div>
- <div id="completedWeekList"></div>
+ <details class="hbl-tasks-done"><summary class="taskcompletedhead"><span>✓ Diese Woche erledigt</span><span id="completedWeekCount" class="taskcounter">0</span></summary>
+ <div id="completedWeekList"></div></details>
  <details id="olderTasksWrap" class="oldertasks" hidden><summary id="olderTasksHeading">Frühere Erledigungen</summary><div id="olderTasksList"></div></details>
 </div>
 </div>

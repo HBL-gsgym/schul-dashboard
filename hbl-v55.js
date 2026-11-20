@@ -126,7 +126,7 @@ function isSchool(date){
 function upcomingEvents(){
  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
  const cur=now.getHours()*60+now.getMinutes(),out=[];
- for(let offset=0;offset<35&&out.length<4;offset++){
+ for(let offset=0;offset<35&&out.filter(e=>e.kind==="lesson").length<4;offset++){
   const date=dayOffset(today,offset);
   if(!isSchool(date))continue;
   const event=[];
@@ -146,28 +146,29 @@ function upcomingEvents(){
   }
   out.push(...event.sort((a,b)=>a.s-b.s));
  }
- return out.slice(0,4);
+ return out;
 }
 function renderUpcomingWithDuties(){
  const host=document.getElementById("todayLessons");if(!host)return;
  const cur=new Date(),now=cur.getHours()*60+cur.getMinutes();
  const upcoming=upcomingEvents();
  if(!upcoming.length){host.innerHTML='<div class="nolesson">Keine anstehenden Unterrichtsblöcke oder Aufsichten.</div>';return;}
- host.innerHTML=upcoming.map((event,index)=>{
-  const {date,offset}=event;
-  const active=offset===0&&now>=event.s&&now<event.e;
-  const label=active?"Jetzt":index===0?"Als Nächstes":"Danach";
-  const dateLabel=offset===0?"Heute":offset===1?"Morgen":DAYNAMES[date.getDay()]+" "+date.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
-  const starts=event.kind==="lesson"?event.block.start:event.type.start;
-  const ends=event.kind==="lesson"?event.block.end:event.type.end;
-  const meta=event.kind==="lesson"?event.block.n+". Block":"Aufsicht";
-  const details=event.kind==="lesson"
-   ?event.block.entries.map(([f,k,r])=>safe(f)+" · "+safe(k)+(r?" · Raum "+safe(r):"")).join("<br>")
-   :'<strong>🛡 '+safe(event.type.label)+'</strong><div class="hbl-duty-location">📍 '+safe(event.place)+'</div>';
-  return '<div class="lessonrow '+(active?"current ":"")+(event.kind==="duty"?"hbl-duty-event":"")+'">'+
-    '<div class="lessontime"><strong>'+dateLabel+'</strong><div>'+starts+'–'+ends+'</div><div class="lessondetail">'+label+" · "+meta+'</div></div>'+
-    '<div class="lessonmain">'+details+'</div></div>';
- }).join("");
+ const lessons=upcoming.filter(event=>event.kind==="lesson").slice(0,4);
+ const duties=upcoming.filter(event=>event.kind==="duty").slice(0,2);
+ const moreOpen=host.querySelector('.hbl-upcoming-more')?.open||false;
+ const dateLabel=event=>event.offset===0?"Heute":event.offset===1?"Morgen":DAYNAMES[event.date.getDay()]+" "+event.date.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
+ const lessonHtml=(event,index)=>{
+  const active=event.offset===0&&now>=event.s&&now<event.e;
+  const label=active?"Jetzt":index===0?"Als Nächstes":index===1?"Nächster Unterricht":"Danach";
+  const details=event.block.entries.map(([f,k,r])=>'<strong>'+safe(f)+' · '+safe(k)+'</strong>'+(r?'<span class="hbl-today-room">Raum '+safe(r)+'</span>':"")).join("");
+  return '<div class="lessonrow hbl-today-lesson '+(active?"current":"")+'"><div class="lessontime"><span class="hbl-today-label">'+label+'</span><strong>'+safe(dateLabel(event))+'</strong><span>'+event.block.start+'–'+event.block.end+'</span><small>'+event.block.n+'. Block · Woche '+safe(weekCycle(event.date))+'</small></div><div class="lessonmain">'+details+'</div></div>';
+ };
+ host.innerHTML=(lessons.length?lessons.slice(0,2).map(lessonHtml).join(""):'<div class="nolesson">Kein anstehender Unterricht.</div>')+
+  (duties.length?'<div class="hbl-today-duties" aria-label="Anstehende Aufsichten"><span class="hbl-today-duty-heading">Aufsichten</span>'+duties.map(event=>{
+   const active=event.offset===0&&now>=event.s&&now<event.e;
+   return '<button type="button" class="hbl-today-duty '+(active?'current':'')+'" onclick="hblOpenDutyDetails('+event.date.getDay()+',\''+event.type.id+'\')" title="'+safe(fullPlace(event.place))+'"><span>'+safe(active?'Jetzt':dateLabel(event))+' · '+event.type.start+'</span><strong>'+safe(compactPlace(event.place))+'</strong></button>';
+  }).join('')+'</div>':'')+
+  (lessons.length>2?'<details class="hbl-upcoming-more" '+(moreOpen?'open':'')+'><summary>Weiterer Unterricht ('+(lessons.length-2)+')</summary>'+lessons.slice(2).map((event,index)=>lessonHtml(event,index+2)).join('')+'</details>':'');
 }
 window.renderToday=renderUpcomingWithDuties;
 window.hblDutyAfterLoad=()=>{renderTimetable();renderToday();};

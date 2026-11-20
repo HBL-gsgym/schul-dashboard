@@ -114,3 +114,27 @@
  .hbl-detail-weeks{grid-template-columns:1fr}
  .hbl-timetable-details .hbl-plan-dialog{padding:20px 16px}
 }
+/* v5.9.9: Heute und nächster Unterricht im Fokus. */
+#todayLessons .hbl-today-lesson{grid-template-columns:108px minmax(0,1fr);padding:12px;gap:12px}
+.hbl-today-lesson .lessontime{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:500}
+.hbl-today-lesson .lessontime strong{font-size:13px}
+.hbl-today-lesson .lessontime small{font-size:10px;color:var(--muted)}
+.hbl-today-label{color:var(--accent);font-size:11px;font-weight:800;margin-bottom:2px}
+.hbl-today-lesson.current{border-left:4px solid var(--accent)}
+.hbl-today-lesson .lessonmain{display:flex;flex-direction:column;gap:4px;font-size:14px;overflow-wrap:anywhere}
+.hbl-today-room{font-size:12px;color:var(--muted);font-weight:500}
+.hbl-today-duties{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.hbl-today-duty-heading{font-size:11px;color:var(--muted);margin-right:2px}
+.hbl-today-duty{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font:inherit;font-size:11px;padding:7px 8px;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.hbl-today-duty span{color:var(--muted)}
+.hbl-today-duty.current{border-color:var(--accent)}
+.hbl-upcoming-more{margin-top:12px}
+.hbl-upcoming-more summary,.hbl-tasks-done summary{cursor:pointer;color:var(--muted);font-size:12px;padding:8px 0;font-weight:650}
+.hbl-tasks-done .taskcompletedhead{display:list-item}
+.hbl-tasks-done .taskcounter{float:right}
+.taskpanel .taskcompleted{margin-top:10px;padding-top:4px}
+@media(max-width:710px){
+ #todayLessons .hbl-today-lesson{grid-template-columns:96px minmax(0,1fr);gap:8px;padding:10px}
+ .hbl-today-duty{min-height:36px}
+ .hbl-upcoming-more summary,.hbl-tasks-done summary{min-height:36px;box-sizing:border-box}
+}
