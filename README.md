@@ -21,6 +21,10 @@ Das Schul-Dashboard HBL soll nicht den Arbeitsalltag der Lehrkräfte in starre V
 
 Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **Schulportal**. Zunächst manuelle Eingabe und eigenständige persönliche Kursverwaltung; Untis-Anbindung zurückgestellt. Schulzuordnungen, Schüleraccounts und Bezahlmodell sind geplant, noch nicht implementiert. Siehe [Architekturplan und nächste Schritte](docs/PRODUCT_ARCHITECTURE.md).
 
+## Meine Kurse verwenden
+
+Unter **Mitarbeit → Meine Kurse** legst du Fach und Klasse/Kurs an, auch ohne Stundenplan. Anschließend unter **Wochenstundenplan → Bearbeiten** einen Block öffnen, den Kurs auswählen und Raum sowie A/B-Woche festlegen. Umbenennen und Archivieren erfolgen in „Meine Kurse“; ein belegter Kurs muss vor dem Archivieren aus dem Stundenplan entfernt werden.
+
 ## Änderungen in v5.9.11
 
 - Eigener privater Kursbestand unter „Meine Kurse“, unabhängig vom Stundenplan: anlegen, umbenennen, archivieren und wiederherstellen. Bestehende Kurse werden mit ihren Kennungen übernommen.
