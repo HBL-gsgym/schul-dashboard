@@ -7,6 +7,8 @@ const PAGE="https://hbl-gsgym.github.io/schul-dashboard/";
 const el=(id)=>document.getElementById(id);
 let client=null,user=null,revision=0,active=false,paused=false,dirty=false,queue=Promise.resolve(),lastError="";
 const originalSave=window.savePrepFile;
+let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
+let loggingOut=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
 function validDemoData(data){return data&&typeof data==="object"&&!Array.isArray(data);}
 function status(message,issue=false){
@@ -37,6 +39,19 @@ function controls(){
 function rememberPending(snapshot){
  try{localStorage.setItem(userKey(),JSON.stringify({content:snapshot,expectedRevision:revision,at:Date.now()}));}catch(e){}
 }
+function downloadLocalBackup(){
+ try{
+  const pending=getPending();
+  const content=pending?pending.content:prepDone;
+  if(!validDemoData(content))throw Error("Lokale Sicherung ist ungültig.");
+  const blob=new Blob([JSON.stringify(content,null,2)],{type:"application/json"});
+  const url=window.URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="HBL-Lokale-Sicherung-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);
+  try{a.click();}finally{a.remove();setTimeout(()=>window.URL.revokeObjectURL(url),2000);}
+  status("Download der vollständigen lokalen Sicherung gestartet");
+ }catch(e){status("Sicherung fehlgeschlagen: "+e.message,true);}
+}
 function clearPending(){
  try{localStorage.removeItem(userKey());}catch(e){}
 }
@@ -46,7 +61,14 @@ function getPending(){
 async function loadRemote({force=false}={}){
  if(!client||!user)return;
  if(!force && (dirty||paused||getPending())){status("Ungesicherte lokale Änderungen – zuerst synchronisieren",true);return;}
+ const session=sessionVersion,changes=changeVersion,request=++readVersion;
+ await queue.catch(()=>{});
+ if(session!==sessionVersion||changes!==changeVersion)return;
  const {data,error}=await client.from("hbl_dashboard_snapshots").select("content,revision").eq("user_id",user.id).maybeSingle();
+ if(session!==sessionVersion||request!==readVersion)return;
+ if(changes!==changeVersion||(!force&&(dirty||paused||getPending()))){
+  status("Lokale Änderungen bleiben erhalten – Cloud-Abgleich zurückgestellt",true);return;
+ }
  if(error)throw error;
  const content=data?.content||{};
  if(!validDemoData(content))throw Error("Ungültige Daten in der Cloud.");
@@ -61,7 +83,10 @@ async function loadRemote({force=false}={}){
 async function cloudWrite(snapshot){
  if(!active||!client||!user)throw Error("Nicht angemeldet");
  if(paused)throw Error("Cloud-Synchronisierung pausiert. Bitte Konflikt lösen.");
+ const session=sessionVersion;
  const {data,error}=await client.rpc("hbl_save_snapshot",{p_content:snapshot,p_expected_revision:revision});
+ if(session!==sessionVersion)throw Error("Sitzung wurde gewechselt. Lokale Sicherung bleibt erhalten.");
+ changeVersion++;
  if(error){
   paused=true;lastError=error.message||"Synchronisierung fehlgeschlagen";
   status(/VERSION_CONFLICT/.test(lastError)?"Anderes Gerät hat neuere Daten – bitte prüfen":("Cloud nicht gespeichert: "+lastError),true);
@@ -75,26 +100,29 @@ async function cloudWrite(snapshot){
  status("Cloud synchronisiert · Stand "+revision+" ✓");
 }
 window.savePrepFile=function(){
+ if(loggingOut)return Promise.reject(Error("Abmeldung läuft. Bitte kurz warten."));
+ if(restoring)return Promise.resolve();
  if(!active)return originalSave();
  const snapshot=JSON.parse(JSON.stringify(prepDone));
+ const session=sessionVersion;
+ changeVersion++;
  dirty=true;rememberPending(snapshot);
  status("Speichert in der Cloud …");
- queue=queue.catch(()=>{}).then(()=>cloudWrite(snapshot));
+ queue=queue.catch(()=>{}).then(()=>{
+  if(session!==sessionVersion)throw Error("Sitzung wurde gewechselt. Lokale Sicherung bleibt erhalten.");
+  return cloudWrite(snapshot);
+ });
  return queue;
 };
 async function startSession(session){
+ const version=++sessionVersion;
  user=session?.user||null;
+ active=false;paused=false;dirty=false;revision=0;
  if(!user){active=false;paused=false;dirty=false;revision=0;controls();return;}
  controls();
  try{
-  const pending=getPending();
-  if(pending){
-   paused=true;dirty=true;
-   message("Auf diesem Gerät gibt es ungesicherte Cloud-Änderungen. Lade sie nicht ungeprüft neu.");
-   status("Lokale Änderungen vorhanden – bitte prüfen",true);
-   return;
-  }
   const membership=await client.from("hbl_dashboard_members").select("enabled").eq("user_id",user.id).maybeSingle();
+  if(version!==sessionVersion)return;
   if(membership.error)throw membership.error;
   if(!membership.data?.enabled){
    active=false;
@@ -103,18 +131,49 @@ async function startSession(session){
    window.dispatchEvent(new Event("hbl-cloud-status"));
    return;
   }
-  await loadRemote();
+  const pending=getPending();
+  if(pending){
+   if(!validDemoData(pending.content)||!Number.isFinite(pending.expectedRevision))throw Error("Lokale Sicherung ist ungültig. Bitte nicht überschreiben.");
+   revision=pending.expectedRevision;active=true;paused=true;dirty=true;
+   restoring=true;
+   try{applyPrepData(pending.content);}finally{restoring=false;}
+   rememberPending(JSON.parse(JSON.stringify(prepDone)));
+   status("Lokale Änderungen wiederhergestellt – bitte exportieren oder erneut speichern",true);
+  }else await loadRemote();
+  if(version!==sessionVersion)return;
   showModal(false);
   window.dispatchEvent(new Event("hbl-cloud-status"));
  }catch(e){status("Cloud-Laden fehlgeschlagen: "+e.message,true);message(e.message,true);}
 }
+window.hblLogout=async function(){
+ if(loggingOut||!client)return false;
+ if((dirty||getPending())&&!confirm("Auf diesem Gerät liegen ungesicherte Änderungen. Wirklich abmelden? Die lokale Sicherung bleibt erhalten."))return false;
+ loggingOut=true;
+ try{
+  await queue.catch(()=>{});
+  let pushWarning=false;
+  if(typeof window.hblPushOnLogout==="function"){
+   try{await window.hblPushOnLogout();}catch(_){pushWarning=true;}
+  }
+  const {error}=await client.auth.signOut();
+  if(error)throw error;
+  sessionVersion++;user=null;active=false;paused=false;revision=0;dirty=false;
+  if(pushWarning)alert("Du bist abgemeldet. Die Push-Abmeldung konnte nicht vollständig bestätigt werden. Auf diesem Gerät können noch Mitteilungen erscheinen; deaktiviere sie bei Bedarf in den Browsereinstellungen.");
+  location.reload();
+  return true;
+ }catch(e){
+  const text="Abmeldung fehlgeschlagen: "+e.message;
+  status(text,true);message(text,true);alert(text);
+  return false;
+ }finally{loggingOut=false;}
+};
 async function initializeAuth(){
  const modal=document.createElement("div");
  modal.id="hblCloudModal";modal.className="hbl-cloud-overlay";modal.hidden=true;
  modal.innerHTML='<section class="hbl-cloud-dialog" role="dialog" aria-modal="true" aria-label="Cloud-Anmeldung"><button type="button" id="hblCloudClose" class="hbl-cloud-close" aria-label="Schließen">✕</button><h2>☁️ Dashboard-Anmeldung</h2><p>Der Zugang ist nur mit persönlicher Einladung möglich. Melde dich mit E-Mail-Adresse und Passwort an.</p><form id="hblCloudForm"><label>E-Mail<input id="hblCloudEmail" type="email" autocomplete="email" required></label><label>Passwort<input id="hblCloudPassword" type="password" autocomplete="current-password" minlength="8" required></label><div class="hbl-cloud-actions"><button type="submit">Anmelden</button></div></form><p id="hblCloudMessage" role="status"></p><small>Du hast noch keinen Zugang? Bitte den Hauptadministrator um eine persönliche Einladung. Keine echten Schülerdaten in dieser Pilotversion speichern.</small></section>';
  const bar=document.createElement("section");
  bar.className="hbl-cloud-bar";bar.id="hblCloudControls";
- bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
+ bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblLocalBackup">Lokale Sicherung herunterladen</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
  document.body.prepend(bar);
  document.body.appendChild(modal);
  el("hblCloudClose").onclick=()=>showModal(false);
@@ -127,29 +186,28 @@ async function initializeAuth(){
   const {data,error}=await client.auth.signInWithPassword({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value});
   if(error)message(error.message,true);else {message("Angemeldet ✓");await startSession(data.session);}
  };
- el("hblCloudLogout").onclick=async()=>{
-  if(dirty||getPending()){if(!confirm("Auf diesem Gerät liegen ungesicherte Änderungen. Wirklich abmelden?"))return;}
-  if(typeof window.hblPushOnLogout==="function")await window.hblPushOnLogout();
-  await client.auth.signOut();
-  user=null;active=false;paused=false;revision=0;dirty=false;
-  location.reload();
- };
+ el("hblLocalBackup").onclick=downloadLocalBackup;
+ el("hblCloudLogout").onclick=()=>window.hblLogout();
  el("hblCloudRefresh").onclick=async()=>{
   try{await loadRemote({force:true});}catch(e){status("Abgleich fehlgeschlagen: "+e.message,true);}
  };
  el("hblCloudRetry").onclick=async()=>{
   if(!user)return;
+  const session=sessionVersion,changes=changeVersion;
+  await queue.catch(()=>{});
+  if(session!==sessionVersion||changes!==changeVersion)return;
   const pending=getPending();
   if(!pending){status("Keine ausstehenden Änderungen");return;}
   try{
    const {data,error}=await client.from("hbl_dashboard_snapshots").select("revision").eq("user_id",user.id).maybeSingle();
+   if(session!==sessionVersion||changes!==changeVersion)return;
    if(error)throw error;
    if(Number(data?.revision||0)!==Number(pending.expectedRevision)){
     status("Konflikt: Cloud wurde geändert. Bitte lokale Daten als JSON exportieren, bevor du neu lädst.",true);return;
    }
    revision=Number(pending.expectedRevision);paused=false;active=true;
-   await cloudWrite(pending.content);
-   applyPrepData(pending.content);
+   queue=cloudWrite(pending.content);
+   await queue;
   }catch(e){status("Erneut speichern fehlgeschlagen: "+e.message,true);}
  };
  el("hblCloudImport").onclick=async()=>{
@@ -166,7 +224,7 @@ async function initializeAuth(){
  window.hblCloudClient=client;
  window.hblCloudUser=()=>user;
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT"){user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
+  if(event==="SIGNED_OUT"){sessionVersion++;user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
   if((event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")&&session?.user&&session.user.id!==user?.id){
    setTimeout(()=>{if(session?.user&&session.user.id!==user?.id)void startSession(session);},0);
   }

@@ -43,8 +43,8 @@ function mount(){
   document.body.appendChild(overlay);
   $("hblProfileClose").onclick=()=>{editing=false;paint();};
   $("hblProfileLogout").onclick=async()=>{
-   if(!client())return;
-   await client().auth.signOut();location.reload();
+   if(typeof window.hblLogout!=="function"){status("Abmeldung ist noch nicht bereit. Bitte kurz warten.");return;}
+   await window.hblLogout();
   };
   $("hblProfileForm").onsubmit=e=>{e.preventDefault();void saveProfile();};
  }
