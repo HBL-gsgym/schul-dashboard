@@ -260,12 +260,24 @@ async function sendMessage(){
  }catch(e){setStatus("Senden fehlgeschlagen: "+e.message);}
  finally{S.sending=false;button.disabled=false;}
 }
+function syncChatViewport(){
+ const overlay=el("hblChatOverlay");
+ if(!overlay||!S.open)return;
+ const viewport=window.visualViewport;
+ const height=viewport?.height||window.innerHeight;
+ overlay.style.setProperty("--hbl-chat-height",height+"px");
+ overlay.style.setProperty("--hbl-chat-top",(viewport?.offsetTop||0)+"px");
+ overlay.classList.toggle("hbl-chat-short",height<500);
+}
 function openChat(open){
  if(!S.allowed||!el("hblChatOverlay"))return;
  S.open=!!open;el("hblChatOverlay").hidden=!open;
+ document.body.classList.toggle("hbl-chat-open",S.open);
+ syncChatViewport();
  el("hblChatToggle")?.setAttribute("aria-expanded",String(S.open));
  if(open){
-  paintThreads();paintRoom();void loadConversation();void reloadInbox();void refreshAccess(true);el("hblChatInput")?.focus();
+  paintThreads();paintRoom();void loadConversation();void reloadInbox();void refreshAccess(true);
+  if(!window.matchMedia("(max-width:760px)").matches)el("hblChatInput")?.focus();
  }else{
   showMembersPanel(false);showGroupCreate(false);
   S.request++;el("hblChatToggle")?.focus();
@@ -279,6 +291,7 @@ function clearAccess(){
  releaseChannel();S.request++;
  S.uid=null;S.allowed=false;S.members=[];S.names.clear();S.groups=[];S.groupMembers=[];S.inbox=[];S.read.clear();S.thread="lounge";
  S.messages=[];S.open=false;S.more=false;S.checked=0;
+ document.body.classList.remove("hbl-chat-open");
  showMembersPanel(false);
  if(el("hblChatOverlay"))el("hblChatOverlay").hidden=true;
  paintBadge();
@@ -491,6 +504,9 @@ async function refreshAccess(force=false){
 }
 function init(){
  if(!mount())return;
+ window.visualViewport?.addEventListener("resize",syncChatViewport);
+ window.visualViewport?.addEventListener("scroll",syncChatViewport);
+ window.addEventListener("resize",syncChatViewport);
  window.addEventListener("hbl-cloud-status",()=>void refreshAccess(true));
  window.addEventListener("hbl-chat-access-changed",()=>void refreshAccess(true));
  window.addEventListener("hbl-profile-changed",()=>void refreshAccess(true));

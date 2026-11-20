@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.6 · Pilotprojekt · 20.11.2026**
+**Stand: v5.9.7 · Pilotprojekt · 20.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -16,6 +16,11 @@ Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag
 Das Schul-Dashboard HBL soll nicht den Arbeitsalltag der Lehrkräfte in starre Vorgaben pressen. Stattdessen passt sich die Oberfläche an die Arbeitsweisen der einzelnen Kolleginnen und Kollegen an. Lehrkräfte können persönliche Links und Werkzeuge frei wählen, Kategorien und Kacheln organisieren und ihren Stundenplan individuell gestalten. Schulweit notwendige Funktionen wie Kalender, organisatorische Informationen und Kollegiumskommunikation bleiben dabei gemeinsam nutzbar.
 
 **Produktprinzip:** So viel gemeinsame Struktur wie nötig, so viel individuelle Anpassbarkeit wie möglich. Neue Funktionen sollen diese Freiheit erhalten oder sinnvoll erweitern, ohne Nutzende mit unnötiger Konfiguration zu überfordern.
+
+## Änderungen in v5.9.7
+
+- Mobile Chats mit horizontaler Gesprächsauswahl und mehr Platz für Nachrichten.
+- Fensterhöhe folgt dem sichtbaren Bildschirm bei geöffneter Tastatur; größere Touchflächen in Gruppen- und Mitgliederdialogen.
 
 ## Änderungen in v5.9.6
 

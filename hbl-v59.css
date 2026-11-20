@@ -78,4 +78,12 @@
  .hbl-chat-room .hbl-chat-members-preview{max-height:56px;gap:4px}
  .hbl-chat-member-chip{font-size:10px;padding:3px 6px}
  .hbl-chat-member-row{padding:8px;gap:7px}
+ .hbl-chat-section{flex:0 0 auto;margin:0;padding:0 3px;letter-spacing:0;font-size:10px}
+ .hbl-chat-section button,.hbl-chat-group-tools button,.hbl-chat-members-title button,
+ .hbl-chat-member-row button,.hbl-chat-group-buttons button,.hbl-chat-members-add>button{min-height:44px}
+ .hbl-chat-section>span{display:none}
+ .hbl-chat-group-create,.hbl-chat-members-panel{inset:8px;padding:14px;box-sizing:border-box;overscroll-behavior:contain;scroll-padding-bottom:16px}
+ .hbl-chat-group-create input[type=text]{font-size:16px}
+ .hbl-group-member-option{min-height:44px}
+ .hbl-chat-push-launch{width:auto!important;height:auto!important;min-height:44px;flex-shrink:0;white-space:normal}
 }
