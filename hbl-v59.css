@@ -138,3 +138,16 @@
  .hbl-today-duty{min-height:36px}
  .hbl-upcoming-more summary,.hbl-tasks-done summary{min-height:36px;box-sizing:border-box}
 }
+/* v5.9.11: Privater Kursbestand */
+.hbl-course-dialog{width:min(100%,680px);background:var(--panel);color:var(--text)}
+.hbl-course-row{padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.hbl-course-row strong{display:block;overflow-wrap:anywhere;font-size:14px}
+.hbl-course-row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.hbl-course-actions{display:flex;flex-wrap:wrap;gap:7px}
+.hbl-course-actions button,.hbl-course-actions a{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;padding:7px 10px;font:600 12px Inter,Segoe UI,Arial,sans-serif;text-decoration:none;cursor:pointer}
+#hblCourseForm{margin-top:18px;padding-top:4px}
+#hblCourseStatus{font-size:12px;overflow-wrap:anywhere}
+.hbl-course-dialog input{background:var(--panel2);color:var(--text);border-color:var(--line)}
+#hblPlanSubjectWrap[hidden],#hblPlanGroupWrap[hidden],#hblCourseCancel[hidden]{display:none!important}
+@media(max-width:710px){.hbl-course-actions button,.hbl-course-actions a{min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}.hbl-course-dialog input{font-size:16px}}
+.hbl-course-dialog .hbl-plan-info{color:var(--muted)}

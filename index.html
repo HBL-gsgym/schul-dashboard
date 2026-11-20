@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.10</title>
+<title>Schul-Dashboard HBL · v5.9.11</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1313,7 +1313,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="stylesheet" href="./hbl-v56.css?v=5.6">
 <link rel="stylesheet" href="./hbl-v57.css?v=5.9.7-chat">
 <link rel="stylesheet" href="./hbl-v58.css?v=5.8">
-<link rel="stylesheet" href="./hbl-v59.css?v=5.9.9-today">
+<link rel="stylesheet" href="./hbl-v59.css?v=5.9.11-courses">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1322,6 +1322,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="icon" href="./hbl-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="./hbl-icon-180.png">
 <script src="./hbl-course-ids.js?v=5.9.10"></script>
+<script src="./hbl-courses.js?v=5.9.11"></script>
 <script defer src="./mobile.js?v=3.3"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
@@ -1742,7 +1743,9 @@ function taskCourses(){
   const f=String(fach||"").trim(),k=String(klasse||"").trim();
   if(f&&k)found.add(f+" · "+k);
  };
- // Die tatsächlich gespeicherten Stundenplan-Blöcke sind die maßgebliche Quelle.
+ // Persönliche Kurse stehen auch ohne Stundenplaneintrag für Korrekturen bereit.
+ for(const c of Object.values(prepDone?.__coursesV1?.courses||{}))if(!c.archived)add(c.subject,c.group);
+ // Vorhandene Stundenpläne bleiben als Rückfall erhalten.
  const slots=prepDone?.__timetableV1?.slots;
  if(slots&&typeof slots==="object"){
   for(const slot of Object.values(slots||{})){
@@ -2387,7 +2390,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.10 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.11 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2505,7 +2508,7 @@ function renderHome(){
 
 
     <section class="participation-overview" aria-label="Mitarbeit der Klassen und Kurse">
-      <div class="section-title"><h2>Mitarbeit</h2><span class="mini-note">Klasse oder Kurs auswählen · Bewertungen werden automatisch gesichert</span></div>
+      <div class="section-title"><h2>Mitarbeit</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenCourseManager()">Meine Kurse</button><span class="mini-note">Klasse oder Kurs auswählen · Bewertungen werden automatisch gesichert</span></div>
       <div class="participation-grid" id="participationOverview"></div>
     </section>
 
@@ -2593,8 +2596,8 @@ function participationInfo(c){
 function renderParticipationOverview(){
  const host=document.getElementById("participationOverview");if(!host)return;
  const root=prepDone.__participation?.classes||{};
- if(!PARTICIPATION_COURSES.length){host.innerHTML=`<div class="hbl-empty-courses">Noch keine Kurse eingerichtet. <button type="button" onclick="hblOpenPlanManager()">Stundenplan gestalten</button></div>`;return;}
- host.innerHTML=PARTICIPATION_COURSES.map(c=>{
+ if(!PARTICIPATION_COURSES.length){host.innerHTML=`<div class="hbl-empty-courses">Noch keine Kurse eingerichtet. <button type="button" onclick="hblOpenCourseManager()">Ersten Kurs anlegen</button></div>`;return;}
+ host.innerHTML=PARTICIPATION_COURSES.filter(c=>!c.archived).map(c=>{
   const data=root[c.id];
   const progress=typeof window.hblCourseProgress==='function'?window.hblCourseProgress(c.id):null;
   const percent=progress&&progress.total?Math.round(progress.past/progress.total*100):0;
@@ -2912,6 +2915,15 @@ function getSettings(){const data=prepDone?.[STORE_KEY];
  return {version:data.version||1,slots:data.slots};
 }
 function emptySchedule(){return {A:{1:{},2:{},3:{},4:{},5:{}},B:{1:{},2:{},3:{},4:{},5:{}}};}
+function getCourseCatalog(){return HblCourses.reconcile(prepDone.__coursesV1,getSettings().slots,prepDone.__participation?.classes,HBL_SAMPLE_COURSES);}
+window.hblReadCourses=()=>({catalog:getCourseCatalog(),slots:slotsCopy()});
+window.hblWriteCourses=async function(catalog){
+ if(!serverReady)throw Error("Speicher noch nicht bereit. Bitte Seite neu laden.");
+ prepDone.__coursesV1=catalog;
+ if(prepDone[STORE_KEY]?.slots)prepDone[STORE_KEY].slots=HblCourses.align(getSettings().slots,catalog);
+ hblApplyTimetable();reconcileAll();renderParticipationOverview();renderParticipationTable();
+ await savePrepFile();
+};
 function activeEntries(settings){
  const list=new Map();
  for(let day=1;day<=5;day++)for(let block=1;block<=4;block++){
@@ -2947,12 +2959,10 @@ function hblApplyTimetable(){
  }
  TIMETABLE=timetable;
  refreshTaskCourses();
- const courses=activeEntries(data);
- const stored=prepDone.__participation?.classes||{};
- for(const [id,c] of Object.entries(stored)){
-  if(courses.has(id)||!courseHasSavedData(c))continue;
-  const meta=c?.meta||HBL_SAMPLE_COURSES.find(x=>x.id===id);
-  if(meta)courses.set(id,{...meta,id,short:meta.short||`${meta.label} ${meta.group}`});
+ const catalog=getCourseCatalog(),courses=new Map();
+ for(const [id,c] of Object.entries(catalog.courses)){
+  if(c.archived&&id!==currentParticipationCourse)continue;
+  courses.set(id,{...courseMeta({...c,courseId:id}),archived:c.archived});
  }
  PARTICIPATION_COURSES.splice(0,PARTICIPATION_COURSES.length,...[...courses.values()].sort((a,b)=>a.short.localeCompare(b.short,'de')));
  renderTimetable();renderToday();renderPreparationWeeks();renderParticipationOverview();hblUpdateCurrentCourse();
@@ -3032,6 +3042,12 @@ window.hblScheduleAfterLoad=function(){
   migrated=JSON.stringify(slots)!==JSON.stringify(settings.slots);
   if(migrated)prepDone[STORE_KEY]={...settings,version:2,slots};
  }
+ const catalog=getCourseCatalog();
+ if(JSON.stringify(catalog)!==JSON.stringify(prepDone.__coursesV1)){prepDone.__coursesV1=catalog;migrated=true;}
+ if(prepDone[STORE_KEY]?.slots){
+  const aligned=HblCourses.align(getSettings().slots,catalog);
+  if(JSON.stringify(aligned)!==JSON.stringify(getSettings().slots)){prepDone[STORE_KEY].slots=aligned;migrated=true;}
+ }
  hblApplyTimetable();
  const reconciled=reconcileAll();
  if(migrated||reconciled){
@@ -3042,8 +3058,12 @@ window.hblScheduleAfterLoad=function(){
  if(!serverReady){alert('Speicher noch nicht bereit. Bitte Seite neu laden.');return false;}
  window.hblScheduleWriting=true;
  try{
-  const identified=HblCourseIds.ensure(slots,{knownSlots:getSettings().slots,classes:prepDone.__participation?.classes});
-  prepDone[STORE_KEY]={version:2,slots:identified};
+  const catalog=getCourseCatalog();
+  const identified=HblCourseIds.ensure(slots,{knownSlots:getSettings().slots,classes:HblCourses.identityClasses(catalog,prepDone.__participation?.classes)});
+  const next=HblCourses.reconcile(catalog,identified,prepDone.__participation?.classes,HBL_SAMPLE_COURSES);
+  for(const pair of Object.values(identified))for(const w of ['A','B'])if(pair?.[w])next.courses[courseId(pair[w])].archived=false;
+  prepDone.__coursesV1=next;
+  prepDone[STORE_KEY]={version:2,slots:HblCourses.align(identified,next)};
   hblApplyTimetable();reconcileAll();renderParticipationOverview();renderParticipationTable();
   await savePrepFile();
  }catch(e){alert('Speichern fehlgeschlagen: '+e.message);return false;}
@@ -3059,11 +3079,11 @@ function ensureModal(){
   <div class="hbl-plan-eyebrow">INDIVIDUELLER STUNDENPLAN</div><h2 id="hblPlanDialogTitle">Block bearbeiten</h2>
   <div class="hbl-plan-current"><div id="hblPlanPreviewA"></div><div id="hblPlanPreviewB"></div></div>
   <form id="hblPlanForm">
-  <label>Aktion <select id="hblPlanAction"><option value="edit">Diesen Kurs bearbeiten</option><option value="replace">Andere Belegung (Kurswechsel)</option></select></label>
-  <p class="hbl-plan-info">Fach und Klasse werden bei „Diesen Kurs bearbeiten“ in allen Blöcken dieses Kurses geändert. Raum und Wochenbelegung gelten nur für diesen Block.</p>
+  <label>Kurs auswählen <select id="hblPlanCourse"></select></label>
+  <p class="hbl-plan-info">Wähle aus deinen Kursen oder lege hier einen neuen an. Bestehende Kurse bearbeitest du unter „Meine Kurse“.</p>
   <label>Gültigkeit <select id="hblPlanWeek"><option value="both">A und B – beide Wochen</option><option value="A">Nur A – grün</option><option value="B">Nur B – blau</option></select></label>
-  <div class="hbl-plan-form-grid"><label>Fach <input id="hblPlanSubject" type="text" maxlength="60" placeholder="z. B. Mathematik" required autocomplete="off"></label>
-  <label>Klasse / Kurs <input id="hblPlanGroup" type="text" maxlength="30" placeholder="z. B. 9a" required autocomplete="off"></label>
+  <div class="hbl-plan-form-grid"><label id="hblPlanSubjectWrap">Fach <input id="hblPlanSubject" type="text" maxlength="60" placeholder="z. B. Mathematik" required autocomplete="off"></label>
+  <label id="hblPlanGroupWrap">Klasse / Kurs <input id="hblPlanGroup" type="text" maxlength="30" placeholder="z. B. 9a" required autocomplete="off"></label>
   <label>Raum <input id="hblPlanRoom" type="text" maxlength="40" placeholder="z. B. 226" autocomplete="off"></label></div>
   <p id="hblPlanEditorNote" class="hbl-plan-info">Ein Eintrag mit „A und B“ gilt jede Woche. Bei verschiedenen Fächern werden beide Wochen nebeneinander angezeigt.</p>
   <div class="hbl-plan-buttons"><button class="hbl-plan-primary" type="submit">Belegung speichern</button><button type="button" id="hblPlanDelete">Belegung entfernen</button><button type="button" id="hblPlanCancel">Abbrechen</button></div></form>
@@ -3073,7 +3093,16 @@ function ensureModal(){
  byId('hblPlanClose').onclick=close;byId('hblPlanCancel').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  overlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}});
- byId('hblPlanWeek').onchange=()=>{byId('hblPlanAction').value='edit';fillEditor();};
+ byId('hblPlanWeek').onchange=()=>{
+  const fresh=byId('hblPlanCourse').value==='__new__';
+  const draft={subject:byId('hblPlanSubject').value,group:byId('hblPlanGroup').value,room:byId('hblPlanRoom').value};
+  fillEditor();
+  if(fresh&&(draft.subject||draft.group)){
+   byId('hblPlanCourse').value='__new__';updateCourseFields();
+   byId('hblPlanSubject').value=draft.subject;byId('hblPlanGroup').value=draft.group;byId('hblPlanRoom').value=draft.room;
+  }
+ };
+ byId('hblPlanCourse').onchange=updateCourseFields;
  byId('hblPlanForm').onsubmit=async e=>{
   e.preventDefault();if(!openEditor)return;
   const v={subject:byId('hblPlanSubject').value.trim(),group:byId('hblPlanGroup').value.trim(),room:byId('hblPlanRoom').value.trim()};
@@ -3081,7 +3110,13 @@ function ensureModal(){
   const original=slotsCopy(),slot=original[openEditor.day+'-'+openEditor.block]||{},week=byId('hblPlanWeek').value;
   if(week==='both'&&slot.A&&slot.B&&JSON.stringify(slot.A)!==JSON.stringify(slot.B)&&!confirm('In A und B stehen unterschiedliche Belegungen. Wirklich beide durch denselben Eintrag ersetzen?'))return;
   try{
-   const slots=HblCourseIds.edit(original,{...openEditor,week,value:v,replace:byId('hblPlanAction').value==='replace',classes:prepDone.__participation?.classes});
+   const selected=byId('hblPlanCourse').value,catalog=getCourseCatalog();
+   let slots;
+   if(selected==='__new__'){
+    const result=HblCourses.update(catalog,{subject:v.subject,group:v.group},original);
+    // Register only after successful validation of the full block assignment.
+    slots=HblCourses.assign(original,result.catalog,result.id,{...openEditor,week,room:v.room});
+   }else slots=HblCourses.assign(original,catalog,selected,{...openEditor,week,room:v.room});
    if(await persistSchedule(slots))close();
   }catch(error){alert(error.message);}
  };
@@ -3093,15 +3128,25 @@ function ensureModal(){
   if(await persistSchedule(slots))close();
  };
 }
+function updateCourseFields(){
+ const fresh=byId('hblPlanCourse').value==='__new__',c=getCourseCatalog().courses[byId('hblPlanCourse').value];
+ for(const name of ['Subject','Group']){
+  byId('hblPlan'+name+'Wrap').hidden=!fresh;
+  byId('hblPlan'+name).required=fresh;
+  if(!fresh)byId('hblPlan'+name).value=name==='Subject'?c?.subject||'':c?.group||'';
+ }
+}
 function fillEditor(){
  if(!openEditor)return;
  const key=openEditor.day+'-'+openEditor.block,slot=getSettings().slots[key]||{},week=byId('hblPlanWeek').value;
  const v=week==='both'?(slot.A||slot.B):slot[week];
- byId('hblPlanAction').disabled=!v;
- if(!v)byId('hblPlanAction').value='replace';
+ const catalog=getCourseCatalog();
+ byId('hblPlanCourse').innerHTML=Object.entries(catalog.courses).filter(([,c])=>!c.archived).sort((a,b)=>(a[1].subject+' '+a[1].group).localeCompare(b[1].subject+' '+b[1].group,'de')).map(([id,c])=>'<option value="'+escapeHtml(id)+'">'+escapeHtml(c.subject+' · '+c.group)+'</option>').join('')+'<option value="__new__">+ Neuen Kurs anlegen</option>';
+ byId('hblPlanCourse').value=v?courseId(v):'__new__';
  byId('hblPlanSubject').value=v?.subject||'';
  byId('hblPlanGroup').value=v?.group||'';
  byId('hblPlanRoom').value=v?.room||'';
+ updateCourseFields();
  byId('hblPlanEditorNote').textContent=week==='both'?'Wird in Woche A und B identisch eingetragen und grau angezeigt.':`Wird nur für Woche ${week} gespeichert. Eine andere Belegung in der Gegenwoche bleibt bestehen.`;
 }
 window.hblOpenSlotEditor=function(day,block){
@@ -3115,8 +3160,7 @@ window.hblOpenSlotEditor=function(day,block){
  }
  const same=slot.A&&slot.B&&JSON.stringify(slot.A)===JSON.stringify(slot.B);
  byId('hblPlanWeek').value=same||(!slot.A&&!slot.B)?'both':slot.A?'A':'B';
- byId('hblPlanAction').value='edit';
- fillEditor();byId('hblPlanOverlay').hidden=false;byId('hblPlanSubject').focus();
+ fillEditor();byId('hblPlanOverlay').hidden=false;byId('hblPlanCourse').focus();
 };
 function makeSampleSlots(){
  const slots={};
@@ -3273,8 +3317,8 @@ window.hblOpenPlanManager=function(force){
  let panel=byId('hblPlanManager');
  if(!panel){
   panel=document.createElement('div');panel.id='hblPlanManager';panel.className='hbl-plan-manager';panel.hidden=true;
-  panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke oder auf eine der drei Aufsichtszeiten. Trage bei Unterricht Fach, Klasse/Kurs und Raum ein; bei Aufsichten den frei wählbaren Aufsichtsort. Wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
-   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="document.getElementById('hblScheduleFile').click()">📥 Stundenplan importieren</button><input id="hblScheduleFile" type="file" accept=".json,.csv,application/json,text/csv" hidden onchange="hblImportScheduleFile(this)"><button type="button" onclick="hblExportSchedule('json')">📤 Export JSON inkl. Aufsichten</button><button type="button" onclick="hblExportSchedule('csv')">📤 Export CSV</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
+  panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke oder auf eine der drei Aufsichtszeiten. Wähle bei Unterricht einen eigenen Kurs und den Raum; bei Aufsichten den frei wählbaren Aufsichtsort. Wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
+   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblOpenCourseManager()">Meine Kurse</button><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="document.getElementById('hblScheduleFile').click()">📥 Stundenplan importieren</button><input id="hblScheduleFile" type="file" accept=".json,.csv,application/json,text/csv" hidden onchange="hblImportScheduleFile(this)"><button type="button" onclick="hblExportSchedule('json')">📤 Export JSON inkl. Aufsichten</button><button type="button" onclick="hblExportSchedule('csv')">📤 Export CSV</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
   host.appendChild(panel);
  }
  managerOpen=typeof force==='boolean'?force:!managerOpen;window.hblTimetableEditing=managerOpen;panel.hidden=!managerOpen;renderTimetable();

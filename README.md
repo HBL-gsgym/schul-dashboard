@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.10 · Pilotprojekt · 20.11.2026**
+**Stand: v5.9.11 · Pilotprojekt · 20.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -20,6 +20,12 @@ Das Schul-Dashboard HBL soll nicht den Arbeitsalltag der Lehrkräfte in starre V
 ## Aktuelle Entwicklungsrichtung
 
 Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **Schulportal**. Zunächst manuelle Eingabe und eigenständige persönliche Kursverwaltung; Untis-Anbindung zurückgestellt. Schulzuordnungen, Schüleraccounts und Bezahlmodell sind geplant, noch nicht implementiert. Siehe [Architekturplan und nächste Schritte](docs/PRODUCT_ARCHITECTURE.md).
+
+## Änderungen in v5.9.11
+
+- Eigener privater Kursbestand unter „Meine Kurse“, unabhängig vom Stundenplan: anlegen, umbenennen, archivieren und wiederherstellen. Bestehende Kurse werden mit ihren Kennungen übernommen.
+- Kursauswahl per Dropdown im Blockeditor; Raum und A/B bleiben pro Belegung einstellbar. Neue Kurse können direkt dort angelegt werden.
+- Ein Kurs kann erst ohne Stundenplanbelegung archiviert werden; Schüler, Bewertungen und Links bleiben erhalten.
 
 ## Änderungen in v5.9.10
 

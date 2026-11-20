@@ -47,6 +47,10 @@ Im nächsten kleinen Schritt genügt eine persönliche Kursliste. Schulbereiche,
 - Bei Rollenentzug oder Schulaustritt endet der schulische Zugriff. Private Daten dürfen dabei nicht pauschal gelöscht oder Schulinhalte ungefragt in den persönlichen Bereich kopiert werden. Aufbewahrung und Export schulischer Daten werden vor Einführung festgelegt.
 - Chatgruppen sind Gesprächsgruppen. Sie ersetzen keine bestätigten Schul-, Klassen-, Fachschafts- oder Gremienmitgliedschaften und verleihen keine Kalender-/Mitteilungsrechte.
 
+## Umsetzungsstand v5.9.11
+
+Die persönliche Kursverwaltung aus Schritt 1 ist umgesetzt: eigener Kursbestand im privaten Snapshot, Anlegen ohne Stundenplan, Umbenennen, Archivieren/Wiederherstellen und Kurs-Dropdown im Blockeditor. Bestehende IDs und Daten bleiben erhalten. Die folgenden Angaben zu v5.9.10 beschreiben den Ausgangspunkt der Planung; Classmanagement-Ausbau und Schulbetrieb sind weiterhin separat zu beauftragen.
+
 ## Ist-Stand und technische Leitplanken
 
 v5.9.10 besitzt persönliche Snapshots mit Revisionskonflikterkennung, Mitarbeit mit Schüler-IDs sowie eingefrorene Kurskennungen in Stundenplaneinträgen (`hbl-course-ids.js`). Kurse werden derzeit überwiegend aus dem Stundenplan abgeleitet. Eine eigenständige Kursverwaltung ist noch nicht vorhanden.

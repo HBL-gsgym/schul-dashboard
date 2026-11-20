@@ -147,3 +147,16 @@ Der Blockeditor unterscheidet Kursbearbeitung und andere Belegung: Umbenennen ak
 JSON-Stundenpläne erhalten Kennungen. CSV enthält weiter die bisherigen sechs Spalten; eindeutige Bezeichnungen werden vorhandenen Kursen zugeordnet. Mehrdeutige Zuordnungen werden abgelehnt. Neue Kurse erhalten zufällige Kennungen. Diese persönlichen Kennungen begründen keine Schul-, Klassen- oder Zugriffsberechtigung.
 
 Gezielte Tests: `tests/course-identity.test.mjs` (Übernahme, Umbenennen, A/B, Kurswechsel, Datenerhalt, Austausch und automatische Termine).
+
+
+## Eigenständiger persönlicher Kursbestand ab v5.9.11
+
+`hbl-courses.js` verwaltet `prepDone.__coursesV1 = {version:1,courses:{[courseId]:{subject,group,archived}}}` im bestehenden privaten Snapshot. Bestehende Stundenplan- und Mitarbeitskurse werden mit ihren IDs wiederholbar übernommen. Schüler, Termine, Bewertungen und Endnoten verbleiben unter `__participation.classes[courseId]`; keine zweite Schülerliste und kein Datenreset.
+
+Die Kursliste ist jetzt die maßgebliche Quelle für Fach-/Klassenbezeichnung und Kursübersicht, unabhängig vom Stundenplan. Der Blockeditor wählt einen aktiven Kurs per Dropdown oder legt einen neuen an. Kurse werden unter „Meine Kurse“ umbenannt; alle zugehörigen Belegungen erhalten die neue Bezeichnung. Raum und A/B bleiben blockbezogen. Eine Änderung nur in A erhält die bestehende B-Belegung.
+
+Archivieren ist nur ohne Stundenplanbelegungen möglich. Archivierte Kurse bleiben mit allen Daten gespeichert, sind wiederherstellbar und über bisherige Mitarbeitslinks erreichbar. Entfernen einer Belegung löscht keinen Kurs. Die vorhandene Terminarchivierung schützt bewertete Termine weiter.
+
+Importierte Belegungen werden vorhandenen Kurskennungen zugeordnet; bei vorhandenen Kennungen bleibt die zentrale persönliche Kursbezeichnung maßgeblich. Ein ausdrücklich bestätigter Stundenplanimport mit archiviertem Kurs reaktiviert diesen. Der Stundenplanexport enthält nur Belegungen; eine vollständige persönliche Sicherung enthält auch den gesamten Kursbestand. Speichern und Konflikte verwenden weiterhin `savePrepFile`/`hbl_save_snapshot`; keine Backend- oder Rechteänderung.
+
+Tests: `tests/course-catalog.test.mjs` ergänzt die Kursidentitätstests. Schulbereiche und zentrale Lehrerzuordnungen sind weiterhin nur Zielbild.
