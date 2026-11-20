@@ -1,7 +1,7 @@
 /* HBL v5.5 – Offline-App-Shell & Push-Empfang. Keine Nutzerdaten im SW-Cache. */
-const CACHE="hbl-pwa-shell-v595";
+const CACHE="hbl-pwa-shell-v594-release";
 const ASSETS=["./","./index.html","./mobile.css?v=3.3","./cloud.css?v=4.0",
- "./hbl-v55.css?v=5.5","./hbl-v56.css?v=5.6","./hbl-v57.css?v=5.7","./hbl-v58.css?v=5.8","./hbl-v59.css?v=5.9.1","./mobile.js?v=3.3","./cloud.js?v=5.9.5",
+ "./hbl-v55.css?v=5.5","./hbl-v56.css?v=5.6","./hbl-v57.css?v=5.7","./hbl-v58.css?v=5.8","./hbl-v59.css?v=5.9.1","./mobile.js?v=3.3","./cloud.js?v=5.9.4-release",
  "./hbl-v55.js?v=5.9.5","./hbl-v56.js?v=5.9","./hbl-v57.js?v=5.9.1","./hbl-v58.js?v=5.9.5","./hbl-v59.js?v=5.9.3","./manifest.webmanifest","./hbl-icon.svg","./hbl-icon-192.png","./hbl-icon-512.png","./hbl-icon-180.png"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));

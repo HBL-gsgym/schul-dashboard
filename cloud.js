@@ -39,6 +39,19 @@ function controls(){
 function rememberPending(snapshot){
  try{localStorage.setItem(userKey(),JSON.stringify({content:snapshot,expectedRevision:revision,at:Date.now()}));}catch(e){}
 }
+function downloadLocalBackup(){
+ try{
+  const pending=getPending();
+  const content=pending?pending.content:prepDone;
+  if(!validDemoData(content))throw Error("Lokale Sicherung ist ungültig.");
+  const blob=new Blob([JSON.stringify(content,null,2)],{type:"application/json"});
+  const url=window.URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="HBL-Lokale-Sicherung-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);
+  try{a.click();}finally{a.remove();setTimeout(()=>window.URL.revokeObjectURL(url),2000);}
+  status("Download der vollständigen lokalen Sicherung gestartet");
+ }catch(e){status("Sicherung fehlgeschlagen: "+e.message,true);}
+}
 function clearPending(){
  try{localStorage.removeItem(userKey());}catch(e){}
 }
@@ -160,7 +173,7 @@ async function initializeAuth(){
  modal.innerHTML='<section class="hbl-cloud-dialog" role="dialog" aria-modal="true" aria-label="Cloud-Anmeldung"><button type="button" id="hblCloudClose" class="hbl-cloud-close" aria-label="Schließen">✕</button><h2>☁️ Dashboard-Anmeldung</h2><p>Der Zugang ist nur mit persönlicher Einladung möglich. Melde dich mit E-Mail-Adresse und Passwort an.</p><form id="hblCloudForm"><label>E-Mail<input id="hblCloudEmail" type="email" autocomplete="email" required></label><label>Passwort<input id="hblCloudPassword" type="password" autocomplete="current-password" minlength="8" required></label><div class="hbl-cloud-actions"><button type="submit">Anmelden</button></div></form><p id="hblCloudMessage" role="status"></p><small>Du hast noch keinen Zugang? Bitte den Hauptadministrator um eine persönliche Einladung. Keine echten Schülerdaten in dieser Pilotversion speichern.</small></section>';
  const bar=document.createElement("section");
  bar.className="hbl-cloud-bar";bar.id="hblCloudControls";
- bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
+ bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblLocalBackup">Lokale Sicherung herunterladen</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
  document.body.prepend(bar);
  document.body.appendChild(modal);
  el("hblCloudClose").onclick=()=>showModal(false);
@@ -173,6 +186,7 @@ async function initializeAuth(){
   const {data,error}=await client.auth.signInWithPassword({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value});
   if(error)message(error.message,true);else {message("Angemeldet ✓");await startSession(data.session);}
  };
+ el("hblLocalBackup").onclick=downloadLocalBackup;
  el("hblCloudLogout").onclick=()=>window.hblLogout();
  el("hblCloudRefresh").onclick=async()=>{
   try{await loadRemote({force:true});}catch(e){status("Abgleich fehlgeschlagen: "+e.message,true);}
