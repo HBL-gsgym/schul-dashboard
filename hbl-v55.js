@@ -10,14 +10,22 @@ const PUBLIC_VAPID="BOaHxzC0CYlfzcVf1wCLlYHMlSKwpdoJJpJ3ODo2UFwyjsgmjHXjVfloCZ9m
 const DAYNAMES_HBL=["","Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dutyStore=()=>prepDone&&prepDone.__dutiesV1&&typeof prepDone.__dutiesV1.slots==="object"?prepDone.__dutiesV1.slots:{};
+// Kürzel nur für die Anzeige; der gespeicherte Aufsichtsort bleibt unverändert.
+function compactPlace(place){return String(place||"").replace(/\b(?:Haus|Hof)\s*(\d+)/gi,"H$1").replace(/(H\d+)\s*[,·/\-]?\s*(?=H\d+)/g,"$1");}
+function fullPlace(place){return String(place||"").replace(/^H(\d+)H(\d+)$/i,"Haus $1 · Hof $2");}
 function dutyCell(day,type){
  const entry=dutyStore()[day+"-"+type]||{},a=entry.A,b=entry.B;
  const same=a&&b&&a.place===b.place,editing=!!window.hblTimetableEditing;
  const kind=!a&&!b?"off":same?"shared":a&&!b?"green":!a&&b?"blue":"mixed";
- const value=(week,v)=>v&&v.place?'<span class="hbl-duty-value '+week+'"><b>'+(week==="shared"?"A+B":week)+'</b>'+safe(v.place)+'</span>':"";
+ const value=(week,v)=>v&&v.place?'<span class="hbl-duty-value '+week+'"><b>'+(week==="shared"?"A+B":week)+'</b>'+safe(compactPlace(v.place))+'</span>':"";
  const desc=same?value("shared",a):value("A",a)+value("B",b);
- return '<button type="button" class="hbl-duty-cell '+kind+'" '+(editing?'onclick="hblOpenDutyEditor('+day+',\''+type+'\')"':'disabled')+' title="'+(editing?"Aufsicht bearbeiten":"Pausenaufsicht")+'">'+(desc||'<span class="hbl-duty-empty">'+(editing?"+ Aufsicht":"–")+'</span>')+'</button>';
+ return '<button type="button" class="hbl-duty-cell '+kind+'" onclick="'+(editing?'hblOpenDutyEditor':'hblOpenDutyDetails')+'('+day+',\''+type+'\')" title="'+safe(editing?"Aufsicht bearbeiten":[a?.place&&'A: '+fullPlace(a.place),b?.place&&'B: '+fullPlace(b.place)].filter(Boolean).join(' · '))+'">'+(desc||'<span class="hbl-duty-empty">'+(editing?"+ Aufsicht":"–")+'</span>')+'</button>';
 }
+window.hblOpenDutyDetails=function(day,type){
+ const duty=DUTIES.find(d=>d.id===type);if(!duty)return;
+ const entry=dutyStore()[day+'-'+type]||{};
+ window.hblShowTimetableDetails?.(DAYNAMES_HBL[day]+' · '+duty.label,duty.start+'–'+duty.end,['A','B'].map(week=>({week,lines:[entry[week]?.place?fullPlace(entry[week].place):'Keine Aufsicht']})));
+};
 function decorateTable(host){
  const old=[...host.children];
  if(old.length!==25)return;

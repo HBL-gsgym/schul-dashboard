@@ -18,6 +18,12 @@
 .hbl-duty-form-place{display:flex;flex-direction:column;gap:7px;margin-top:14px}
 .hbl-duty-form-place input{padding:12px;border:1px solid var(--line);background:var(--panel);border-radius:8px;color:var(--text);font:inherit;max-width:100%}
 .hbl-duty-overlay[hidden]{display:none!important}
+.hbl-timetable-details[hidden]{display:none!important}
+.hbl-detail-weeks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hbl-detail-week{min-width:0;border-left:4px solid var(--greenweek);border-radius:8px;background:var(--panel2);padding:14px;overflow-wrap:anywhere}
+.hbl-detail-week.B{border-color:var(--blueweek)}
+.hbl-detail-week p{margin:9px 0 0;line-height:1.5}
+.hbl-timetable-details .hbl-plan-dialog{max-height:85dvh;overflow:auto}
 .hbl-push-panel{margin-top:16px;border:1px solid var(--line);background:var(--panel2);border-radius:13px;padding:14px 16px;color:var(--text)}
 .hbl-push-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .hbl-push-header strong{font-size:15px}

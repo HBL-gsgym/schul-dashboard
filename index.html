@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.7</title>
+<title>Schul-Dashboard HBL · v5.9.8</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1309,11 +1309,11 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 }
 
 </style>
-<link rel="stylesheet" href="./hbl-v55.css?v=5.5">
+<link rel="stylesheet" href="./hbl-v55.css?v=5.9.8-plan">
 <link rel="stylesheet" href="./hbl-v56.css?v=5.6">
 <link rel="stylesheet" href="./hbl-v57.css?v=5.9.7-chat">
 <link rel="stylesheet" href="./hbl-v58.css?v=5.8">
-<link rel="stylesheet" href="./hbl-v59.css?v=5.9.7-chat">
+<link rel="stylesheet" href="./hbl-v59.css?v=5.9.8-plan">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1325,7 +1325,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.9.6-mobile"></script>
-<script defer src="./hbl-v55.js?v=5.9.5"></script>
+<script defer src="./hbl-v55.js?v=5.9.8-plan"></script>
 <script defer src="./hbl-v56.js?v=5.9.5-invites"></script>
 <script defer src="./hbl-v57.js?v=5.9.7-chat"></script>
 <script defer src="./hbl-v58.js?v=5.9.5"></script>
@@ -2144,14 +2144,39 @@ function renderTimetable(){
   const A=get('A'),B=get('B'),same=A&&B&&JSON.stringify(A)===JSON.stringify(B);
   const cls=!A&&!B?'off':same?'shared':A&&!B?'green':!A&&B?'blue':'mixed';
   const content=(entry,week)=>entry?`<span class="hbl-slot-item ${week}" title="${window.hblTimetableEditing?'Bearbeiten':'Unterricht'}"><b>${week==='shared'?'A+B':week}</b><strong>${partEsc(entry[0])} · ${partEsc(entry[1])}</strong><small>${partEsc(entry[2]||'Ohne Raum')}</small></span>`:'';
-  html+=`<button type="button" class="blockcell hbl-slot-cell ${cls}" ${window.hblTimetableEditing?'onclick="hblOpenSlotEditor('+day+','+block+')"':''} ${window.hblTimetableEditing?'':'disabled'} title="${window.hblTimetableEditing?'Block bearbeiten':'Ansichtsmodus'}"><span class="blocknum">${block}. Block ${window.hblTimetableEditing?'<span>✎</span>':''}</span><span class="hbl-slot-parts">${same?content(A,'shared'):(content(A,'A')+content(B,'B'))||(window.hblTimetableEditing?'<span class="hbl-empty-label">+ Belegung hinzufügen</span>':'<span class="hbl-empty-label">Freiblock</span>')}</span></button>`;
+  html+=`<button type="button" class="blockcell hbl-slot-cell ${cls}" onclick="${window.hblTimetableEditing?'hblOpenSlotEditor':'hblOpenSlotDetails'}(${day},${block})" ${!window.hblTimetableEditing&&!A&&!B?'disabled':''} title="${window.hblTimetableEditing?'Block bearbeiten':'Unterrichtsdetails öffnen'}"><span class="blocknum">${block}. Block ${window.hblTimetableEditing?'<span>✎</span>':''}</span><span class="hbl-slot-parts">${same?content(A,'shared'):(content(A,'A')+content(B,'B'))||(window.hblTimetableEditing?'<span class="hbl-empty-label">+ Belegung hinzufügen</span>':'<span class="hbl-empty-label">Freiblock</span>')}</span></button>`;
  }
  host.innerHTML=html;
  if(typeof window.hblDecorateDutyTable==='function')window.hblDecorateDutyTable(host);
  const toggle=document.querySelector('.hbl-plan-manage');if(toggle)toggle.textContent=window.hblTimetableEditing?'✓ Bearbeiten beenden':'✎ Bearbeiten';
  const note=document.getElementById('hblPlanHint');
- if(note){const amount=Object.values(TIMETABLE.A).reduce((n,d)=>n+Object.keys(d).length,0)+Object.values(TIMETABLE.B).reduce((n,d)=>n+Object.keys(d).length,0);note.textContent=window.hblTimetableEditing?'Bearbeitungsmodus aktiv: Klicke auf einen Block, um die Belegung zu ändern.':'Ansichtsmodus · Änderungen sind gesperrt.';}
+ if(note){const amount=Object.values(TIMETABLE.A).reduce((n,d)=>n+Object.keys(d).length,0)+Object.values(TIMETABLE.B).reduce((n,d)=>n+Object.keys(d).length,0);note.textContent=window.hblTimetableEditing?'Bearbeitungsmodus aktiv: Klicke auf einen Block, um die Belegung zu ändern.':'Block oder Aufsicht antippen für Details · Änderungen unter „Bearbeiten“.';}
 }
+window.hblShowTimetableDetails=function(title,time,entries){
+ let overlay=document.getElementById('hblTimetableDetails');
+ if(!overlay){
+  overlay=document.createElement('div');overlay.id='hblTimetableDetails';overlay.className='hbl-plan-overlay hbl-timetable-details';overlay.hidden=true;
+  overlay.innerHTML='<section class="hbl-plan-dialog" role="dialog" aria-modal="true" aria-labelledby="hblTimetableDetailsTitle"><button type="button" class="hbl-plan-close" aria-label="Schließen">✕</button><h2 id="hblTimetableDetailsTitle"></h2><p class="hbl-plan-info"></p><div class="hbl-detail-weeks"></div></section>';
+  document.body.appendChild(overlay);
+  const close=()=>{overlay.hidden=true;overlay.hblReturnFocus?.focus();};
+  overlay.querySelector('button').onclick=close;
+  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+  overlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}else if(e.key==='Tab'){e.preventDefault();overlay.querySelector('button').focus();}});
+ }
+ overlay.hblReturnFocus=document.activeElement;
+ overlay.querySelector('h2').textContent=title;
+ overlay.querySelector('p').textContent=time;
+ overlay.querySelector('.hbl-detail-weeks').innerHTML=entries.map(entry=>`<section class="hbl-detail-week ${entry.week}"><b>Woche ${partEsc(entry.week)}</b>${entry.lines.map(line=>`<p>${partEsc(line)}</p>`).join('')}</section>`).join('');
+ overlay.hidden=false;overlay.querySelector('button').focus();
+};
+window.hblOpenSlotDetails=function(day,block){
+ if(day<1||day>5||block<1||block>4)return;
+ const info=BLOCKS[block-1];
+ window.hblShowTimetableDetails(['','Montag','Dienstag','Mittwoch','Donnerstag','Freitag'][day]+' · '+block+'. Block',info.start+'–'+info.end,['A','B'].map(week=>{
+  const entry=info.hours.map(hour=>TIMETABLE[week]?.[day]?.[hour]).find(Boolean);
+  return {week,lines:entry?[entry[0],'Klasse / Kurs: '+entry[1],'Raum: '+(entry[2]||'ohne Raum')]:['Freiblock']};
+ }));
+};
 
 
 /* HBL v3.1: Kacheln frei anordnen und ein-/ausklappen.
@@ -2361,7 +2386,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.7 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.8 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2463,7 +2488,7 @@ function renderHome(){
 
     <main class="grid">
       <section class="card hbl-links-card"><div class="card-title"><h2>Meine Links</h2></div><div id="hblLinksRoot"></div></section>
-<section class="card timetablecard"><div class="hbl-plan-heading"><h2>Wochenstundenplan</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenPlanManager()">✎ Bearbeiten</button></div><div class="timetablegrid" id="weeklyTimetable"></div><div class="timetablelegend">Grau: A und B · Grün: nur A · Blau: nur B · Zwei Fächer im selben Block erscheinen nebeneinander.</div><div id="hblPlanHint" class="hbl-plan-hint"></div></section>
+<section class="card timetablecard"><div class="hbl-plan-heading"><h2>Wochenstundenplan</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenPlanManager()">✎ Bearbeiten</button></div><div class="timetablegrid" id="weeklyTimetable"></div><div class="timetablelegend">Grau: A und B · Grün: nur A · Blau: nur B · Unterschiedliche Belegungen werden für A und B getrennt angezeigt.</div><div id="hblPlanHint" class="hbl-plan-hint"></div></section>
     </main>
 
     <section class="subjects">

@@ -87,3 +87,30 @@
  .hbl-group-member-option{min-height:44px}
  .hbl-chat-push-launch{width:auto!important;height:auto!important;min-height:44px;flex-shrink:0;white-space:normal}
 }
+/* v5.9.8: Aufsichten bleiben eine dezente Zwischenzeile. */
+#weeklyTimetable .hbl-duty-container{padding:2px 4px;gap:1px;border:0;border-radius:4px;background:transparent;min-width:0;justify-content:center}
+#weeklyTimetable .hbl-duty-caption{font-size:9px;font-weight:500;flex-direction:row;flex-wrap:wrap;gap:2px 5px;line-height:1.2}
+#weeklyTimetable .hbl-duty-caption small{font-size:9px;font-weight:500}
+#weeklyTimetable .hbl-duty-cell{flex:0 0 auto;min-height:28px;flex-direction:row;align-items:center;justify-content:flex-start;padding:2px 0;gap:4px;background:transparent;border:0;border-radius:4px}
+#weeklyTimetable .hbl-duty-value{font-size:11px;padding:2px 4px;gap:3px;background:transparent;min-width:0;overflow-wrap:anywhere}
+#weeklyTimetable .hbl-duty-value b{min-width:0;font-size:9px}
+#weeklyTimetable .hbl-duty-spacer{min-height:0}
+#weeklyTimetable .hbl-duty-cell:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media(max-width:710px){
+ #weeklyTimetable.timetablegrid{grid-template-columns:repeat(5,minmax(0,1fr))!important;overflow-x:visible;gap:4px}
+ #weeklyTimetable .hbl-slot-cell{padding:4px!important;gap:3px;min-height:94px}
+ #weeklyTimetable .blocknum{font-size:9px;letter-spacing:0}
+ #weeklyTimetable .hbl-slot-parts{flex-direction:column;gap:3px}
+ #weeklyTimetable .hbl-slot-item{padding:4px 3px;justify-content:flex-start}
+ #weeklyTimetable .hbl-slot-item b{font-size:9px;margin-bottom:2px}
+ #weeklyTimetable .hbl-slot-item strong{font-size:10px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+ #weeklyTimetable .hbl-slot-item small{font-size:9px}
+ #weeklyTimetable .hbl-empty-label{font-size:9px}
+ #weeklyTimetable .hbl-duty-container{padding:2px 0}
+ #weeklyTimetable .hbl-duty-caption{display:none}
+ #weeklyTimetable .hbl-duty-cell{min-height:32px;flex-wrap:wrap;gap:2px}
+ #weeklyTimetable .hbl-duty-value{font-size:9px;padding:1px 0;gap:2px;white-space:nowrap;letter-spacing:-.2px}
+ .dashboard-board .dashboard-tile[data-tile="stundenplan"] .timetablelegend::after{content:" · Antippen für Details"}
+ .hbl-detail-weeks{grid-template-columns:1fr}
+ .hbl-timetable-details .hbl-plan-dialog{padding:20px 16px}
+}
