@@ -3,6 +3,34 @@
 'use strict';
 const width=24;
 const empty=()=>({version:1,desks:[]});
+const roomName=value=>typeof value==='string'?value.trim().replace(/\s+/g,' '):'';
+const roomKey=value=>roomName(value).toLocaleLowerCase('de-DE');
+function roomsForCourse(id,slots={},courses={},classes={}){
+ const all=new Map(),own=new Map(),templates=[];
+ function remember(map,value){
+  const name=roomName(value),key=roomKey(name);
+  if(name&&!map.has(key))map.set(key,name);
+ }
+ for(const pair of Object.values(slots)){
+  for(const entry of [pair?.A,pair?.B]){
+   if(!entry?.room)continue;
+   remember(all,entry.room);
+   if(entry.courseId===id)remember(own,entry.room);
+  }
+ }
+ for(const [other,course] of Object.entries(courses)){
+  const plan=classes[other]?.seating;
+  if(plan?.version!==1||!roomName(plan.room))continue;
+  remember(all,plan.room);
+  if(other!==id&&plan.desks.length)templates.push({id:other,label:course.subject+' · '+course.group,plan});
+ }
+ const sort=(a,b)=>a.localeCompare(b,'de',{numeric:true});
+ return {suggested:own.size===1?[...own.values()][0]:'',rooms:[...own.values()].sort(sort).concat([...all].filter(([key])=>!own.has(key)).map(([,name])=>name).sort(sort)),templates:templates.sort((a,b)=>sort(a.label,b.label))};
+}
+function copyLayout(plan,template,newId){
+ if(!roomKey(plan.room)||roomKey(plan.room)!==roomKey(template.room))throw Error('Der Grundriss gehört zu einem anderen Raum.');
+ plan.desks=template.desks.map(d=>({id:newId(),x:d.x,y:d.y,vertical:d.vertical,seats:Array(d.seats.length).fill(null)}));
+}
 function size(desk){
  const double=desk.seats.length===2;
  return {w:double&&!desk.vertical?6:3,h:double&&desk.vertical?6:3};
@@ -66,7 +94,7 @@ function clearMissing(plan,students){
  const ids=new Set(students.map(s=>s.id));
  for(const desk of plan.desks)desk.seats=desk.seats.map(id=>ids.has(id)?id:null);
 }
-const api={empty,width,size,fits,add,move,rotate,assign,shuffledPlan,clearMissing};
+const api={empty,width,size,fits,add,move,rotate,assign,shuffledPlan,clearMissing,roomsForCourse,roomName,roomKey,copyLayout};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 else root.HblSeating=api;
 })(typeof window==='undefined'?globalThis:window);

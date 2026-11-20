@@ -25,6 +25,15 @@ window.hblCreateSeatView=function(host,page){
   const handle=[...host.querySelectorAll('[data-handle]')].find(el=>el.dataset.handle===selected);
   handle?.focus({preventScroll:true});
  }
+ function templateTools(room,templates){
+  const matches=templates.filter(t=>model.roomKey(t.plan.room)===model.roomKey(room));
+  if(!matches.length)return '';
+  return '<label>Tischanordnung aus <select data-template>'+matches.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.label)+'</option>').join('')+'</select></label>'+button('copy','Tischanordnung übernehmen');
+ }
+ function roomEditor(){
+  const {rooms,templates}=page.rooms();
+  return '<div class="seat-tools"><label>Raum <input data-room list="seat-room-options" maxlength="40" required placeholder="z. B. 226" value="'+esc(draft.room)+'"></label><datalist id="seat-room-options">'+rooms.map(name=>'<option value="'+esc(name)+'"></option>').join('')+'</datalist></div><div class="seat-tools" data-template-tools>'+templateTools(draft.room,templates)+'</div>';
+ }
  function render(){
   const data=page.read().data;
   if(draft&&(data!==source||baseline!==data?.seating||rosterKey!==JSON.stringify(data?.students))){
@@ -57,7 +66,9 @@ window.hblCreateSeatView=function(host,page){
   const board='<div class="seat-scroll" tabindex="0" aria-label="Raum mit Sitzplätzen"><div class="seat-room"><div class="seat-front">Tafel</div><div class="seat-board" style="height:'+Math.max(220,(bottom+(editing?3:0))*unitY)+'px">'+desks+(capacity?'':'<span class="seat-empty">Noch keine Tische eingerichtet.</span>')+'</div></div></div>';
   const count=students.length-placed.size;
   const summary=capacity+' Plätze · '+placed.size+' belegt'+(count?' · '+count+' ohne Platz':'');
-  host.innerHTML='<div class="seat-heading"><h2>Sitzplan</h2><span>'+summary+'</span></div><fieldset class="seat-fields"'+(busy?' disabled':'')+'><div class="seat-tools">'+controls+'</div>'+
+  const room=model.roomName(plan.room);
+  const headingRoom=!editing&&room?' · Raum '+esc(room):'';
+  host.innerHTML='<div class="seat-heading"><h2>Sitzplan'+headingRoom+'</h2><span>'+summary+'</span></div><fieldset class="seat-fields"'+(busy?' disabled':'')+'>'+(editing?roomEditor():'')+'<div class="seat-tools">'+controls+'</div>'+
    (preview?'<p><strong>Vorschau der Zufallsverteilung</strong></p>':'')+board+
    (count&&capacity?'<details><summary>Ohne Platz ('+count+')</summary><p>'+students.filter(s=>!placed.has(s.id)).map(s=>esc(person.get(s.id))).join(', ')+'</p></details>':'')+
    (editing?inspector(person,students):'')+
@@ -78,6 +89,11 @@ window.hblCreateSeatView=function(host,page){
  }
  async function save(){
   if(!draft||busy)return;
+  draft.room=model.roomName(draft.room);
+  if(!draft.room){
+   message='Bitte einen Raum für diesen Sitzplan eingeben oder auswählen.';
+   render();host.querySelector('[data-room]')?.focus();return;
+  }
   const data=page.read().data;
   if(source!==data||baseline!==data.seating||rosterKey!==JSON.stringify(data.students)){render();return;}
   busy=true;
@@ -100,7 +116,17 @@ window.hblCreateSeatView=function(host,page){
    switch(el.dataset.action){
     case 'edit':
      source=data;baseline=data.seating;rosterKey=JSON.stringify(data.students);
-     draft=structuredClone(baseline||model.empty());message='';render();break;
+     draft=structuredClone(baseline||model.empty());
+     draft.room=model.roomName(draft.room)||page.rooms().suggested;
+     message='';render();break;
+    case 'copy':{
+     const id=host.querySelector('[data-template]')?.value;
+     const template=page.rooms().templates.find(t=>t.id===id);
+     if(!template)throw Error('Die gewählte Tischanordnung ist nicht mehr verfügbar.');
+     if(draft.desks.length&&!confirm('Tische und Sitzverteilung im Entwurf ersetzen? Die übernommenen Plätze sind leer.'))break;
+     update(()=>{model.copyLayout(draft,template.plan,()=>crypto.randomUUID());selected=null;seat=0;});
+     break;
+    }
     case 'single':case 'double':
      update(()=>{selected=model.add(draft,el.dataset.action==='single'?1:2,crypto.randomUUID()).id;seat=0;});focusDesk();break;
     case 'move':update(()=>model.move(draft,desk,host.querySelector('[data-col]').valueAsNumber-1,host.querySelector('[data-row]').valueAsNumber-1));focusDesk();break;
@@ -119,6 +145,12 @@ window.hblCreateSeatView=function(host,page){
     case 'save':save();break;
    }
   }catch(error){message=error.message;render();}
+ });
+ host.addEventListener('input',event=>{
+  if(!event.target.matches('[data-room]')||!draft)return;
+  draft.room=event.target.value;
+  host.querySelector('[data-template-tools]').innerHTML=templateTools(draft.room,page.rooms().templates);
+  host.querySelector('.seat-status').textContent='';
  });
  host.addEventListener('change',event=>{
   if(!event.target.matches('[data-assign]'))return;
