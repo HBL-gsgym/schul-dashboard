@@ -51,6 +51,41 @@ Im nächsten kleinen Schritt genügt eine persönliche Kursliste. Schulbereiche,
 
 Die persönliche Kursverwaltung aus Schritt 1 ist umgesetzt: eigener Kursbestand im privaten Snapshot, Anlegen ohne Stundenplan, Umbenennen, Archivieren/Wiederherstellen und Kurs-Dropdown im Blockeditor. Bestehende IDs und Daten bleiben erhalten. Die folgenden Angaben zu v5.9.10 beschreiben den Ausgangspunkt der Planung; Classmanagement-Ausbau und Schulbetrieb sind weiterhin separat zu beauftragen.
 
+## Entwurf für den persönlichen Schülerdaten-Tresor
+
+Planungsstand für die persönliche Lehrkräfte-App auf Basis von v5.9.11. Stundenplan und Kursauswahl sollen auch bei gesperrtem Tresor funktionieren. Erst wenn die Lehrkraft eine Schülerliste, Mitarbeit, einen Sitzplan oder Noten öffnet, fragt HBL nach der Entsperrung. Bis zur technischen Prüfung und schulischen Freigabe gilt der Pilotbetrieb mit erfundenen Schülerdaten.
+
+### Was heute gespeichert wird und was in den Tresor gehört
+
+Heute enthält `prepDone.__participation` unter anderem Schülerlisten und Bewertungen. In `cloud.js` sendet `cloudWrite` den gesamten persönlichen Stand als lesbares JSON an `hbl_save_snapshot`. Auch `rememberPending` hält bei ausstehenden Änderungen eine vollständige Kopie im Browserspeicher. `downloadLocalBackup` kann sie als JSON-Datei herunterladen. Diese drei Wege müssen gemeinsam umgestellt werden.
+
+Künftig gehören Namen, Schüler-IDs samt Kurszuordnung, Mitarbeit, Bewertungen, personenbezogene Kommentare und Sitzplätze in einen eigenen verschlüsselten Datenbestand. Die Module verwenden nach dem Entsperren dieselben stabilen Schüler- und Kurs-IDs. Der allgemeine Speicherweg übernimmt nur ausdrücklich vorgesehene Dashboard-Felder. Freitext außerhalb des Tresors, etwa in Aufgaben oder Chats, fällt außerhalb seines Schutzes. Die Oberfläche muss diese Grenze bei der Eingabe erkennbar machen.
+
+### Einrichtung, Gerätewechsel und Wiederherstellung
+
+| Situation | Ablauf für die Lehrkraft |
+| --- | --- |
+| Erster Start | Nach dem HBL-Login wählt die Lehrkraft eine eigene Tresor-Passphrase. Das Gerät erzeugt einen zufälligen Datenschlüssel und einen unabhängigen, zufälligen Wiederherstellungscode. Die Lehrkraft bewahrt den Code außerhalb von HBL auf und bestätigt durch erneute Eingabe, dass sie ihn gesichert hat. Erst dann wird der Tresor aktiviert. |
+| Zweites Gerät | Mit demselben HBL-Konto anmelden und dort die Tresor-Passphrase eingeben. Das Gerät lädt den verschlüsselten Stand und öffnet ihn lokal. Das erste Gerät darf dabei ausgeschaltet sein. |
+| Sperren und Abmelden | Eine Sperre von Hand, Inaktivität, Neuladen oder Abmeldung verlangen eine erneute Entsperrung. HBL entfernt sichtbare Schülerdaten und Schlüsselreferenzen aus der Sitzung. Vor Bestätigung eines Speichervorgangs muss die Änderung mindestens lokal verschlüsselt gesichert sein. |
+| Passphrase vergessen | Nach der Kontoanmeldung öffnet der Wiederherstellungscode den Datenschlüssel lokal. Eine neue Passphrase und ein neuer Code ersetzen die bisherigen Schlüsselverpackungen gemeinsam. Eine Rücksetzung des HBL-Logins allein öffnet den Tresor nicht. Fehlen beide Geheimnisse und ist kein Gerät mehr entsperrt, kann auch der Support die Daten nicht wiederherstellen. |
+| Gerät verloren | Auf dem Ersatzgerät den Tresor öffnen und die verlorene Sitzung widerrufen. Bei möglichem Schlüsselzugriff zusätzlich den Datenschlüssel wechseln und den aktuellen Bestand neu verschlüsseln. Bereits gelesene Daten, ältere Kopien und vorhandene Downloads lassen sich nicht zuverlässig zurückholen. |
+
+### Speicherung, Schlüssel und Synchronisierung
+
+- Der Browser verschlüsselt die Inhalte vor jedem dauerhaften Schreiben. Er verpackt den zufälligen Datenschlüssel zweimal, einmal mit einem aus der Passphrase und einem zufälligen Salt abgeleiteten Schlüssel und einmal mit einem getrennten Schlüssel aus dem hochentropischen Wiederherstellungscode. So reicht bei einem gewöhnlichen Passphrasewechsel eine neue Verpackung. Ein Schlüsselwechsel nach einem Verlust muss dagegen auch die Daten und beide Verpackungen erneuern.
+- Für den Prototyp sind authentifizierte Verschlüsselung mit AES-GCM über Web Crypto und Argon2id für die Passphrase vorgesehen. Pro Verschlüsselung ist ein unter demselben Schlüssel eindeutiger Nonce erforderlich, auch bei zwei offline arbeitenden Geräten. Konto, Tresor, Schlüsselgeneration und Format werden an die Integritätsprüfung gebunden. Bibliothek, Nonce-Verfahren und Ableitungsparameter vor der Umsetzung festlegen und auf einem typischen Schulhandy prüfen. [Web Cryptography API](https://www.w3.org/TR/WebCryptoAPI/) · [Argon2, RFC 9106](https://www.rfc-editor.org/rfc/rfc9106)
+- Supabase speichert verschlüsselte Inhalte und Schlüsselverpackungen sowie die nötigen Metadaten, etwa Konto-ID, Revision und Schlüsselgeneration. Zugriff auf die gespeicherten Zeilen wird zusätzlich auf das jeweilige Konto begrenzt. Datenbankleser sollen aus einem Abzug allein keine Schülerdaten lesen können. Eine schwache Passphrase bleibt offline erratbar. Ein kompromittiertes Gerät oder manipulierter Web-App-Code kann Daten im entsperrten Zustand lesen. [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- Prototyp mit einem verschlüsselten Bestand je Lehrkraft und eigener Revision. Ein Schreibversuch muss zur erwarteten Revision und Schlüsselgeneration passen. Bei Konflikten bleiben der Serverstand und der verschlüsselte lokale Entwurf erhalten. Erst nach dem Entsperren entscheidet die Lehrkraft über die Übernahme. Ein veralteter Tab darf nach Schlüsselwechsel oder Kontowechsel keine Daten zurückschreiben.
+- Offline-Änderungen und Tresor-Exporte enthalten ausschließlich verschlüsselte Nutzdaten. Ein wiederherstellbares Exportformat umfasst auch Formatversion, Schlüsselverpackungen und Ableitungsparameter. Die Lehrkraft benötigt ein gültiges Geheimnis zum Stand des Exports. Schülerdaten, Schlüssel und Geheimnisse dürfen weder im Service-Worker-Cache noch in Fehlerprotokollen oder Push-Vorschauen landen.
+
+### Etappen und Abnahme
+
+1. **Lokaler Prototyp mit erfundenen Daten.** Einen Schülerdatensatz mit Bewertung eingeben, sperren, neu öffnen und einen verschlüsselten Export in einem zweiten leeren Browserprofil wiederherstellen. Falsche Passphrase, veränderter Export und fehlender Code dürfen weder Daten überschreiben noch still einen leeren Ersatztresor anlegen. Mit eindeutigen Testwerten prüfen, was tatsächlich in Browserspeicher und Export steht.
+2. **Synchronisierung mit zwei Geräten.** Nach eigener Freigabe den verschlüsselten Speicherweg ergänzen. Zwei Geräte desselben Kontos, ein fremdes Konto, parallele Offline-Änderungen, Wiederherstellung und einen veralteten Schreibversuch nach Schlüsselwechsel prüfen. Auch bei einem Netzabbruch während der Wiederherstellung muss ein vollständiger, wieder lesbarer Stand erhalten bleiben.
+3. **Bestehende Daten übernehmen.** Zuerst Feldzuordnung, ausstehende Geräteänderungen, Importe und Exporte inventarisieren. Für jedes Konto einen wiederholbaren Übergang planen, alte App-Versionen serverseitig am erneuten Hochladen von Schülerdaten hindern und Kurs-/Schüler-IDs erhalten. Verschlüsselten Bestand zurücklesen und mit dem Ausgangsstand vergleichen. Erst nach erfolgreichem Vergleich und ausdrücklicher Freigabe alte Klartextbestände bereinigen. Frühere Backups und Downloads getrennt berücksichtigen.
+4. **Einsatz mit echten Schülerdaten.** Vorher Schlüsselverwaltung und Speicherwege unabhängig prüfen lassen und die schulischen Voraussetzungen klären. Für gemeinsame Schulkurse sind eigene Freigaben, Empfängerschlüssel und Regeln beim Ausscheiden einer Lehrkraft erforderlich. Die persönliche Passphrase bleibt bei der jeweiligen Lehrkraft.
+
 ## Ist-Stand und technische Leitplanken
 
 v5.9.10 besitzt persönliche Snapshots mit Revisionskonflikterkennung, Mitarbeit mit Schüler-IDs sowie eingefrorene Kurskennungen in Stundenplaneinträgen (`hbl-course-ids.js`). Kurse werden derzeit überwiegend aus dem Stundenplan abgeleitet. Eine eigenständige Kursverwaltung ist noch nicht vorhanden.
