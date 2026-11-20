@@ -28,6 +28,17 @@ Dies ist die zentrale Produktvision. **Software folgt dem Arbeitsablauf der Lehr
 
 **Diese aktuelle Workflow-Vorgabe ersetzt ältere pauschale „erst testen/PR/Freigabe, dann veröffentlichen“-Regeln in der Dokumentation und in Konzept-Issues.** Fachliche Anforderungen, Konten-/Datenerhalt, Geheimnisschutz und der Umfang des Nutzerauftrags gelten weiterhin. Ein ausdrücklich nur lesender Prüfauftrag bleibt lesend.
 
+## Tokenbewusst und zügig arbeiten (20.11.2026)
+
+- **Gezielt lesen:** Nach dem Einstieg nur betroffene Dateien, relevante Codeabschnitte und geänderte Vorgaben prüfen. Dokumentation nicht bei jeder Kleinigkeit vollständig erneut lesen. Bekannte Zusammenhänge aus der laufenden Sitzung weiterverwenden; vor Änderungen den relevanten aktuellen Stand trotzdem kontrollieren.
+- **Kurz kommunizieren:** Abschluss möglichst als „Geändert – geprüft – live – nächster Schritt“ in wenigen Sätzen. Fachbegriffe kurz erklären. Ausführliche Pläne, Begründungen und Berichte nur bei Bedarf, Problemen, Meilensteinen oder auf Nachfrage. Fortschrittsmeldungen knapp und nur mit neuen Erkenntnissen.
+- **Checks einmal und passend ausführen:** Vorhandene schnelle Checks nutzen; nach erfolgreichem Lauf nur bei weiteren relevanten Änderungen oder ungeklärten Fehlern wiederholen. Zusätzliche Tests gezielt auf das geänderte Verhalten und konkrete Risiken begrenzen. Keine komplette Testkampagne für jede Kleinigkeit.
+- **Browser punktuell einsetzen:** Sichtbare Änderungen und wichtige betroffene Bedienabläufe prüfen. Keine vollständige Browserrunde für reine Backend-, Dokumentations- oder kleine technische Änderungen ohne UI-Auswirkung. Grenzen der tatsächlichen Prüfung ehrlich nennen.
+- **Zusammengehörige Wünsche bündeln:** Mehrere bereits beauftragte kleine Anpassungen möglichst in einem Durchgang umsetzen und veröffentlichen. Nicht jeden technischen Teilschritt erneut bestätigen lassen; keine unbestellten Funktionen hinzufügen.
+- **Zusatzarbeit vermeiden:** Keine neuen Testsysteme, umfangreichen Refactorings, langen Architekturpläne oder ausführlichen Zusatzdokumente als Nebenprodukt einer kleinen Aufgabe. Vorhandene Werkzeuge und Tests wiederverwenden.
+- **Tool-Ausgaben begrenzen:** Suchen auf relevante Pfade/Muster eingrenzen, nur notwendige Ausschnitte auslesen und unabhängige Abfragen bündeln. Erfolgreiche Checks kurz zusammenfassen; ausführliche Logs und Diffs nur bei konkretem Bedarf. Keine großen Datei-, Bild- oder Protokollausgaben ohne Nutzen für die aktuelle Entscheidung.
+- Token sparen durch gezielteres Arbeiten, nicht durch Weglassen erforderlicher Umsetzung, Verschweigen von Fehlern oder Behaupten ungetesteter Erfolge. Geheimnisschutz, Konten-/Datenerhalt und ausdrücklich verlangte Prüfungen bleiben verbindlich.
+
 ## Unverhandelbare Regeln
 1. **Keine echten Schülerdaten in Tests oder Demos**: keine Schülernamen, Bewertungen, Beobachtungen, Gesundheitsdaten oder sonstige personenbezogene Schuldaten in Supabase, GitHub, Logs, Beispieldateien oder Screenshots verwenden. Bis zur schulischen Freigabe ausdrücklich Demo-/Testbetrieb.
 2. **Pilotbetrieb und Daten schützen**: Im aktuellen Arbeitsmodus sind die für einen ausdrücklich erteilten Umsetzungsauftrag nötigen Supabase-Änderungen und Deployments direkt erlaubt. Auftragsumfang einhalten, Konten und gespeicherte Daten erhalten; keine ungefragten Löschungen, Resets oder fachfremden Konfigurationsänderungen. Bei reinen Prüfaufträgen lesend arbeiten.
