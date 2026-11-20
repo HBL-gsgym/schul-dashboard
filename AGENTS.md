@@ -3,7 +3,7 @@
 > Diese Datei gilt für das gesamte Repository. Zuerst lesen, danach `README.md` und die Dokumentation unter `docs/`. Sprache für Kommunikation und sichtbare Benutzeroberfläche: Deutsch.
 
 ## Zweck und aktueller Stand
-Dies ist ein **öffentliches GitHub-Repository** für den **Pilotbetrieb** einer schulischen Lehrer-Dashboard-Web-App. Der im Repository vorgefundene Stand ist **v5.9.3** (18.11.2026). Die tatsächlich ausgecheckten Dateien sind immer maßgeblich; Dokumentation kann veralten. Das Projekt liegt unter `HBL-gsgym/schul-dashboard`; der Produktions-Frontend-Link ist https://hbl-gsgym.github.io/schul-dashboard/.
+Dies ist ein **öffentliches GitHub-Repository** für den **Pilotbetrieb** einer schulischen Lehrer-Dashboard-Web-App. Der veröffentlichte Ausgangsstand dieser Arbeitsregel ist **v5.9.4** (20.11.2026). Die tatsächlich ausgecheckten Dateien sind immer maßgeblich; Dokumentation kann veralten. Das Projekt liegt unter `HBL-gsgym/schul-dashboard`; der Produktions-Frontend-Link ist https://hbl-gsgym.github.io/schul-dashboard/.
 
 Funktionen: individuelle A/B-Stundenpläne, Pausenaufsichten, Aufgaben/Korrekturen/Vorbereitung, Brandenburg-Schuljahreskalender und Schulveranstaltungen/Unterrichtsausfälle, Mitarbeitserfassung, individuelle Links und Kachel-Layout, Supabase-Login und Benutzerverwaltung mit manuellen Einladungs-/Passwortlinks, Lehrerzimmer, Direkt- und Gruppenchats, Web-Push/PWA.
 
@@ -13,13 +13,28 @@ Funktionen: individuelle A/B-Stundenpläne, Pausenaufsichten, Aufgaben/Korrektur
 
 Dies ist die zentrale Produktvision. **Software folgt dem Arbeitsablauf der Lehrkraft – nicht umgekehrt.** Bei Produktentscheidungen Personalisierung und selbstbestimmte Arbeitsweisen erhalten: frei wählbare Links, individuell geordnete Kategorien und Kacheln, persönliche Werkzeuge und Stundenpläne. Gemeinsame schulische Grundfunktionen dürfen sinnvoll standardisiert sein, aber individuelle Anpassungen nicht grundlos blockieren. Keine starren, herstellerdefinierten Linklisten, erzwungenen Workflows oder unnötige zentrale Abhängigkeiten einführen. Neue Funktionen nach dem Prinzip „gemeinsamer Kern + persönliche Freiheit“ entwerfen; Anpassungen einfach und zugänglich halten.
 
+## Aktueller Arbeitsmodus im kleinen Pilotbetrieb (20.11.2026)
+
+**Ausdrückliche Vorgabe des Projektverantwortlichen:** Aktuell nutzen nur der Entwickler, sein eigener Testaccount und zwei befreundete Feedbackgeber das Dashboard. Für ausdrücklich beauftragte Aufgaben deshalb zügig und direkt arbeiten:
+
+- Änderungen im normalen Pilotbetrieb direkt auf GitHub (`main`/GitHub Pages) und, soweit für den Auftrag erforderlich, direkt im bestehenden Supabase-Projekt umsetzen und veröffentlichen. Der Umsetzungsauftrag umfasst die dafür nötigen Frontend-, Edge-Function- und überschaubaren Datenbankänderungen; keine zusätzliche Freigabe für jeden technischen Teilschritt verlangen.
+- Keine obligatorischen PR-Entwürfe, getrennten Testinstanzen, umfassenden Testserien oder wiederholten Bestätigungsrunden vor jeder kleinen Veröffentlichung. Vorhandene schnelle Checks und gezielte Funktionsprüfungen nach Art und Risiko der Änderung einsetzen; einen bestandenen Check ohne neue Ursache nicht wiederholen. Reine Dokumentationsänderungen benötigen keinen Anwendungstest.
+- **Ausnahmen:** Bei echten Meilensteinen (z. B. neue Hauptversion, schulübergreifende Architektur, grundlegender Rollen-/Datenmodellumbau) zuerst einen kleinen technischen Plan und angemessene Abnahmetests mit dem Nutzer abstimmen. Ebenso ausdrücklich verlangte Prüf-, PR-, Test- oder Freigabeschritte beachten.
+- Nur an ausdrücklich beauftragten Aufgaben arbeiten. Roadmap-Issues sind Orientierung und kein Startauftrag für neue Versionen oder Migrationen außerhalb des aktuellen Auftrags.
+- Bestehende Konten, IDs, Berechtigungen und gespeicherte Daten bewahren. Datenlöschung, Reset, Kontolöschung oder andere irreversible Eingriffe sind durch diesen Arbeitsmodus nicht pauschal genehmigt; Kostenpflichtiges ebenfalls nicht ungefragt beauftragen.
+- Vor Änderungen den tatsächlich betroffenen Code und bei Backend-Arbeit den relevanten Datenbank-/Function-Stand prüfen. Kleine nachvollziehbare Änderungen, geeignete Versionierung und einen praktikablen Rückweg erhalten.
+- Nach Umsetzung kurz auf Deutsch erklären, was geändert und veröffentlicht wurde, was geprüft wurde und welche konkreten Grenzen offen sind. Nicht geprüfte Abläufe nicht als verifiziert darstellen.
+- Kommunikation verständlich halten, Fachbegriffe kurz erklären und am Ende den nächsten sinnvollen Schritt nennen. Nur nach Zustimmung fragen, wenn ein neuer Auftrag, eine echte offene Entscheidung oder eine der obigen Ausnahmen vorliegt.
+
+**Diese aktuelle Workflow-Vorgabe ersetzt ältere pauschale „erst testen/PR/Freigabe, dann veröffentlichen“-Regeln in der Dokumentation und in Konzept-Issues.** Fachliche Anforderungen, Konten-/Datenerhalt, Geheimnisschutz und der Umfang des Nutzerauftrags gelten weiterhin. Ein ausdrücklich nur lesender Prüfauftrag bleibt lesend.
+
 ## Unverhandelbare Regeln
 1. **Keine echten Schülerdaten in Tests oder Demos**: keine Schülernamen, Bewertungen, Beobachtungen, Gesundheitsdaten oder sonstige personenbezogene Schuldaten in Supabase, GitHub, Logs, Beispieldateien oder Screenshots verwenden. Bis zur schulischen Freigabe ausdrücklich Demo-/Testbetrieb.
-2. **Produktivsystem schützen**: Ohne gesonderte ausdrückliche Genehmigung des Nutzers **keine** produktiven Supabase-SQL-/RLS-/Auth-/Edge-Function-/Cron-/Secret-Änderungen, keine Datenmanipulationen und keine produktiven Zugangstests. Insbesondere keine echten Konten anlegen, sperren oder löschen. Bei Prüfaufträgen standardmäßig nur lesend arbeiten.
-3. **Git sicher benutzen**: Nach Möglichkeit Feature-Branch + Pull Request statt Änderungen direkt auf `main`. `main` wird von GitHub Pages ausgeliefert. Keine destruktiven Git-Befehle oder unkontrollierten Merges.
+2. **Pilotbetrieb und Daten schützen**: Im aktuellen Arbeitsmodus sind die für einen ausdrücklich erteilten Umsetzungsauftrag nötigen Supabase-Änderungen und Deployments direkt erlaubt. Auftragsumfang einhalten, Konten und gespeicherte Daten erhalten; keine ungefragten Löschungen, Resets oder fachfremden Konfigurationsänderungen. Bei reinen Prüfaufträgen lesend arbeiten.
+3. **Git nachvollziehbar benutzen**: Im normalen Pilotbetrieb direkt auf `main` veröffentlichen; PRs bei Meilensteinen oder auf Nutzerwunsch. `main` wird von GitHub Pages ausgeliefert. Keine destruktiven Git-Befehle oder unkontrollierten Merges; fremde Änderungen bewahren.
 4. **Secrets niemals veröffentlichen**: Keine service_role-/secret-Keys, SMTP-Zugangsdaten, VAPID-Private-Keys, Cron-Tokens, JWTs, Einladungs-/Recovery-Links, Cookie-/Session-Daten oder tatsächliche Nutzerdaten committen oder ausgeben. Publishable/anon-Keys und öffentliche VAPID-Keys sind keine Secret-Keys, müssen aber klar als solche erkennbar bleiben.
 5. **Autorisierung gehört in die Datenbank**: UI-Sperren sind keine Sicherheit. Änderungen an Auth, Chat-Gruppen oder Einladungen müssen RLS, Mitgliedschaften, gesperrte Nutzer und Privatsphäre prüfen. Kein ungeprüfter Einsatz von `SECURITY DEFINER`.
-6. **Nicht ungefragt neu bauen**: Kein Framework-Wechsel, keine Umstrukturierung der riesigen `index.html`, keine Ersetzung des Snapshotspeichers und kein großer Refactor als Nebeneffekt einer kleinen Aufgabe. Erst Analyse, kleinen Änderungsplan und Tests.
+6. **Nicht ungefragt neu bauen**: Kein Framework-Wechsel, keine Umstrukturierung der riesigen `index.html`, keine Ersetzung des Snapshotspeichers und kein großer Refactor als Nebeneffekt einer kleinen Aufgabe. Zuerst den betroffenen Bestand prüfen; größere Architekturänderungen nur im ausdrücklich beauftragten Umfang planen und umsetzen.
 7. **Bestandsfunktionen erhalten**: A/B-Zuordnung (A=grün, B=blau), vier 90-min-Unterrichtsblöcke, Ferien/Feiertage, bewertete Mitarbeitstermine, Aufsichten, mobil/PWA, Anmelde- und Chatrechte müssen funktionsfähig bleiben.
 8. **Datenschutz & Zugänglichkeit**: Eingaben validieren, fremde Inhalte sicher als Text rendern, keine Geheimnisse in URL/Logs; mobile Bedienbarkeit, Tastatur und nachvollziehbare Fehlermeldungen berücksichtigen.
 
@@ -38,10 +53,10 @@ Weitere Details: `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/SECURITY.m
 1. Auftrag und betroffene Module eingrenzen; reale Dateien lesen, nicht aus alten Chat-Zusammenfassungen auf Code schließen.
 2. Vor Änderungen Abhängigkeiten prüfen (DOM, globale Hooks, Speicher-/Revisionslogik, RLS, Edge Functions, SW).
 3. Einen überschaubaren Plan und mögliche Risiken nennen. Bei Audit/„prüfen“ **keine Code-/DB-Änderungen**, bis der Nutzer ausdrücklich Umsetzung beauftragt.
-4. Kleine, verständliche Commits; Änderungen mit Tests belegen. Lokaler Basischeck: `npm test` (nur Node.js, keine Installation externer Pakete nötig).
-5. Bei Änderungen an JS/CSS `index.html`-Referenzen und `sw.js`-App-Shell/CACHE sorgfältig synchron halten. HTML-Inline-JS auf Syntax prüfen; PWA alt/neu testen.
+4. Kleine, verständliche Commits und angemessene gezielte Prüfung. `npm test` ist der schnelle vorhandene Basischeck bei Codeänderungen; keine vollständige Testkampagne als Standard-Voraussetzung für kleine Veröffentlichungen.
+5. Bei Änderungen an JS/CSS `index.html`-Referenzen und `sw.js`-App-Shell/CACHE sorgfältig synchron halten. HTML-Inline-JS bei Änderungen auf Syntax prüfen; betroffene PWA-Abläufe gezielt prüfen.
 6. Für UI-Funktionen mindestens Desktop und Smartphone (schmale Ansicht), Hell-/Dunkelmodus, Login/Logout und Fehlersituationen gedanklich oder in Tests prüfen.
-7. Bei Auth/Chat/PostgreSQL zusätzlich RLS-Negativtests mit *synthetischen* Konten in einer **separaten Testdatenbank** planen. Ohne Genehmigung nicht in Produktion ausführen.
+7. Bei Auth/Chat/PostgreSQL die betroffenen Berechtigungen gezielt prüfen. Die vorhandene getrennte Testinstanz bei Bedarf nutzen; sie ist keine Pflicht für jede Änderung. Umfangreiche RLS-/Mehrkontentests bei Meilensteinen oder auf Nutzerwunsch. Nur synthetische Testdaten verwenden.
 8. Abschluss: geänderte Dateien, geprüfte Tests, nicht geprüfte Risiken sowie benötigte Deploy-/Migrationsschritte genau benennen; niemals ungetestete Funktionen als verifiziert darstellen.
 
 ## Übergabe des ChatGPT-Projektwissens
@@ -49,7 +64,7 @@ Weitere Details: `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/SECURITY.m
 Lies auch `docs/CHATGPT_TO_CODEX.md`. Diese Datei bündelt Entscheidungen zu Produktvision, freien Links, A/B-Stundenplänen, Mitarbeitserhalt, geschlossenem Kollegiumszugang, Gruppenchats, Push und offenen Tests. Sie ist eine Kontextübergabe und kein automatischer Import des gesamten Chatverlaufs. Im Konfliktfall ist der tatsächliche Code der maßgebliche technische Ist-Stand.
 
 ## Prioritäten für die erste Codex-Sitzung
-**Zuerst nur Lesemodus**: technische Bestandsaufnahme, Sicherheits-/Funktionsrisiken priorisieren, fehlende Tests aufzeigen und einen kleinen PR-Plan vorlegen. Einstieg: `docs/CODEX_START.md`.
+Die erste lesende Bestandsaufnahme wurde bereits durchgeführt. `docs/CODEX_START.md` bleibt als Vorlage für ausdrücklich beauftragte Audits erhalten und ist keine erneute Freigabeschleife für spätere Umsetzungsaufträge. Für laufende Arbeit gilt der aktuelle Pilot-Arbeitsmodus oben.
 
 ## Fachliche Regeln
 - Unterricht: vier Blöcke: 08:15–09:45, 10:05–11:35, 12:20–13:50, 14:00–15:30.
