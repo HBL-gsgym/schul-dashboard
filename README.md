@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.12 · Pilotprojekt · 20.11.2026**
+**Stand: v5.9.13 · Pilotprojekt · 20.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -23,11 +23,19 @@ Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **S
 
 ## Meine Kurse verwenden
 
-Unter **Mitarbeit → Meine Kurse** legst du Fach und Klasse/Kurs an, auch ohne Stundenplan. Anschließend unter **Wochenstundenplan → Bearbeiten** einen Block öffnen, den Kurs auswählen und Raum sowie A/B-Woche festlegen. Umbenennen und Archivieren erfolgen in „Meine Kurse“; ein belegter Kurs muss vor dem Archivieren aus dem Stundenplan entfernt werden.
+Unter **Kurse → Meine Kurse** legst du Fach und Klasse/Kurs an, auch ohne Stundenplan. Anschließend unter **Wochenstundenplan → Bearbeiten** einen Block öffnen, den Kurs auswählen und Raum sowie A/B-Woche festlegen. Umbenennen und Archivieren erfolgen in „Meine Kurse“. Ein belegter Kurs muss vor dem Archivieren aus dem Stundenplan entfernt werden.
+
+## Kursübersicht und Noten in v5.9.13
+
+**Kurs öffnen** führt zur Übersicht mit einem Platz für den späteren Sitzplan. Über **Mitarbeit** und **Noten** öffnest du die jeweilige Seite für denselben Kurs. Die Schülerliste wird weiterhin in der Mitarbeit gepflegt. Vorhandene Mitarbeit-Direktlinks funktionieren weiter.
+
+Unter **Noten → Bewertungsbereiche und Skala** wählst du pro Kurs Noten von 1 bis 6 oder Punkte von 0 bis 15. Lege Bereiche mit Prozentgewichten an und füge mit **+ Nachweis** einzelne Spalten hinzu. Titel und Datum sind optional. Über den Spaltenkopf kannst du einen Nachweis bearbeiten. Bereiche lassen sich umsortieren oder vorübergehend deaktivieren. Bewertete Bereiche und Spalten sind vor dem Entfernen geschützt.
+
+Jeder Bereichsmittelwert berücksichtigt die ausgefüllten Noten. Ein gewichteter Gesamtwert erscheint, sobald die aktiven Gewichte zusammen 100 % ergeben und für die Person in jedem positiv gewichteten Bereich mindestens eine Note steht. Der angezeigte Wert hat zwei Nachkommastellen. Die Entscheidung über eine Endnote bleibt bei der Lehrkraft. Die Einträge werden mit dem persönlichen Dashboard gespeichert. Im Pilotbetrieb ausschließlich erfundene Namen und Noten verwenden.
 
 ## Kursnotiz in v5.9.12
 
-In der Kurswahl unter **Mitarbeit** öffnet **+ Kursnotiz** ein kurzes Textfeld für den aktuellen Unterrichtsstand (bis zu 240 Zeichen). Nach dem Speichern steht die Notiz direkt auf der Kurskarte neben Schülerzahl und Blockfortschritt. Zum Ändern die Notiz antippen. Zum Entfernen das Feld leeren und speichern.
+In der Kurswahl öffnet **+ Kursnotiz** ein kurzes Textfeld für den aktuellen Unterrichtsstand (bis zu 240 Zeichen). Nach dem Speichern steht die Notiz direkt auf der Kurskarte neben Schülerzahl und Blockfortschritt. Zum Ändern die Notiz antippen. Zum Entfernen das Feld leeren und speichern.
 
 ## Änderungen in v5.9.11
 
