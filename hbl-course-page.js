@@ -5,7 +5,7 @@ const grades=window.HblGradebook;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const format=value=>value.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
 const makeId=()=>crypto.randomUUID();
-let page,serial=0;
+let page,seatView,serial=0;
 function link(view,label,style='part-button'){
  return '<a class="'+style+'" href="?'+view+'='+encodeURIComponent(page.id)+'">'+label+'</a>';
 }
@@ -31,7 +31,11 @@ function refresh(){
  title.textContent=page.mode==='noten'?'Noten · '+name:name;
  document.title=title.textContent+' · Schul-Dashboard';
  if(page.mode==='kurs'){
-  host.innerHTML='<section class="part-pane"><h2>Sitzplan</h2><div class="seat-preview">Für diesen Kurs ist noch kein Sitzplan eingerichtet.</div></section><nav class="course-choices" aria-label="Kursbereiche">'+link('mitarbeit','Mitarbeit')+link('noten','Noten')+'</nav>';
+  if(!host.querySelector('.seat-section')){
+   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><nav class="course-choices" aria-label="Kursbereiche">'+link('mitarbeit','Mitarbeit')+link('noten','Noten')+'</nav>';
+   seatView=window.hblCreateSeatView(host.querySelector('.seat-section'),page);
+  }
+  seatView.render();
   return;
  }
  if(data?.gradebook&&data.gradebook.version!==1){host.textContent='Dieses Notenbuch benötigt eine neuere App-Version.';return;}
@@ -95,6 +99,7 @@ function onChange(event){
  host.querySelector(selector)?.focus({preventScroll:true});
 }
 function onClick(event){
+ if(page.mode!=='noten')return;
  const button=event.target.closest('button');
  if(!button||!page.read().data)return;
  const book=page.read().data.gradebook||grades.empty(),d=button.dataset;
