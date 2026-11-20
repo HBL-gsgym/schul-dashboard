@@ -35,7 +35,7 @@
         table.parentNode.insertBefore(hint,table);
       }
     }else if(document.getElementById('dashboardBoard')){
-      const items=[['⌂','Heute','unterricht'],['☑','Aufgaben','aufgaben'],['✎','Mitarbeit','mitarbeit'],['▦','Plan','stundenplan']];
+      const items=[['⌂','Heute','unterricht'],['☑','Aufgaben','aufgaben'],['▦','Kurse','mitarbeit'],['▦','Plan','stundenplan']];
       for(const [icon,label,id] of items){
         nav.appendChild(createButton(icon,label,()=>{
           const tile=document.querySelector('.dashboard-tile[data-tile="'+id+'"]');

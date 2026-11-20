@@ -1,0 +1,31 @@
+.course-workspace{box-sizing:border-box;width:min(100%,78rem);margin:auto;padding:clamp(14px,3vw,40px);color:var(--text)}
+.course-workspace h1{font-size:clamp(24px,4vw,36px);margin:16px 0}
+.course-workspace .part-pane h2{margin:0}
+.seat-preview{min-height:clamp(14rem,40vh,27rem);margin-top:12px;display:grid;place-items:center;padding:1rem;text-align:center;color:var(--muted);background:var(--panel2);border:1px dashed var(--line);border-radius:12px}
+.course-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.course-choices a{text-align:center;font-size:1rem;padding:14px}
+.grade-pilot{margin:0 0 12px;color:var(--muted);font-size:.83rem}
+.course-workspace summary{cursor:pointer;font-weight:700;margin:4px 0}
+.grade-settings{display:grid;gap:10px;padding:12px 0;justify-items:start}
+.grade-settings label,.grade-dialog label{font-weight:600}
+.grade-area,.grade-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.grade-area{width:100%;padding:8px 0;border-bottom:1px solid var(--line)}
+.grade-area b{overflow-wrap:anywhere}
+.grade-area span{color:var(--muted);margin-right:auto}
+.grade-scroll{max-height:65vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.grade-scroll table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+.grade-scroll th,.grade-scroll td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.grade-scroll th{background:var(--panel2)}
+.grade-scroll thead{position:sticky;top:0;z-index:2}
+.grade-scroll tr>th[scope=row],.grade-scroll th[rowspan]:first-child{position:sticky;left:0;text-align:left;min-width:7rem;max-width:13rem;overflow-wrap:anywhere}
+.grade-scroll button,.grade-scroll select,.grade-settings select,.grade-dialog input,.grade-dialog select{font:inherit;color:var(--text);background:var(--panel);border-radius:6px;border:1px solid var(--line);padding:6px}
+.grade-scroll th button{cursor:pointer;font-weight:600;max-width:12rem;overflow-wrap:anywhere}
+.grade-scroll th small{display:block}
+.grade-total,.grade-mean{font-weight:700}
+.grade-dialog{box-sizing:border-box;width:min(26rem,calc(100% - 2rem));max-height:85vh;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text)}
+.grade-dialog::backdrop{background:rgba(0,0,0,.45)}
+.grade-dialog form,.grade-dialog label:not(:has([type=checkbox])){display:grid;gap:7px}
+.grade-dialog form{gap:14px}
+.grade-dialog h2,.grade-dialog p{margin:0}
+.grade-dialog p:empty{display:none}
+@media(max-width:600px){.course-workspace{padding:12px}.grade-scroll td,.grade-scroll th{padding:5px}.grade-scroll select{min-height:40px}}

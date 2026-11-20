@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.12</title>
+<title>Schul-Dashboard HBL · v5.9.13</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1329,8 +1329,11 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="icon" href="./hbl-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="./hbl-icon-180.png">
 <script src="./hbl-course-ids.js?v=5.9.10"></script>
-<script src="./hbl-courses.js?v=5.9.11"></script>
-<script defer src="./mobile.js?v=3.3"></script>
+<script src="./hbl-courses.js?v=5.9.13"></script>
+<script src="./hbl-grades.js?v=5.9.13"></script>
+<script src="./hbl-course-page.js?v=5.9.13"></script>
+<link rel="stylesheet" href="./hbl-course-page.css?v=5.9.13">
+<script defer src="./mobile.js?v=5.9.13"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.9.6-mobile"></script>
@@ -2203,7 +2206,7 @@ const HBL_TILE_SPECS=[
  {id:"links",selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
  {id:"stundenplan",selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
- {id:"mitarbeit",selector:"section.participation-overview",title:"Mitarbeit",span:12}
+ {id:"mitarbeit",selector:"section.participation-overview",title:"Kurse",span:12}
 ];
 const HBL_TILE_WIDTHS=[2,3,4,6,12];
 let hblDraggedTile=null;
@@ -2397,7 +2400,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.12 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.13 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2515,7 +2518,7 @@ function renderHome(){
 
 
     <section class="participation-overview" aria-label="Mitarbeit der Klassen und Kurse">
-      <div class="section-title"><h2>Mitarbeit</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenCourseManager()">Meine Kurse</button><span class="mini-note">Klasse oder Kurs auswählen · Bewertungen werden automatisch gesichert</span></div>
+      <div class="section-title"><h2>Kurse</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenCourseManager()">Meine Kurse</button><span class="mini-note">Klasse oder Kurs auswählen</span></div>
       <div class="participation-grid" id="participationOverview"></div>
     </section>
 
@@ -2575,27 +2578,30 @@ function plannedParticipationDates(courseId){return typeof window.hblPlannedSlot
 function fillParticipationSchedule(c,courseId){return typeof window.hblReconcileCourseDates==='function'?window.hblReconcileCourseDates(c,courseId):false;}
 function partPlaceholder(name){return /^Schüler\s+[1-9]\d*$/.test(String(name).trim());}
 function partStudentHasResults(c,studentId){
- if(c.finals?.[studentId])return true;
+ if(c.finals?.[studentId]||HblGradebook.hasStudent(c.gradebook,studentId))return true;
  return Object.values(c.marks?.[studentId]||{}).some(mark=>mark&&(mark.rating||mark.comment));
+}
+function initializeCourseStudents(c){
+ if(c.initialized)return false;
+ if(!Array.isArray(c.students))c.students=[];
+ if(!c.students.length){
+  for(let i=1;i<=30;i++)c.students.push({id:partId(),name:`Schüler ${i}`});
+ }
+ c.initialized=true;
+ return true;
 }
 function initializeParticipationRoster(){
  // Erst nach erfolgreichem Laden vom PowerShell-Server anlegen.
  // Niemals vorhandene Namen oder Bewertungen überschreiben.
  if(!serverReady||!currentParticipationCourse)return;
  const c=partCourseData(true);
- let changed=false;
- if(!c.initialized){
-  if(c.students.length===0){
-   for(let i=1;i<=30;i++)c.students.push({id:partId(),name:`Schüler ${i}`});
-  }
-  c.initialized=true;changed=true;
- }
+ let changed=initializeCourseStudents(c);
  if(fillParticipationSchedule(c,currentParticipationCourse))changed=true;
  renderParticipationTable();
  if(changed)partPersist();
  else setParticipationStatus("Termine und Namen aus der JSON-Datei geladen ✓");
 }
-function partCourseById(id){return PARTICIPATION_COURSES.find(c=>c.id===id)||(/^(kurs-[a-z0-9-]+|ma9a|ph9a|gkph12|astro10|wat8a|wat8b|wat8c|wat9a|wat9c|wat9d)$/.test(String(id))?{id,label:'Kurs',group:'',short:'Kurs wird geladen',subject:'neutral',icon:'📘'}:null);}
+function partCourseById(id){return PARTICIPATION_COURSES.find(c=>c.id===id)||(HblCourseIds.valid(id)?{id,label:'Kurs',group:'',short:'Kurs wird geladen',subject:'neutral',icon:'📘'}:null);}
 function participationInfo(c){
  const all=c?.students||[];const sessions=c?.dates||[];
  return `${all.length} SuS · ${sessions.length} Termine`;
@@ -2615,7 +2621,7 @@ function renderParticipationOverview(){
    <span class="pcourse-info">${partEsc(participationInfo(data))}</span>
    ${progressHtml}
    <button type="button" class="pcourse-note" data-course-id="${partEsc(c.id)}" aria-label="Kursnotiz für ${partEsc(c.short)} bearbeiten" onclick="editCourseNote(this)">${note?'<strong>Kursnotiz</strong> · '+partEsc(note):'+ Kursnotiz'}</button>
-   <a class="pcourse-action" href="?mitarbeit=${encodeURIComponent(c.id)}" target="_blank" rel="noopener" aria-label="Mitarbeit für ${partEsc(c.short)} öffnen">Mitarbeit öffnen →</a></article>`;
+   <a class="pcourse-action" href="?kurs=${encodeURIComponent(c.id)}" target="_blank" rel="noopener" aria-label="Kurs ${partEsc(c.short)} öffnen">Kurs öffnen →</a></article>`;
  }).join("");
 }
 function editCourseNote(button){
@@ -2698,7 +2704,7 @@ function renderParticipationPage(courseId){
  document.body.innerHTML=`
  <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
  <div class="part-shell">
-  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><span class="part-top-meta">MITARBEIT · HBL v5.0 TEST</span></div>
+  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><a class="part-back" href="?kurs=${encodeURIComponent(courseId)}">Zur Kursübersicht</a><span class="part-top-meta">MITARBEIT · HBL v5.0 TEST</span></div>
   <header class="part-hero"><div class="part-eyebrow">Mitarbeitserfassung · DEMO · Nur Beispieldaten</div>
    <div class="part-hero-row"><div><h1 id="hblCurrentCourseTitle">${header}</h1><p>Termine, Bewertungen und individuelle Kommentare pro Schüler/in</p></div>
    <div style="font-size:12px;color:var(--muted);font-weight:700" id="partHeroStats">Noch keine Einträge</div></div>
@@ -2752,6 +2758,7 @@ function replaceParticipationRoster(){
  if(!participationCanEdit())return;
  const c=partCourseData(true),names=participationInputNames();
  if(!names.length){setParticipationStatus("Bitte zunächst Namen einfügen.",true);return;}
+ if(c.students.some(student=>HblGradebook.hasStudent(c.gradebook,student.id))){setParticipationStatus("Die Liste enthält Noten. Zum Erhalt der Zuordnung bitte Namen bearbeiten oder hinzufügen.",true);return;}
  const graded=c.students.filter(student=>partStudentHasResults(c,student.id));
  const authentic=c.students.filter(student=>!partPlaceholder(student.name));
  if((graded.length||authentic.length)&&!confirm(
@@ -2853,6 +2860,7 @@ function renameParticipationStudent(id,name){
 function deleteParticipationStudent(id){
  if(!participationCanEdit())return;
  const c=partCourseData(true),p=c.students.find(v=>v.id===id);if(!p)return;
+ if(HblGradebook.hasStudent(c.gradebook,id)){setParticipationStatus("Für diese Person sind Noten hinterlegt. Die Person bleibt im Kurs.",true);return;}
  if(!confirm(p.name+" mit allen Mitarbeitseinträgen aus diesem Kurs löschen?"))return;
  c.students=c.students.filter(v=>v.id!==id);delete c.marks[id];delete c.finals[id];
  renderParticipationTable();partPersist();
@@ -2938,7 +2946,16 @@ function readPreference(key){try{return localStorage.getItem(key)}catch(e){retur
 if(readPreference("schoolTheme")==="dark") document.body.classList.add("dark");
 const params=new URLSearchParams(location.search);
 const fach=params.get("fach"),mitarbeit=params.get("mitarbeit");
-mitarbeit && partCourseById(mitarbeit) ? renderParticipationPage(mitarbeit) : fach ? renderSubject(fach) : renderHome();
+const coursePageMode=params.has("noten")?"noten":"kurs";
+const coursePageId=params.get(coursePageMode);
+if(coursePageId&&HblCourseIds.valid(coursePageId)){
+ HblCoursePage.mount({id:coursePageId,mode:coursePageMode,
+  read:()=>({meta:prepDone.__coursesV1?.courses?.[coursePageId],data:prepDone.__participation?.classes?.[coursePageId]}),
+  save:()=>savePrepFile()});
+ loadPrepFromServer();
+}else if(mitarbeit&&HblCourseIds.valid(mitarbeit))renderParticipationPage(mitarbeit);
+else if(fach)renderSubject(fach);
+else renderHome();
 </script>
 <script>
 /* HBL Schul-Dashboard v5.0 – personal timetable + automatic per-block participation dates.
@@ -3101,6 +3118,12 @@ window.hblScheduleAfterLoad=function(){
  }
  hblApplyTimetable();
  const reconciled=reconcileAll();
+ if(serverReady&&coursePageMode==="noten"&&coursePageId&&Object.hasOwn(catalog.courses,coursePageId)){
+  const classes=getParticipationRoot().classes;
+  const data=classes[coursePageId]??={students:[],dates:[],marks:{},finals:{}};
+  if(initializeCourseStudents(data))migrated=true;
+ }
+ HblCoursePage.refresh();
  if(migrated||reconciled){
   renderParticipationOverview();renderParticipationTable();
   if(serverReady && !window.hblScheduleWriting)savePrepFile().catch(()=>{});
