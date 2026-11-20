@@ -134,3 +134,14 @@ Es sind **keine vollständigen SQL-Migrationsdateien** im aktuellen GitHub-Baum 
 - Live-Nutzung mit realen Schuldaten ist weder durch diese Dokumentation noch durch syntaktische Checks freigegeben.
 
 **Nächster Schritt:** `docs/CODEX_START.md` ausführen – zunächst ausschließlich lesender Audit.
+
+
+## Persönliche Kurskennungen ab v5.9.10
+
+`hbl-course-ids.js` stellt die Kursidentität unabhängig von Fach-/Klassenbezeichnung bereit. Stundenplaneinträge in `__timetableV1` (interne Version 2) tragen zusätzlich `courseId`. Bei Bestandsplänen werden bisherige Kennungen einmalig übernommen und gespeichert; Mitarbeitsschlüssel, Schüler-IDs und bestehende Deep-Links werden nicht umgeschrieben. Die Ergänzung läuft beim Laden im eigenen Snapshot und verwendet den vorhandenen revisionsgeschützten Speicherweg.
+
+Der Blockeditor unterscheidet Kursbearbeitung und andere Belegung: Umbenennen aktualisiert Fach/Klasse aller Blöcke derselben Kennung; Raum und Wochenbelegung bleiben blockbezogen. Ein Kurswechsel verändert keine Kennung des bisherigen Kurses und überträgt keine Bewertungen. Entfernte bewertete Termine bleiben gemäß bestehender Archivlogik erhalten. Die automatische Terminplanung gleicht Kennungen direkt mit Stundenplaneinträgen ab.
+
+JSON-Stundenpläne erhalten Kennungen. CSV enthält weiter die bisherigen sechs Spalten; eindeutige Bezeichnungen werden vorhandenen Kursen zugeordnet. Mehrdeutige Zuordnungen werden abgelehnt. Neue Kurse erhalten zufällige Kennungen. Diese persönlichen Kennungen begründen keine Schul-, Klassen- oder Zugriffsberechtigung.
+
+Gezielte Tests: `tests/course-identity.test.mjs` (Übernahme, Umbenennen, A/B, Kurswechsel, Datenerhalt, Austausch und automatische Termine).

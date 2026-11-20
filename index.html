@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.9</title>
+<title>Schul-Dashboard HBL · v5.9.10</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1321,6 +1321,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="./hbl-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="./hbl-icon-180.png">
+<script src="./hbl-course-ids.js?v=5.9.10"></script>
 <script defer src="./mobile.js?v=3.3"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
@@ -2386,7 +2387,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.9 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 20. November 2026">v5.9.10 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2897,30 +2898,18 @@ let openEditor=null,managerOpen=false;
 const byId=id=>document.getElementById(id);
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const lower=s=>String(s??'').trim().replace(/\s+/g,' ').toLocaleLowerCase('de-DE');
-const normalizedCourseSubject=s=>{
- const x=lower(s);
- if(['mathematik','math','ma','mathe'].includes(x))return 'ma';
- if(['physik','ph'].includes(x))return 'ph';
- if(['astronomie','astro'].includes(x))return 'astro';
- if(['physik gk','gkphysik','gk physik','gkph1'].includes(x))return 'gkph1';
- return x;
-};
-const legacy={
- 'ma|9a':'ma9a','ph|9a':'ph9a','gkph1|12':'gkph12','astro|10':'astro10',
- 'wat|8a':'wat8a','wat|8b':'wat8b','wat|8c':'wat8c','wat|9a':'wat9a','wat|9c':'wat9c','wat|9d':'wat9d'
-};
-function hashString(s){let v=2166136261;for(const ch of s){v^=ch.charCodeAt(0);v=Math.imul(v,16777619);}return(v>>>0).toString(36);}
-function courseId(entry){const key=normalizedCourseSubject(entry?.subject)+'|'+lower(entry?.group);return legacy[key]||('kurs-'+hashString(key));}
+const normalizedCourseSubject=HblCourseIds.subject;
+const courseId=HblCourseIds.id;
 function subjectSymbol(subject){const x=normalizedCourseSubject(subject);return x==='ma'?['math','➗']:x==='ph'||x==='gkph1'?['physics','⚛️']:x==='astro'?['astro','🔭']:x==='wat'?['wat','🛠️']:['neutral','📘'];}
-function courseMeta(entry){const id=courseId(entry),[type,icon]=subjectSymbol(entry.subject),legacyCourse=HBL_SAMPLE_COURSES.find(c=>c.id===id);
- return {id,label:legacyCourse?.label||entry.subject,group:entry.group,short:legacyCourse?.short||`${entry.subject} ${entry.group}`,subject:type,icon};}
+function courseMeta(entry){const id=courseId(entry),[type,icon]=subjectSymbol(entry.subject);
+ return {id,label:entry.subject,group:entry.group,short:`${entry.subject} ${entry.group}`,subject:type,icon};}
 function normalizedEntry(entry){if(!entry||typeof entry!=='object')return null;
  const subject=String(entry.subject||'').trim().slice(0,60),group=String(entry.group||'').trim().slice(0,30),room=String(entry.room||'').trim().slice(0,40);
- return subject&&group?{subject,group,room}:null;
+ return subject&&group?{subject,group,room,...(HblCourseIds.valid(entry.courseId)?{courseId:entry.courseId}:{})}:null;
 }
 function getSettings(){const data=prepDone?.[STORE_KEY];
  if(!data||!Array.isArray(data.slots)&&(!data.slots||typeof data.slots!=='object'))return {version:1,slots:{}};
- return {version:1,slots:data.slots};
+ return {version:data.version||1,slots:data.slots};
 }
 function emptySchedule(){return {A:{1:{},2:{},3:{},4:{},5:{}},B:{1:{},2:{},3:{},4:{},5:{}}};}
 function activeEntries(settings){
@@ -2977,7 +2966,8 @@ function plannedSlots(course){
   if(schoolDateDescription(dateKey,year,holidays).kind!=='school')continue;
   const plan=TIMETABLE[weekCycle(date)]?.[day]||{};
   for(const block of BLOCKS){
-   const matched=block.hours.some(h=>{const arr=plan[h];return arr&&courseId({subject:arr[0],group:arr[1]})===course;});
+   const entry=getSettings().slots[day+'-'+block.n]?.[weekCycle(date)];
+   const matched=entry&&courseId(entry)===course;
    if(matched&&!(typeof window.hblCancelled==="function"&&window.hblCancelled(dateKey,block.n)))result.push({date:dateKey,block:block.n});
   }
  }
@@ -3035,16 +3025,25 @@ function reconcileAll(){
  return changed;
 }
 window.hblScheduleAfterLoad=function(){
+ let migrated=false;
+ const settings=prepDone[STORE_KEY];
+ if(settings?.slots){
+  const slots=HblCourseIds.ensure(settings.slots,{migrate:true});
+  migrated=JSON.stringify(slots)!==JSON.stringify(settings.slots);
+  if(migrated)prepDone[STORE_KEY]={...settings,version:2,slots};
+ }
  hblApplyTimetable();
- if(reconcileAll()){
+ const reconciled=reconcileAll();
+ if(migrated||reconciled){
   renderParticipationOverview();renderParticipationTable();
   if(serverReady && !window.hblScheduleWriting)savePrepFile().catch(()=>{});
  }
 };async function persistSchedule(slots){
  if(!serverReady){alert('Speicher noch nicht bereit. Bitte Seite neu laden.');return false;}
- prepDone[STORE_KEY]={version:1,slots};
  window.hblScheduleWriting=true;
  try{
+  const identified=HblCourseIds.ensure(slots,{knownSlots:getSettings().slots,classes:prepDone.__participation?.classes});
+  prepDone[STORE_KEY]={version:2,slots:identified};
   hblApplyTimetable();reconcileAll();renderParticipationOverview();renderParticipationTable();
   await savePrepFile();
  }catch(e){alert('Speichern fehlgeschlagen: '+e.message);return false;}
@@ -3060,6 +3059,8 @@ function ensureModal(){
   <div class="hbl-plan-eyebrow">INDIVIDUELLER STUNDENPLAN</div><h2 id="hblPlanDialogTitle">Block bearbeiten</h2>
   <div class="hbl-plan-current"><div id="hblPlanPreviewA"></div><div id="hblPlanPreviewB"></div></div>
   <form id="hblPlanForm">
+  <label>Aktion <select id="hblPlanAction"><option value="edit">Diesen Kurs bearbeiten</option><option value="replace">Andere Belegung (Kurswechsel)</option></select></label>
+  <p class="hbl-plan-info">Fach und Klasse werden bei „Diesen Kurs bearbeiten“ in allen Blöcken dieses Kurses geändert. Raum und Wochenbelegung gelten nur für diesen Block.</p>
   <label>Gültigkeit <select id="hblPlanWeek"><option value="both">A und B – beide Wochen</option><option value="A">Nur A – grün</option><option value="B">Nur B – blau</option></select></label>
   <div class="hbl-plan-form-grid"><label>Fach <input id="hblPlanSubject" type="text" maxlength="60" placeholder="z. B. Mathematik" required autocomplete="off"></label>
   <label>Klasse / Kurs <input id="hblPlanGroup" type="text" maxlength="30" placeholder="z. B. 9a" required autocomplete="off"></label>
@@ -3072,18 +3073,17 @@ function ensureModal(){
  byId('hblPlanClose').onclick=close;byId('hblPlanCancel').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  overlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}});
- byId('hblPlanWeek').onchange=fillEditor;
+ byId('hblPlanWeek').onchange=()=>{byId('hblPlanAction').value='edit';fillEditor();};
  byId('hblPlanForm').onsubmit=async e=>{
   e.preventDefault();if(!openEditor)return;
   const v={subject:byId('hblPlanSubject').value.trim(),group:byId('hblPlanGroup').value.trim(),room:byId('hblPlanRoom').value.trim()};
   if(!v.subject||!v.group){alert('Fach und Klasse/Kurs müssen ausgefüllt sein.');return;}
-  const key=openEditor.day+'-'+openEditor.block, slots=slotsCopy(),slot=slots[key]||{},week=byId('hblPlanWeek').value;
-  if(week==='both'){
-   if(slot.A&&slot.B&&JSON.stringify(slot.A)!==JSON.stringify(slot.B) && !confirm('In A und B stehen unterschiedliche Belegungen. Wirklich beide durch denselben Eintrag ersetzen?'))return;
-   slot.A={...v};slot.B={...v};
-  } else {if(slot.A&&slot.B&&JSON.stringify(slot.A)===JSON.stringify(slot.B))delete slot[week==='A'?'B':'A'];slot[week]={...v};}
-  slots[key]=slot;
-  if(await persistSchedule(slots))close();
+  const original=slotsCopy(),slot=original[openEditor.day+'-'+openEditor.block]||{},week=byId('hblPlanWeek').value;
+  if(week==='both'&&slot.A&&slot.B&&JSON.stringify(slot.A)!==JSON.stringify(slot.B)&&!confirm('In A und B stehen unterschiedliche Belegungen. Wirklich beide durch denselben Eintrag ersetzen?'))return;
+  try{
+   const slots=HblCourseIds.edit(original,{...openEditor,week,value:v,replace:byId('hblPlanAction').value==='replace',classes:prepDone.__participation?.classes});
+   if(await persistSchedule(slots))close();
+  }catch(error){alert(error.message);}
  };
  byId('hblPlanDelete').onclick=async()=>{
   if(!openEditor)return;
@@ -3097,6 +3097,8 @@ function fillEditor(){
  if(!openEditor)return;
  const key=openEditor.day+'-'+openEditor.block,slot=getSettings().slots[key]||{},week=byId('hblPlanWeek').value;
  const v=week==='both'?(slot.A||slot.B):slot[week];
+ byId('hblPlanAction').disabled=!v;
+ if(!v)byId('hblPlanAction').value='replace';
  byId('hblPlanSubject').value=v?.subject||'';
  byId('hblPlanGroup').value=v?.group||'';
  byId('hblPlanRoom').value=v?.room||'';
@@ -3113,6 +3115,7 @@ window.hblOpenSlotEditor=function(day,block){
  }
  const same=slot.A&&slot.B&&JSON.stringify(slot.A)===JSON.stringify(slot.B);
  byId('hblPlanWeek').value=same||(!slot.A&&!slot.B)?'both':slot.A?'A':'B';
+ byId('hblPlanAction').value='edit';
  fillEditor();byId('hblPlanOverlay').hidden=false;byId('hblPlanSubject').focus();
 };
 function makeSampleSlots(){
