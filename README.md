@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.21 · Pilotprojekt · 21.11.2026**
+**Stand: v5.9.22 · Pilotprojekt · 21.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -45,7 +45,7 @@ Einen Platz antippen und eine Person aus der gemeinsamen Kursliste auswählen. I
 
 Seit v5.9.20 zeigt das Notenbuch je Kurs beide Halbjahreswerte an. In der Voreinstellung **Sek I** kommt die Jahresnote hinzu. Dafür zählen alle erfassten Leistungen des Schuljahres innerhalb ihrer jeweiligen Bereichsgewichtung. Unter **Bewertungsbereiche, Skala und Berechnung** lässt sich **Sek II** mit zwei getrennten Halbjahreswerten einstellen. Die Notenskala ist davon unabhängig.
 
-Im Sitzplan bleibt eine Person bei jeder Zufallsverteilung an ihrem Platz, wenn du beim Bearbeiten ihren besetzten Platz auswählst, **Platz fixieren** drückst und speicherst. Eine Stecknadel kennzeichnet feste Plätze. Mit **Fixierung lösen** nimmt die Person wieder an der Verteilung teil. Auch eine manuelle Umbesetzung löst die Fixierung des betroffenen Platzes.
+Im Sitzplan bleibt eine Person bei jeder Zufallsverteilung an ihrem Platz, wenn du beim Bearbeiten ihren besetzten Platz auswählst, **Platz fixieren** drückst und speicherst. Über **Drucken / PDF** öffnest du den Druckdialog für den gespeicherten Sitzplan im A4-Querformat. Eine Stecknadel kennzeichnet feste Plätze. Mit **Fixierung lösen** nimmt die Person wieder an der Verteilung teil. Auch eine manuelle Umbesetzung löst die Fixierung des betroffenen Platzes.
 
 Über den Spaltenkopf lässt sich jeder Nachweis einem Halbjahr zuordnen. Die fünf Startspalten neuer Notenbücher beginnen im ersten Halbjahr. Ältere Spalten ohne Zuordnung zählen zum Jahreswert in Sek I und lassen sich nachträglich zuordnen. **Nachweise anzeigen** filtert die Eingabespalten. Die berechneten Vorschläge bleiben für beide Halbjahre und in Sek I für das Jahr sichtbar. Einen Vorschlag antippen, um eine Zeugnisnote manuell festzulegen oder die Festlegung zu entfernen.
 
