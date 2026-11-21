@@ -21,17 +21,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Statischen Offline-Check ausführen
+      - name: Statischen Offline-Check ausfÃ¼hren
         run: npm test
-      - name: Node.js für Chrome-Browserprüfung bereitstellen
-        if: runner.os == 'Linux'
+      - name: Node.js fÃ¼r Chrome-BrowserprÃ¼fung bereitstellen
+        if: runner.os == 'Windows'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Navigation in Android-Emulation und Desktop-Chrome prüfen
-        if: runner.os == 'Linux'
+      - name: Navigation in Android-Emulation und Desktop-Chrome prÃ¼fen
+        if: runner.os == 'Windows'
         env:
-          CHROME_PATH: google-chrome
+          CHROME_PATH: 'C:\Program Files\Google\Chrome\Application\chrome.exe'
         run: |
           node scripts/check-navigation.mjs
           node scripts/check-navigation.mjs --desktop
