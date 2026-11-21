@@ -146,3 +146,10 @@ button.seat-place{cursor:pointer}
  .hbl-course-layout > .hbl-course-picker{min-height:45px;margin-bottom:8px}
  .hbl-course-picker .part-tab{min-height:40px}
 }
+
+/* Klassenbuchnummer + Name bleiben beim horizontalen Notenscrollen sichtbar. */
+.course-roster [hidden]{display:none!important}
+.class-roster-warning{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font-size:13px;line-height:1.4}
+.grade-scroll tr>th[scope=row],.grade-scroll thead th[rowspan]:first-child{left:0;min-width:3.5rem;max-width:3.5rem;text-align:center;z-index:3}
+.grade-scroll tbody td:nth-child(2){position:sticky;left:3.5rem;background:var(--panel);min-width:8rem;text-align:left;z-index:1}
+.grade-scroll thead th[rowspan]:nth-child(2){position:sticky;left:3.5rem;min-width:8rem;max-width:13rem;text-align:left;z-index:4}

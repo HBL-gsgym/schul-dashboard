@@ -2,6 +2,8 @@
 (function(){
 'use strict';
 const grades=window.HblGradebook;
+const rosters=window.HblClassRosters;
+const ordered=students=>rosters.sorted((students||[]).map((s,i)=>({...s,number:rosters.numberOf(s,i)})));
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const format=value=>value.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
 const makeId=()=>crypto.randomUUID();
@@ -122,19 +124,23 @@ function refresh(){
  document.getElementById('coursePageMeta').textContent=(data?.students?.length??0)+' Lernende · '+(page.mode==='noten'?'Notenbuch':'Sitzplan und Schülerliste');
  document.title=(page.mode==='noten'?'Noten · ':'Kurs · ')+name+' · Schul-Dashboard';
  const stamp=JSON.stringify(page.mode==='kurs'?
-  [data?.students,data?.seating,data?.dates,data?.marks,page.rooms?.()]:
+  [data?.students,data?.seating,data?.dates,data?.marks,page.rooms?.(),page.rosterWarning?.()]:
   [data?.students,data?.gradebook,gradeView]);
  if(renderStamps.get(key)===stamp&&host.childNodes.length)return;
  renderStamps.set(key,stamp);
  if(page.mode==='kurs'){
   if(!host.querySelector('.seat-section')){
-   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><details class="part-pane course-roster"><summary></summary><button type="button" class="part-button" data-add-person>+ Person hinzufügen</button><ul></ul></details>';
+   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><details class="part-pane course-roster"><summary></summary><p class="class-roster-warning" hidden></p><button type="button" class="part-button" data-link-class hidden>Klassenliste nach Nummer abgleichen</button><button type="button" class="part-button" data-add-person>+ Person hinzufügen</button><ul></ul></details>';
    seatViews.set(key,window.hblCreateSeatView(host.querySelector('.seat-section'),page));
   }
   seatViews.get(key)?.render();
-  const roster=host.querySelector('.course-roster'),students=data?.students||[];
-  roster.querySelector('summary').textContent='Schülerliste ('+students.length+')';
-  roster.querySelector('ul').innerHTML=students.map(s=>'<li><button type="button" data-person="'+esc(s.id)+'" aria-label="'+esc(s.name)+' bearbeiten">'+esc(s.name)+'</button></li>').join('');
+  const roster=host.querySelector('.course-roster'),students=ordered(data?.students);
+  const warning=!!page.rosterWarning?.();
+  const warningText=roster.querySelector('.class-roster-warning'),linkButton=roster.querySelector('[data-link-class]');
+  warningText.hidden=!warning;linkButton.hidden=!warning;
+  if(warning)warningText.textContent='Dieser Fachkurs enthält noch eine eigenständige Schülerliste. Prüfe die Zuordnung zu den Klassenbuchnummern, bevor Daten zusammengeführt werden.';
+  roster.querySelector('summary').textContent='Schülerliste ('+students.length+') · Klassenbuchnummern';
+  roster.querySelector('ul').innerHTML=students.map(s=>'<li><button type="button" data-person="'+esc(s.id)+'" aria-label="Nr. '+s.number+' · '+esc(s.name)+' bearbeiten">Nr. '+s.number+' · '+esc(s.name)+'</button></li>').join('');
   return;
  }
  if(data?.gradebook&&data.gradebook.version!==1){host.textContent='Dieses Notenbuch benötigt eine neuere App-Version.';return;}
@@ -150,7 +156,7 @@ function refresh(){
   '<div class="grade-period"><label>Nachweise anzeigen <select data-view><option value="year">Gesamtes Schuljahr</option><option value="first">1. Halbjahr</option><option value="second">2. Halbjahr</option></select></label></div>'+
   (active.some(a=>a.columns.some(c=>!['first','second'].includes(c.term)))?'<p>Nachweise ohne Halbjahr findest du unter „Gesamtes Schuljahr“. Zum Zuordnen den Spaltenkopf öffnen.</p>':'')+
   (gradeView!=='year'&&active.length&&!active.some(a=>a.columns.some(c=>c.term===gradeView))?'<p>Für dieses Halbjahr gibt es noch keine Nachweise. Ordne einen Spaltenkopf im gesamten Schuljahr zu oder ergänze einen Nachweis im Bewertungsbereich.</p>':'')+
-  tableHtml(book,active,data?.students||[])+'</section>';
+  tableHtml(book,active,ordered(data?.students))+'</section>';
  host.querySelector('[data-scale]').value=book.scale;
  host.querySelector('[data-view]').value=gradeView;
  host.querySelector('[data-mode]').value=book.mode==='sek2'?'sek2':'sek1';
@@ -178,9 +184,9 @@ function tableHtml(book,active,students){
    const raw=value===null?'Unvollständig':format(value);
    return '<td class="grade-total"><button type="button" data-report="'+p+'" data-person-id="'+esc(s.id)+'" aria-label="Zeugnisnote für '+esc(s.name)+' · '+periodLabel[p]+' bearbeiten">'+(manual==null?raw:'Zeugnis: '+esc(manual)+'<small>Berechnet: '+raw+'</small>')+'</button></td>';
   }).join('');
-  return '<tr><th scope="row">'+esc(s.name)+'</th>'+cells+totals+'</tr>';
+  return '<tr><th scope="row">'+s.number+'</th><td>'+esc(s.name)+'</td>'+cells+totals+'</tr>';
  }).join('');
- return '<div class="grade-scroll" tabindex="0" aria-label="Notentabelle"><table><thead><tr><th rowspan="2" scope="col">Name</th>'+groupHead+'<th scope="colgroup" colspan="'+periods.length+'">Notenvorschläge</th></tr><tr>'+headings+periods.map(p=>'<th scope="col">'+(p==='year'?'Jahresnote':periodLabel[p])+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+ return '<div class="grade-scroll" tabindex="0" aria-label="Notentabelle"><table><thead><tr><th rowspan="2" scope="col">Nr.</th><th rowspan="2" scope="col">Name</th>'+groupHead+'<th scope="colgroup" colspan="'+periods.length+'">Notenvorschläge</th></tr><tr>'+headings+periods.map(p=>'<th scope="col">'+(p==='year'?'Jahresnote':periodLabel[p])+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
   (students.length?'':'<p>Öffne die Schülerliste in der '+link('kurs','Kursübersicht','')+', um Personen hinzuzufügen.</p>');
 }
 async function commit(change){
@@ -220,6 +226,7 @@ function onClick(event){
  if(page.mode==='kurs'){
   if(!button.closest('.course-roster'))return;
   if(seatViews.get(contentKey)?.isEditing()){status('Bitte den Sitzplanentwurf zuerst speichern oder schließen.');return;}
+  if(button.hasAttribute('data-link-class')){page.linkClass?.();return;}
   personEditor(button);return;
  }
  const book=grades.forCourse(page.read().data),d=button.dataset;
@@ -262,25 +269,36 @@ function personEditor(button){
  if(id&&!person)return;
  const dialog=document.createElement('dialog');
  dialog.className='grade-dialog';dialog.setAttribute('aria-labelledby','personTitle');
- dialog.innerHTML='<form><h2 id="personTitle">'+(person?'Name bearbeiten':'Person hinzufügen')+'</h2><label>Name<input required maxlength="100" autocomplete="off"></label><div class="grade-actions"><button class="part-button primary">Speichern</button><button type="button" class="part-button" data-cancel>Abbrechen</button>'+
-  (person?'<button type="button" class="part-button" data-remove>Aus Kurs entfernen</button>':'')+'</div><p role="status"></p></form>';
- const form=dialog.querySelector('form'),input=form.querySelector('input'),feedback=form.querySelector('[role=status]');
- input.value=originalName||'';
+ const nextNumber=Math.max(0,...data.students.map((s,i)=>rosters.numberOf(s,i)))+1;
+ const originalNumber=person?rosters.numberOf(person,data.students.indexOf(person)):nextNumber;
+ dialog.innerHTML='<form><h2 id="personTitle">'+(person?'Schüler bearbeiten':'Schüler hinzufügen')+'</h2><label>Klassenbuchnummer<input name="number" type="number" required min="1" max="999" step="1"></label><label>Name oder Alias<input name="name" required maxlength="100" autocomplete="off"></label><div class="grade-actions"><button class="part-button primary">Speichern</button><button type="button" class="part-button" data-cancel>Abbrechen</button>'+
+  (person?'<button type="button" class="part-button" data-remove>Aus der Schülerliste entfernen</button>':'')+'</div><p role="status"></p></form>';
+ const form=dialog.querySelector('form'),input=form.elements.name,numberInput=form.elements.number,feedback=form.querySelector('[role=status]');
+ input.value=originalName||'';numberInput.value=originalNumber;
  let busy=false;
  async function apply(remove){
   if(busy)return;
   if(page.read().data!==data||(person&&(!data.students.includes(person)||person.name!==originalName))){
    feedback.textContent='Die Schülerliste hat sich geändert. Bitte erneut öffnen.';return;
   }
-  const name=input.value.trim();
-  if(remove){
-   try{if(!page.removeStudent(data,id))return;}
-   catch(error){feedback.textContent=error.message;return;}
-  }else{
-   if(!name){feedback.textContent='Bitte einen Namen eingeben.';input.focus();return;}
-   if(person)person.name=name;
-   else data.students.push({id:makeId(),name});
-  }
+  const name=input.value.trim(),number=Number(numberInput.value);
+  try{
+   if(!remove&&(!name||!Number.isSafeInteger(number)||number<1||number>999)){
+    feedback.textContent='Name und Klassenbuchnummer (1–999) eingeben.';return;
+   }
+   if(remove&&page.isClassRoster?.()){
+    if(!confirm('Schüler aus der gesamten Klasse entfernen? Nur ohne Bewertungen und belegte Sitzplätze möglich.'))return;
+   }
+   const shared=page.editStudent?.({id,remove,name,number})===true;
+   if(!shared){
+    if(remove){if(!page.removeStudent(data,id))return;}
+    else{
+     if(data.students.some((s,i)=>s.id!==id&&rosters.numberOf(s,i)===number))throw Error('Diese Klassenbuchnummer ist bereits vergeben.');
+     if(person){person.name=name;person.number=number;}
+     else data.students.push({id:makeId(),name,number});
+    }
+   }
+  }catch(error){feedback.textContent=error.message;return;}
   busy=true;
   form.querySelectorAll('input,button').forEach(el=>el.disabled=true);
   try{await page.save();status('Schülerliste gespeichert.');}

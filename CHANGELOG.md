@@ -1,3 +1,8 @@
+## v7.0.9 – 21.11.2026 · ChatGPT
+- Neue private klassen-/schuljahresbezogene Schülerstammliste mit stabilen IDs und festen, individuell bearbeitbaren Klassenbuchnummern (numerische statt alphabetische Reihenfolge) für Übersicht, Mitarbeit und Noten; gleiche Klasse in mehreren Fächern teilt Schülerdaten, Fachleistungen/Sitzpläne bleiben getrennt.
+- Bestehende Kursdaten werden nur bei eindeutigem ID-/Namensabgleich verbunden; Noten, Mitarbeit und Sitzplätze werden konfliktgeprüft auf die kanonischen IDs übertragen. Bei voneinander abweichenden Aliaslisten muss der nummernbasierte Abgleich ausdrücklich bestätigt werden. Import aktualisiert Namen nach Nummer ohne Noten-/ID-Löschung; Entfernen benoteter/platzierter Personen wird klassenübergreifend verhindert.
+- Kein Supabase-Schema- oder Auth-Eingriff; Unit-/statische Tests ergänzt. Browsergeräte-Prüfung auf Android/iPad steht noch aus.
+
 ## v7.0.8 · Codex
 - Rekursiven Routeraufruf und unnötige DOM-Wechsel im Dashboard und bei der Kursnavigation behoben. In Desktop-Chrome und Android-Emulation geprüft. Physischer Android-/PWA-Test offen.
 
