@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
+import {categoryActive,pushWindowActive} from "./push-policy.mjs";
 import webpush from "npm:web-push@3.6.7";
 
 // HBL v5.5: A private cron-only Web Push dispatcher.
@@ -87,20 +88,12 @@ function dueEvents(snapshot:Record<string,unknown>,date:string,time:string,schoo
 
 type ChatPref={user_id:string;enabled:boolean;days:number[];start_time:string;end_time:string;preview:boolean};
 type ChatMsg={id:string;channel:string;sender_id:string;recipient_id?:string|null;group_id?:string;body:string;created_at:string};
-function pushWindowActive(p:ChatPref,local:{date:string;time:string}){
- const dow=new Date(local.date+"T12:00:00Z").getUTCDay()||7;
- const yesterday=dow===1?7:dow-1;
- const start=String(p.start_time).slice(0,5),end=String(p.end_time).slice(0,5);
- const days=p.days||[];
- if(start<end)return days.includes(dow)&&local.time>=start&&local.time<end;
- return (days.includes(dow)&&local.time>=start)||(days.includes(yesterday)&&local.time<end);
-}
 async function dispatchChatPush(now:Date):Promise<{sent:number;failed:number}>{
  const local=germanTime(now);
  const {data:prefs,error:prefError}=await db.from("hbl_chat_push_preferences")
   .select("user_id,enabled,days,start_time,end_time,preview").eq("enabled",true).limit(1000);
  if(prefError)throw prefError;
- const active=new Map((prefs||[]).filter((p:ChatPref)=>pushWindowActive(p,local)).map((p:ChatPref)=>[p.user_id,p]));
+ const active=new Map((prefs||[]).filter((p:ChatPref)=>categoryActive(p,"enabled",local)).map((p:ChatPref)=>[p.user_id,p]));
  if(!active.size)return {sent:0,failed:0};
  const {data:subs,error:subsError}=await db.from("hbl_push_subscriptions")
   .select("id,user_id,endpoint,p256dh,auth_key").in("user_id",[...active.keys()]).limit(1000);
@@ -137,7 +130,7 @@ async function dispatchChatPush(now:Date):Promise<{sent:number;failed:number}>{
  for(const sub of subs){
   const pref=active.get(sub.user_id) as ChatPref|undefined;
   if(!pref||!permitted.has(sub.user_id)||!dashboardEnabled.has(sub.user_id))continue;
-  const candidates=messages.filter(m=>m.sender_id!==sub.user_id&&(
+  const candidates=messages.filter(m=>m.sender_id!==sub.user_id&&pushWindowActive(pref,germanTime(new Date(m.created_at)))&&(
    m.channel==="lounge" ||
    (m.channel==="direct"&&m.recipient_id===sub.user_id) ||
    (m.channel==="group"&&m.group_id&&members.get(m.group_id)?.has(sub.user_id))
@@ -208,12 +201,21 @@ Deno.serve(async (req:Request) => {
       .lte("starts_on",now.date).gte("ends_on",now.date);
     if(eventsError)throw eventsError;
     const ids=[...new Set(subs.map((s:any)=>s.user_id))];
+    const [lessonPrefs,membership]=await Promise.all([
+      db.from("hbl_chat_push_preferences").select("user_id,lessons_enabled,days,start_time,end_time").in("user_id",ids),
+      db.from("hbl_dashboard_members").select("user_id").eq("enabled",true).in("user_id",ids)
+    ]);
+    if(lessonPrefs.error||membership.error)throw lessonPrefs.error||membership.error;
+    const prefs=new Map((lessonPrefs.data||[]).map(p=>[p.user_id,p] as const));
+    const allowed=new Set((membership.data||[]).map(m=>m.user_id));
     const {data:rows,error:snapError}=await db.from("hbl_dashboard_snapshots")
       .select("user_id,content").in("user_id",ids);
     if(snapError)throw snapError;
     const byUser=new Map((rows||[]).map((r:any)=>[r.user_id,r.content||{}]));
     let sent=0,failed=0;
     for(const sub of subs){
+      const pref=prefs.get(sub.user_id)??{lessons_enabled:true,days:[1,2,3,4,5],start_time:"07:00",end_time:"17:00"};
+      if(!allowed.has(sub.user_id)||!categoryActive(pref,"lessons_enabled",now))continue;
       const snapshot=byUser.get(sub.user_id);
       if(!snapshot)continue;
       for(const event of dueEvents(snapshot,now.date,now.time,schoolEvents||[])){

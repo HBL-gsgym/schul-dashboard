@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.10.5 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.0 · Pilotprojekt · 21.11.2026**
+
+Unter **Mein HBL → Benachrichtigungen** gelten die gewählten Wochentage und Uhrzeiten gemeinsam für Chatnachrichten und Erinnerungen an Unterricht und Aufsichten. Die Auswahl für den persönlichen Kalender (v8.0) und Mitteilungen (v12.0) wird für später gespeichert. Jedes Gerät benötigt eine eigene Push-Freigabe.
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 

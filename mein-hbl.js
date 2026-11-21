@@ -4,9 +4,18 @@ window.openMeinHbl=function(){
  dialog.className='mein-hbl';
  dialog.setAttribute('aria-labelledby','meinHblTitle');
  const opener=document.activeElement;
- dialog.innerHTML='<header><h2 id="meinHblTitle">Mein HBL</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button disabled>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p>Weitere Einstellungen folgen mit den nächsten Etappen.</p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
+ dialog.innerHTML='<header><h2 id="meinHblTitle">Mein HBL</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button data-notifications>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p></p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
  const get=selector=>dialog.querySelector(selector);
  const byId=id=>document.getElementById(id);
+ const notifications=get('[data-notifications]');
+ notifications.onclick=()=>{
+  if(!window.hblCloudUser?.()){
+   openSection(notifications);
+   const info=document.createElement('p');info.textContent='Melde dich an, um deine Benachrichtigungen einzustellen.';extra.append(info);
+   existing('hblCloudLogin','Anmelden');return;
+  }
+  handedOff=true;dialog.close();window.hblOpenPushSettings(()=>window.openMeinHbl());
+ };
  const tilesButton=get('[data-tiles]');
  tilesButton.onclick=()=>{
   openSection(tilesButton);

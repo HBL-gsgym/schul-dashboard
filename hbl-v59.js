@@ -6,6 +6,7 @@ const db=()=>window.hblCloudClient||null;
 const user=()=>typeof window.hblCloudUser==="function"?window.hblCloudUser():null;
 const weekdays=["Mo","Di","Mi","Do","Fr","Sa","So"];
 let currentUser=null;
+let loadVersion=0,returnFocus,returnToMenu;
 let ready=false;
 function message(value,bad=false){const status=el("hblChatPushStatus");if(status){status.textContent=value;status.classList.toggle("problem",bad);}}
 function mount(){
@@ -22,10 +23,13 @@ function mount(){
  const overlay=document.createElement("div");
  overlay.className="hbl-chat-push-overlay";overlay.id="hblChatPushOverlay";overlay.hidden=true;
  overlay.innerHTML='<section class="hbl-chat-push-dialog" role="dialog" aria-modal="true" aria-labelledby="hblChatPushHeading">'+
- '<div class="hbl-chat-push-top"><h2 id="hblChatPushHeading">🔔 Chat-Benachrichtigungen</h2><button type="button" id="hblChatPushClose" aria-label="Schließen">✕</button></div>'+
- '<p>Du entscheidest, wann Chat-Nachrichten als Pop-up auf deinem Handy erscheinen. Die Nachrichten selbst bleiben jederzeit im Chat abrufbar.</p>'+
+ '<div class="hbl-chat-push-top"><h2 id="hblChatPushHeading">🔔 Benachrichtigungen</h2><button type="button" id="hblChatPushClose" aria-label="Schließen">✕</button></div>'+
+ '<p>Wähle deine Kategorien und ein gemeinsames Zeitfenster für alle Benachrichtigungen. Kalender und Mitteilungen kannst du für spätere Versionen vormerken.</p>'+
  '<form id="hblChatPushForm">'+
- '<label class="hbl-chat-push-switch"><input id="hblChatPushEnabled" type="checkbox"> Chat-Pop-ups aktivieren</label>'+
+ '<label class="hbl-chat-push-switch"><input id="hblChatPushEnabled" type="checkbox"> Chatnachrichten</label>'+
+ '<label class="hbl-chat-push-switch"><input id="hblLessonPush" type="checkbox"> Unterricht &amp; Aufsichten (10 Minuten vorher)</label>'+
+ '<label class="hbl-chat-push-switch"><input id="hblCalendarPush" type="checkbox"> Kalendererinnerungen (ab v8.0)</label>'+
+ '<label class="hbl-chat-push-switch"><input id="hblAnnouncementPush" type="checkbox"> Mitteilungen (ab v12.0)</label>'+
  '<p class="hbl-chat-push-label">Aktive Wochentage</p><div class="hbl-chat-push-days" id="hblChatPushDays"></div>'+
  '<div class="hbl-chat-push-times"><label>Von <input id="hblChatPushStart" type="time" value="07:00" required></label>'+
  '<label>Bis <input id="hblChatPushEnd" type="time" value="17:00" required></label></div>'+
@@ -43,7 +47,14 @@ function mount(){
  document.body.appendChild(overlay);
  el("hblChatPushClose").onclick=()=>showSettings(false);
  overlay.addEventListener("click",e=>{if(e.target===overlay)showSettings(false);});
- overlay.addEventListener("keydown",e=>{if(e.key==="Escape")showSettings(false);});
+ overlay.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){e.stopPropagation();showSettings(false);}
+  if(e.key!=="Tab")return;
+  const controls=[...overlay.querySelectorAll("button:not(:disabled),input:not(:disabled)")];
+  const first=controls[0],last=controls.at(-1);
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+ });
  el("hblChatPushForm").onsubmit=e=>{e.preventDefault();void save();};
  el("hblChatPushDevice").onclick=()=>void activateDevice();
  el("hblChatPushTest").onclick=()=>void testNotification();
@@ -113,28 +124,52 @@ async function testNotification(){
 }
 async function showSettings(open){
  if(!mount())return;
+ if(open)returnFocus=document.activeElement;
  el("hblChatPushOverlay").hidden=!open;
- if(!open)return;
+ if(!open){
+  if(returnToMenu){const back=returnToMenu;returnToMenu=null;back();}
+  else returnFocus?.focus();
+  return;
+ }
+ el("hblChatPushClose").focus();
  await load();
- await deviceStatus();
+ if(user())await deviceStatus();
 }
+window.hblOpenPushSettings=back=>{returnToMenu=back;void showSettings(true);};
 async function load(){
- if(!db()||!user())return;
+ const version=++loadVersion;
+ currentUser=null;el("hblChatPushSave").disabled=true;
+ if(!db()||!user()){message("Bitte zuerst anmelden.");return;}
  const id=user().id;
  const {data,error}=await db().from("hbl_chat_push_preferences")
-  .select("enabled,days,start_time,end_time,preview").eq("user_id",id).maybeSingle();
+  .select("enabled,lessons_enabled,calendar_enabled,announcements_enabled,days,start_time,end_time,preview").eq("user_id",id).maybeSingle();
+ if(version!==loadVersion||user()?.id!==id)return;
  if(error){message("Einstellungen konnten nicht geladen werden: "+error.message,true);return;}
  currentUser=id;
- el("hblChatPushEnabled").checked=data?.enabled??false;
+ el("hblChatPushEnabled").checked=data?.enabled??true;
+ el("hblLessonPush").checked=data?.lessons_enabled??true;
+ el("hblCalendarPush").checked=data?.calendar_enabled??false;
+ el("hblAnnouncementPush").checked=data?.announcements_enabled??true;
+ el("hblChatPushSave").disabled=false;
  const days=data?.days||[1,2,3,4,5];
  el("hblChatPushDays").querySelectorAll("input").forEach(input=>input.checked=days.includes(Number(input.value)));
  el("hblChatPushStart").value=String(data?.start_time||"07:00").slice(0,5);
  el("hblChatPushEnd").value=String(data?.end_time||"17:00").slice(0,5);
  el("hblChatPushPreview").checked=data?.preview??false;
- message("");
+ if(!data){message("Vorschläge geladen. Speichere deine Auswahl, um sie zu übernehmen.");return;}
+ await reportWindow(data);
+}
+async function reportWindow(pref,saved=false){
+ const id=user()?.id;
+ const policy=await import("./supabase/functions/hbl-push-dispatch/push-policy.mjs?v=6.0.0").catch(()=>null);
+ if(!id||user()?.id!==id)return;
+ if(!policy){message((saved?"Gespeichert. ":"")+"Zeitfensterstatus momentan nicht verfügbar.");return;}
+ const parts=Object.fromEntries(new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(p=>[p.type,p.value]));
+ const local={date:parts.year+"-"+parts.month+"-"+parts.day,time:parts.hour+":"+parts.minute};
+ message((saved?"Gespeichert. ":"")+(policy.pushWindowActive(pref,local)?"Benachrichtigungszeit aktiv.":"Ruhezeit aktiv."));
 }
 async function save(){
- if(!db()||!user())return;
+ if(!db()||!user()||currentUser!==user().id)return;
  const uid=user().id;
  const days=[...el("hblChatPushDays").querySelectorAll("input:checked")].map(i=>Number(i.value));
  const start=el("hblChatPushStart").value,end=el("hblChatPushEnd").value;
@@ -144,11 +179,13 @@ async function save(){
  try{
   const {error}=await db().from("hbl_chat_push_preferences").upsert({
    user_id:uid,enabled:el("hblChatPushEnabled").checked,days,
+   lessons_enabled:el("hblLessonPush").checked,calendar_enabled:el("hblCalendarPush").checked,
+   announcements_enabled:el("hblAnnouncementPush").checked,
    start_time:start,end_time:end,preview:el("hblChatPushPreview").checked,
    updated_at:new Date().toISOString()
   },{onConflict:"user_id"});
   if(error)throw error;
-  message("✓ Einstellungen gespeichert. Chat-Nachrichten bleiben auch während der Freizeit lesbar.");
+  await reportWindow({days,start_time:start,end_time:end},true);
   await deviceStatus();
  }catch(e){message("Speichern fehlgeschlagen: "+e.message,true);}
  finally{btn.disabled=false;}

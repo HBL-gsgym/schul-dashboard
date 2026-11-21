@@ -1,5 +1,7 @@
 # Architektur und Datenfluss
 
+In v6.0 liest „Mein HBL“ die vier Push-Optionen aus der persönlichen Zeile in `hbl_chat_push_preferences`. `enabled` bleibt der Chat-Schalter. Der Dispatcher prüft Zeitfenster, Kategorie und die Berechtigung für den jeweiligen Inhalt vor dem Versand. Kalender und Mitteilungen haben noch keine Versandquelle. Der Geräte-Test ist eine manuell angeforderte Testnachricht.
+
 > **Aktuelle Produktentscheidung vom 20.11.2026:** [Persönlicher Arbeitsplatz und Schulportal](PRODUCT_ARCHITECTURE.md) beschreibt die weitere Richtung und die nächsten Schritte. Zunächst manuelle, vom Stundenplan unabhängige persönliche Kursverwaltung; Schulbetrieb ist eine spätere Etappe. Der Plan unterscheidet Zielbild und implementierten Stand und ersetzt keine Umsetzungsfreigabe.
 
 **Stand:** Repository v5.9.3, geprüft am 18.11.2026. Dies ist eine Bestandsdokumentation des tatsächlich vorhandenen Frontends sowie eine lesende Übersicht des Supabase-Schemas, keine Behauptung über abgeschlossene End-to-End-Tests.

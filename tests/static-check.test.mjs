@@ -20,6 +20,9 @@ for (const [name, extra, expected] of [
         if (entry.isFile()) copyFileSync(join(root, entry.name), join(dir, entry.name));
       }
       mkdirSync(join(dir, 'scripts'));
+      const policyDir='supabase/functions/hbl-push-dispatch';
+      mkdirSync(join(dir,policyDir),{recursive:true});
+      copyFileSync(join(root,policyDir,'push-policy.mjs'),join(dir,policyDir,'push-policy.mjs'));
       copyFileSync(join(root, 'scripts/check-static.mjs'), join(dir, 'scripts/check-static.mjs'));
       const html = join(dir, 'index.html');
       writeFileSync(html, readFileSync(html, 'utf8') + extra);

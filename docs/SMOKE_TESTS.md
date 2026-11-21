@@ -1,5 +1,7 @@
 # Manuelle Smoke-Tests (Pilotbetrieb)
 
+Für v6.0 mit einem synthetischen Konto „Mein HBL → Benachrichtigungen“ öffnen, Chat ausschalten, Unterricht einschalten und speichern. Wieder öffnen und alle vier Werte sowie Uhrzeiten prüfen. Geräte-Test separat auslösen. Für die zeitgesteuerte Zustellung einen geplanten Demo-Unterricht innerhalb und außerhalb des Zeitfensters prüfen. Bei einem Unterrichtsausfall muss die Erinnerung entfallen.
+
 **Stand:** 18.11.2026 · Ausgangsversion v5.9.3.
 
 Diese Checkliste beschreibt **Testfälle**, keine bereits bestandenen Tests.
