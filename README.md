@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.19 · Pilotprojekt · 21.11.2026**
+**Stand: v5.9.20 · Pilotprojekt · 21.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -42,6 +42,10 @@ Unter **Kurse → Kurs öffnen → Sitzplan einrichten** Einzel- und Doppeltisch
 Einen Platz antippen und eine Person aus der gemeinsamen Kursliste auswählen. Ist die Person bereits platziert, werden die Plätze getauscht. **Frei** lässt einen Platz leer. Eine Namensänderung am Platz gilt nach dem Speichern auch für Mitarbeit und Noten. **Zufällig verteilen** zeigt zuerst eine Vorschau. Die Tischpositionen bleiben erhalten. **Ohne Platz** zeigt, wer noch keinen Sitz hat. Mit **Rückgängig** den letzten Bearbeitungsschritt zurücknehmen. **Sitzplan speichern** sichert den Entwurf im persönlichen Kurs. Für den Pilotbetrieb weiterhin nur Beispieldaten verwenden.
 
 ## Kursübersicht und Noten in v5.9.13
+
+Seit v5.9.20 zeigt das Notenbuch je Kurs beide Halbjahreswerte an. In der Voreinstellung **Sek I** kommt die Jahresnote hinzu. Dafür zählen alle erfassten Leistungen des Schuljahres innerhalb ihrer jeweiligen Bereichsgewichtung. Unter **Bewertungsbereiche, Skala und Berechnung** lässt sich **Sek II** mit zwei getrennten Halbjahreswerten einstellen. Die Notenskala ist davon unabhängig.
+
+Über den Spaltenkopf lässt sich jeder Nachweis einem Halbjahr zuordnen. Die fünf Startspalten neuer Notenbücher beginnen im ersten Halbjahr. Ältere Spalten ohne Zuordnung zählen zum Jahreswert in Sek I und lassen sich nachträglich zuordnen. **Nachweise anzeigen** filtert die Eingabespalten. Die berechneten Vorschläge bleiben für beide Halbjahre und in Sek I für das Jahr sichtbar. Einen Vorschlag antippen, um eine Zeugnisnote manuell festzulegen oder die Festlegung zu entfernen.
 
 **Kurs öffnen** führt zur Übersicht mit Sitzplan. Unter den Schaltflächen **Mitarbeit** und **Noten** kannst du die **Schülerliste** aufklappen. Tippe auf einen Namen zum Bearbeiten oder auf **+ Person hinzufügen**. Die Namen gelten für alle drei Ansichten. Personen mit eingetragenen Noten sind vor dem Entfernen geschützt.
 
