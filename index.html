@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.9.16</title>
+<title>Schul-Dashboard HBL · v5.9.17</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1332,9 +1332,10 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-courses.js?v=5.9.13"></script>
 <script src="./hbl-grades.js?v=5.9.13"></script>
 <script src="./hbl-seating.js?v=5.9.16"></script>
-<script src="./hbl-seat-view.js?v=5.9.16"></script>
+<script src="./hbl-seat-rating.js?v=5.9.17"></script>
+<script src="./hbl-seat-view.js?v=5.9.17"></script>
 <script src="./hbl-course-page.js?v=5.9.14"></script>
-<link rel="stylesheet" href="./hbl-course-page.css?v=5.9.16">
+<link rel="stylesheet" href="./hbl-course-page.css?v=5.9.17">
 <script defer src="./mobile.js?v=5.9.13"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
@@ -2402,7 +2403,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v5.9.16 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v5.9.17 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2870,12 +2871,16 @@ function deleteParticipationStudent(id){
  HblSeating.clearMissing(c.seating,c.students);
  renderParticipationTable();partPersist();
 }
-function setParticipationMark(studentId,dateId,rating){
- if(!participationCanEdit())return;
- const c=partCourseData(true);if(!c.students.some(s=>s.id===studentId)||!c.dates.some(d=>d.id===dateId))return;
+function writeParticipationMark(c,studentId,dateId,rating){
+ if(!c?.students.some(s=>s.id===studentId)||!c.dates.some(d=>d.id===dateId)||!PART_OPTIONS.includes(rating))return false;
+ c.marks??={};
  if(!c.marks[studentId])c.marks[studentId]={};
  const previous=c.marks[studentId][dateId]||{};
- c.marks[studentId][dateId]={...previous,rating:PART_OPTIONS.includes(rating)?rating:""};
+ c.marks[studentId][dateId]={...previous,rating};
+ return true;
+}
+function setParticipationMark(studentId,dateId,rating){
+ if(!participationCanEdit()||!writeParticipationMark(partCourseData(true),studentId,dateId,rating))return;
  renderParticipationTable();partPersist();
 }
 function setParticipationFinal(studentId,value){
@@ -2955,6 +2960,7 @@ const coursePageMode=params.has("noten")?"noten":"kurs";
 const coursePageId=params.get(coursePageMode);
 if(coursePageId&&HblCourseIds.valid(coursePageId)){
  HblCoursePage.mount({id:coursePageId,mode:coursePageMode,
+  participation:{blocks:BLOCKS,ratings:PART_OPTIONS.filter(Boolean),today:taskDateString,formatDate:partDateFormat,write:writeParticipationMark},
   rooms:()=>HblSeating.roomsForCourse(coursePageId,prepDone.__timetableV1?.slots,prepDone.__coursesV1?.courses,prepDone.__participation?.classes),
   read:()=>({meta:prepDone.__coursesV1?.courses?.[coursePageId],data:prepDone.__participation?.classes?.[coursePageId]}),
   save:()=>savePrepFile()});

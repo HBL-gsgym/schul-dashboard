@@ -58,3 +58,11 @@ button.seat-place{cursor:pointer}
 .grade-dialog h2,.grade-dialog p{margin:0}
 .grade-dialog p:empty{display:none}
 @media(max-width:600px){.course-workspace{padding:12px}.grade-scroll td,.grade-scroll th{padding:5px}.grade-scroll select{min-height:40px}}
+.seat-rating{max-width:26rem}
+.seat-rating>p,.seat-rating>label{margin:8px 0 14px}
+.seat-rating>label{display:grid;gap:4px}
+.seat-rating-values{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.seat-rating-values button{min-height:44px;font-size:1.1rem;justify-content:center;padding:5px}
+.seat-rating-values [aria-pressed=true]{background:var(--accent);color:white;outline:2px solid var(--text)}
+.seat-rating-values button:disabled{opacity:.55}
+.seat-rate:hover,.seat-rate:focus-visible{background:var(--panel2);text-decoration:underline}

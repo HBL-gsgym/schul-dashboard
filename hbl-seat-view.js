@@ -9,6 +9,9 @@ const unitY=22;
 window.hblCreateSeatView=function(host,page){
  let source,baseline,rosterKey,draft,names={},undo,preview,selected,seat=0,drag,busy=false;
  let message='';
+ const rateSeat=window.hblSeatRating(page,host,text=>{
+  message=text;host.querySelector('.seat-status').textContent=text;
+ });
  function reset(){
   draft=undo=preview=selected=drag=null;names={};seat=0;
  }
@@ -55,6 +58,7 @@ window.hblCreateSeatView=function(host,page){
    const label='Tisch '+(i+1);
    const seats=d.seats.map((id,j)=>{
     const name=person.get(id)||'Frei';
+    if(!draft&&person.has(id))return '<button type="button" class="seat-place seat-rate" data-rate="'+esc(id)+'" aria-label="Mitarbeit für '+esc(name)+' erfassen">'+esc(name)+'</button>';
     return editing?'<button type="button" class="seat-place" data-desk="'+esc(d.id)+'" data-index="'+j+'" aria-label="'+label+', Platz '+(j+1)+': '+esc(name)+'" aria-pressed="'+(d.id===selected&&seat===j)+'">'+esc(name)+'</button>':'<span class="seat-place" title="'+esc(name)+'">'+esc(name)+'</span>';
    }).join('');
    const handle=editing?'<button type="button" class="seat-handle" data-handle="'+esc(d.id)+'" aria-label="'+label+' verschieben">'+label+' ↔</button>':'<small>'+label+'</small>';
@@ -109,6 +113,7 @@ window.hblCreateSeatView=function(host,page){
  host.addEventListener('click',event=>{
   if(busy)return;
   const el=event.target.closest('button');if(!el)return;
+  if(el.hasAttribute('data-rate')){rateSeat(el);return;}
   if(el.hasAttribute('data-handle')){pick(el.dataset.handle,0);focusDesk();return;}
   if(el.hasAttribute('data-desk')){pick(el.dataset.desk,Number(el.dataset.index));host.querySelector('[data-assign]')?.focus({preventScroll:true});return;}
   const desk=currentDesk(),data=page.read().data;
