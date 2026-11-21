@@ -41,3 +41,8 @@ body:has(#dashboardBoard) #hblCloudControls :is(#hblAccountMore,#hblProfileButto
 @media(max-width:710px){
  body:has(#dashboardBoard) #hblCloudControls>.hbl-cloud-actions{grid-column:2;grid-row:1}
 }
+/* v6.0.5: Dashboard ohne Cloud-/Rücksetzleiste. Cloud bleibt im DOM für Auth,
+   Chat und Statusabfragen; Benutzeraktionen sind über Mein HBL erreichbar. */
+body:has(#dashboardBoard) #hblCloudControls{display:none!important}
+body:has(#dashboardBoard) .board-toolbar,
+body:has(#dashboardBoard) .preptools{display:none!important}

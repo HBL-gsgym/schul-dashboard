@@ -70,6 +70,11 @@ window.openMeinHbl=function(){
  function existing(id,label,leave){
   if(byId(id)&&!byId(id).hidden)action(label,()=>launch(id,leave));
  }
+ const chatEntry=document.createElement('button');
+ chatEntry.type='button';chatEntry.textContent='Kollegium-Chat';
+ chatEntry.onclick=()=>launch('hblChatToggle');
+ const chatTarget=byId('hblChatToggle');
+ if(chatTarget&&!chatTarget.hidden)get('[data-home] p').before(chatEntry);
  get('[data-account]').onclick=()=>{
   openSection(get('[data-account]'));
   const info=document.createElement('p'),user=window.hblCloudUser?.();

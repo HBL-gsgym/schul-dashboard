@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.4 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.5 · Pilotprojekt · 21.11.2026**
+
+Der zuletzt noch sichtbare separate Cloud-Balken aus `cloud.js` ist auf dem Dashboard ebenfalls ausgeblendet; die Funktionen bleiben erhalten und der Chat ist jetzt auch über **Mein HBL → Kollegium-Chat** erreichbar. Ein eventueller alter Board-Toolbar-Rest wird bei der Initialisierung entfernt.
 
 Der bisherige Status- und Rücksetzstreifen oberhalb der Dashboard-Kacheln entfällt: **Cloud-/Speicherstatus** und Sync-Aktionen sind in **Mein HBL → Daten & Synchronisierung** verfügbar, **Anordnung zurücksetzen** unter **Mein HBL → Dashboard anpassen** (mit Bestätigungsabfrage). Bestehende Speicherung, Konten und Kacheleinstellungen bleiben erhalten.
 

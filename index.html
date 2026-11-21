@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v6.0.4</title>
+<title>Schul-Dashboard HBL · v6.0.5</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1274,7 +1274,7 @@ body:not(.dark) .demo-alert{color:#6f4200;background:#fff4dc;border-color:#e4c68
 
 </style>
 <link rel="stylesheet" href="./mobile.css?v=6.0.3">
-<link rel="stylesheet" href="./cloud.css?v=5.10.4">
+<link rel="stylesheet" href="./cloud.css?v=6.0.5">
 <style>
 /* HBL Dashboard v5.0: customizable A/B timetable */
 .hbl-plan-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
@@ -1368,7 +1368,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seat-view.js?v=5.9.22"></script>
 <script src="./hbl-course-page.js?v=5.9.20"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=5.9.22">
-<script defer src="./mein-hbl.js?v=6.0.4"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
+<script defer src="./mein-hbl.js?v=6.0.5"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
 <script defer src="./mobile.js?v=5.10.5"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
@@ -2405,7 +2405,9 @@ function initializeDashboardTiles(){
  // Der Speicherstatus bleibt für bestehende Cloud-/Lokalspeicher-Aufrufe erhalten,
  // wird jedoch nur noch unter „Mein HBL → Daten & Synchronisierung“ gezeigt.
  const tools=document.querySelector(".preptools");
- if(tools){tools.hidden=true;tools.style.display="none";}
+ if(tools)tools.remove();
+ // Rückstände aus älteren PWA-Ständen sicher aus dem Dashboard entfernen.
+ document.querySelectorAll(".board-toolbar").forEach(toolbar=>toolbar.remove());
 
  board.addEventListener("dragover",e=>{
   if(!hblDraggedTile)return;
@@ -2449,7 +2451,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.4 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.5 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2549,7 +2551,7 @@ function renderHome(){
   </div>
   <div class="schoolyear-note">Schultage Mo–Fr; Ferien und Feiertage nach Brandenburg. Variable Ferientage gelten vorbehaltlich der schulischen Festlegung.</div>
 </section>
-<div class="preptools"><span id="prepStorageStatus" role="status" aria-live="polite">Verbinde mit Speicherdatei …</span></div>
+
 
     <main class="grid">
       <section class="card hbl-links-card"><div class="card-title"><h2>Meine Links</h2></div><div id="hblLinksRoot"></div></section>
