@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.2 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.3 · Pilotprojekt · 21.11.2026**
+
+Die Android-Hero-Kachel enthält jetzt auch A/B-Woche, Uhrzeit mit Sekunden, Datum und KW in einer Reihe mit einheitlicher Schriftgröße. Auf Desktop bleibt die Uhrzeit separat. Die Ecosia-Suche wird innerhalb ihrer Kachel unterhalb der Steuerleiste in voller Breite dargestellt; die Suchfunktion und persönliche Kachel-Einstellungen bleiben erhalten.
 
 Auf Android ist die Kopfkachel kompakter, die Wochen-/Uhrzeit-/Datums-/KW-Information steht in einer Zeile, die Autoren-Signatur ist dezent und der doppelte „Mein HBL“-Button oben wird ausgeblendet (Zugang über mobile Navigation bleibt). Die **Ecosia-Websuche** ist nun eine optionale Dashboard-Kachel, die sich über **Mein HBL → Dashboard anpassen** verschieben, minimieren und ausblenden lässt; bestehende individuelle Layouts und Suchverhalten bleiben erhalten.
 

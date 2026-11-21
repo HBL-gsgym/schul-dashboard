@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v6.0.2</title>
+<title>Schul-Dashboard HBL · v6.0.3</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1255,6 +1255,14 @@ header.part-hero{display:block !important;grid-template-columns:none !important;
  .tile-grip span{display:none;}
  .board-toolbar{padding:9px;}
 }
+
+/* Such-Kachel: obere Steuerleiste und eigenständiges Formular darunter. */
+.dashboard-board .search-tile.dashboard-tile{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.dashboard-board .search-tile .tile-controls{width:100%;flex:0 0 auto;margin-bottom:0}
+.dashboard-board .search-tile .searchbar{display:flex;align-items:stretch;gap:10px;width:100%;min-width:0;margin:0!important}
+.dashboard-board .search-tile .searchbar input{min-width:0;width:0;flex:1 1 0}
+.dashboard-board .search-tile .searchbar button{flex:0 0 auto}
+
 /* Im Dunkelmodus bleiben Griff, Bedienelemente und Fokus deutlich sichtbar. */
 body.dark .tile-controls{border-bottom-color:var(--line);}
 body.dark .tile-tool:hover,body.dark .tile-grip:hover{background:rgba(255,255,255,.08);}
@@ -1265,7 +1273,7 @@ body.dark .tile-tool:hover,body.dark .tile-grip:hover{background:rgba(255,255,25
 body:not(.dark) .demo-alert{color:#6f4200;background:#fff4dc;border-color:#e4c68a}
 
 </style>
-<link rel="stylesheet" href="./mobile.css?v=6.0.2">
+<link rel="stylesheet" href="./mobile.css?v=6.0.3">
 <link rel="stylesheet" href="./cloud.css?v=5.10.4">
 <style>
 /* HBL Dashboard v5.0: customizable A/B timetable */
@@ -1430,7 +1438,7 @@ function updateClock(){
   const now=new Date();
   const info=weekInfo(now);
   const compact=window.matchMedia("(max-width:710px)").matches;
-  const t=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",...(compact?{}:{second:"2-digit"})});
+  const t=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const d=now.toLocaleDateString("de-DE",compact?{day:"2-digit",month:"2-digit",year:"2-digit"}:{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"});
   document.getElementById("time").textContent=t;
   document.getElementById("date").textContent=d;
@@ -2234,7 +2242,7 @@ const HBL_TILE_SPECS=[
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
  {id:"kalender",selector:".schoolyear-card",title:"Schuljahreskalender",span:12},
  {id:"musik",selector:"section.music-shortcuts",title:"Musik zum Arbeiten",span:12},
- {id:"suche",selector:"form.searchbar",title:"Websuche",span:12},
+ {id:"suche",selector:"section.search-tile",title:"Websuche",span:12},
  {id:"links",core:true,selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
  {id:"stundenplan",core:true,selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
@@ -2430,6 +2438,16 @@ function initializeDashboardTiles(){
  // Ohne gespeicherte Daten startet das bekannte, ursprüngliche Layout.
 }
 
+function syncHeroClockPlacement(){
+ const header=document.querySelector(".wrapper > header"),hero=header?.querySelector(".hero"),clock=header?.querySelector(".clockbox");
+ if(!header||!hero||!clock)return;
+ if(matchMedia("(max-width:710px)").matches){
+  if(clock.parentElement!==hero)hero.append(clock);
+ }else if(clock.parentElement!==header){
+  hero.insertAdjacentElement("afterend",clock);
+ }
+ updateClock();
+}
 function renderHome(){
   document.body.innerHTML=`
   <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
@@ -2438,7 +2456,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.2 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.3 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2474,10 +2492,12 @@ function renderHome(){
       </aside>
     </header>
 
-    <form class="searchbar" action="https://www.ecosia.org/search" method="get" target="_blank">
+    <section class="search-tile" aria-label="Websuche">
+      <form class="searchbar" action="https://www.ecosia.org/search" method="get" target="_blank">
       <input name="q" placeholder="Mit Ecosia suchen …" autocomplete="off">
       <button type="submit">Suchen</button>
-    </form>
+      </form>
+    </section>
 
     <section class="music-shortcuts" aria-label="Musik zum Arbeiten">
       <span class="music-caption"><span class="music-caption-icon" aria-hidden="true">♫</span> Musik zum Arbeiten</span>
@@ -2564,9 +2584,11 @@ function renderHome(){
 
   </div>`;
   initializeDashboardTiles();
+  syncHeroClockPlacement();
   updateClock(); renderToday(); renderPreparationWeeks(); renderTimetable(); initTaskForm(); renderTasks(); renderSchoolCalendar(); renderParticipationOverview();
   setBackdrop(readPreference("schoolBackdrop")||"astro",false);
-  loadPrepFromServer(); setInterval(updateClock,1000); setInterval(renderToday,30000);
+  loadPrepFromServer(); window.addEventListener('resize',syncHeroClockPlacement);
+  setInterval(updateClock,1000); setInterval(renderToday,30000);
   setInterval(renderPreparationWeeks,60000);setInterval(renderTasks,60000);setInterval(renderSchoolCalendar,60000);
 }
 
