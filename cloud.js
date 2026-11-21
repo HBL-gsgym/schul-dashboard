@@ -240,6 +240,20 @@ async function initializeAuth(){
  client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  window.hblCloudClient=client;
  window.hblCloudUser=()=>user;
+ window.hblChangeOwnPassword=async(expectedId,current,password)=>{
+  if(!expectedId||user?.id!==expectedId||!user.email)throw Error("Bitte erneut anmelden.");
+  if(!current||password.length<10||password===current)throw Error("Bitte ein anderes neues Passwort mit mindestens 10 Zeichen wählen.");
+  const check=window.supabase.createClient(URL,KEY,{auth:{storageKey:"hbl-password-"+crypto.randomUUID(),persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  try{
+   const verified=await check.auth.signInWithPassword({email:user.email,password:current});
+   if(verified.error)throw Error("Anmeldung mit dem bisherigen Passwort fehlgeschlagen.");
+   if(verified.data.user?.id!==expectedId||user?.id!==expectedId)throw Error("Das aktive Konto hat sich geändert.");
+   const result=await check.auth.updateUser({password});
+   if(result.error)throw result.error;
+  }finally{
+   await check.auth.signOut({scope:"local"}).catch(()=>{});
+  }
+ };
  client.auth.onAuthStateChange((event,session)=>{
   if(event==="SIGNED_OUT"){sessionVersion++;user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
   if((event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")&&session?.user&&session.user.id!==user?.id){
