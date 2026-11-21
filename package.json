@@ -1,6 +1,6 @@
 {
   "name": "hbl-schul-dashboard",
-  "version": "6.0.7",
+  "version": "6.0.8",
   "private": true,
   "type": "module",
   "description": "Statischer Check des Schul-Dashboard-HBL-Piloten",

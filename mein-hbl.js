@@ -120,10 +120,17 @@ window.openMeinHbl=function(){
   window.removeEventListener('online',syncStatus);window.removeEventListener('offline',syncStatus);
  },{once:true});
  get('[data-version]').textContent=document.querySelector('.dashboard-version')?.firstChild.textContent.trim()||'';
- if(document.getElementById('hblAdminOpen')){
-  const admin=document.createElement('button');admin.onclick=()=>launch('hblAdminOpen');admin.textContent='Administration';
-  get('[data-home] p').before(admin);
+ const admin=document.createElement('button');
+ admin.type='button';admin.textContent='Administration';
+ admin.onclick=()=>{if(window.hblCanManageUsers?.()){handedOff=true;dialog.close();window.hblOpenAdminUsers?.();}};
+ function syncAdminAccess(){
+  const allowed=!!window.hblCanManageUsers?.();
+  if(allowed&&!admin.isConnected)get('[data-home] p').before(admin);
+  else if(!allowed&&admin.isConnected)admin.remove();
  }
+ syncAdminAccess();
+ window.addEventListener('hbl-admin-rights-changed',syncAdminAccess);
+ dialog.addEventListener('close',()=>window.removeEventListener('hbl-admin-rights-changed',syncAdminAccess),{once:true});
  function showDesign(detail){
   get('[data-home]').hidden=detail;get('[data-detail]').hidden=!detail;
   get('h2').textContent=detail?'Design':'Mein HBL';

@@ -93,22 +93,29 @@ async function loadEvents(force){
   const state=byId("hblEventStatus");if(state)state.textContent="Schultermine konnten nicht geladen werden: "+e.message;
  }finally{busy=false;}
 }
+// Benutzerverwaltung ausschließlich unter „Mein HBL → Administration“.
+window.hblCanManageUsers=()=>!!user()&&loadedUser===user().id&&isOwner;
+window.hblOpenAdminUsers=()=>{if(window.hblCanManageUsers())void openAdminUsers();};
+function hblNotifyAdminRights(){window.dispatchEvent(new Event("hbl-admin-rights-changed"));}
 async function loadRole(){
  const logged=user(),sb=client();
- if(!logged||!sb){isAdmin=false;isOwner=false;return;}
+ if(!logged||!sb){isAdmin=false;isOwner=false;hblNotifyAdminRights();return;}
  const {data,error}=await sb.from(ROLES_TABLE).select("is_owner").eq("user_id",logged.id).maybeSingle();
- if(error){isAdmin=false;isOwner=false;return;}
+ if(logged.id!==user()?.id||logged.id!==loadedUser)return;
+ if(error){isAdmin=false;isOwner=false;hblNotifyAdminRights();return;}
  isAdmin=!!data;isOwner=!!data?.is_owner;
+ hblNotifyAdminRights();
  if(byId("schoolDots"))renderSchoolCalendar();
 }
 async function refreshSession(){
  const logged=user();
  if(!logged){
-  if(loadedUser){events=[];loadedUser=null;lastEvents=null;isAdmin=false;isOwner=false;refreshViews();}
+  if(loadedUser){events=[];loadedUser=null;lastEvents=null;isAdmin=false;isOwner=false;hblNotifyAdminRights();refreshViews();}
   return;
  }
  if(logged.id!==loadedUser){
   loadedUser=logged.id;
+  isAdmin=false;isOwner=false;hblNotifyAdminRights();
   events=[];lastEvents=null;
   await Promise.all([loadRole(),loadEvents(true)]);
  }else await loadEvents();
@@ -190,11 +197,10 @@ window.hblDecorateSchoolMilestones=function(aside,year){
     (isAdmin?'<button type="button" data-edit-event="'+safe(e.id)+'" class="hbl-school-event-button">'+content+'</button>':'<div class="hbl-school-event-text">'+content+'</div>')+
    '</div>';
  }).join(""):'<p class="hbl-school-events-empty">Für gemeinsame Schultermine bitte anmelden oder als Administrator Termine hinzufügen.</p>')+'</div>'+
- (isOwner?'<button type="button" id="hblAdminOpen" class="hbl-admin-launch">⚙ Benutzer verwalten</button>':'');
+ '';
  aside.appendChild(section);
  byId("hblEventAdd")?.addEventListener("click",()=>openEventEditor());
  section.querySelectorAll("[data-edit-event]").forEach(x=>x.addEventListener("click",()=>openEventEditor(x.dataset.editEvent)));
- byId("hblAdminOpen")?.addEventListener("click",()=>void openAdminUsers());
 };
 function mountEventEditor(){
  let el=byId("hblEventOverlay");if(el)return el;

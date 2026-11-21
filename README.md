@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.7 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.8 · Pilotprojekt · 21.11.2026**
+
+Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 
 Der zusätzliche Button **„🔔 Ruhezeiten“** wurde aus dem Chatkopf entfernt. Sämtliche Chat-, Unterrichts- und sonstigen Push-Einstellungen bleiben zentral unter **Mein HBL → Benachrichtigungen** erreichbar, einschließlich Geräteaktivierung. Die Benachrichtigungsfunktionen selbst sind unverändert.
 
