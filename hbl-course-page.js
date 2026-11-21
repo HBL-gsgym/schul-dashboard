@@ -5,7 +5,20 @@ const grades=window.HblGradebook;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const format=value=>value.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
 const makeId=()=>crypto.randomUUID();
-let page,seatView,serial=0;
+let page,serial=0;
+const cachedContents=new Map(),seatViews=new Map(),renderStamps=new Map();
+let contentKey='';
+function switchCourseContent(host,key){
+ if(contentKey===key)return;
+ if(contentKey){
+  const detached=document.createDocumentFragment();
+  while(host.firstChild)detached.append(host.firstChild);
+  cachedContents.set(contentKey,detached);
+ }
+ const previous=cachedContents.get(key);
+ if(previous){host.append(previous);cachedContents.delete(key);}
+ contentKey=key;
+}
 let gradeView='year';
 const periodLabel={first:'1. Halbjahr',second:'2. Halbjahr',year:'Schuljahr'};
 function link(view,label,style='part-button'){
@@ -34,18 +47,26 @@ function renderCourseSwitcher(courses){
   if(c)visible.push({id:current,short:[c.subject,c.group].filter(Boolean).join(' ')});
  }
  visible.sort((a,b)=>a.short.localeCompare(b.short,'de'));
- const stamp=JSON.stringify({current,view,visible});
- if(nav.dataset.stamp===stamp)return;
- nav.dataset.stamp=stamp;
- nav.innerHTML=visible.length?visible.map(c=>
-  '<a class="part-tab'+(c.id===current?' current':'')+'" href="?'+view+'='+encodeURIComponent(c.id)+'"'+
-  (c.id===current?' aria-current="page"':'')+'>'+esc(c.short)+'</a>'
- ).join(''):'<span class="hbl-course-picker-empty">Kurse werden geladen …</span>';
- // Aktiven Kurs horizontal in den sichtbaren Streifen holen, ohne vertikal zu scrollen.
+ const visibleStamp=JSON.stringify(visible);
+ if(nav.dataset.visibleStamp!==visibleStamp){
+  nav.dataset.visibleStamp=visibleStamp;
+  nav.innerHTML=visible.length?visible.map(c=>
+   '<a class="part-tab" data-course-choice="'+esc(c.id)+'" href="?'+view+'='+encodeURIComponent(c.id)+'">'+esc(c.short)+'</a>'
+  ).join(''):'<span class="hbl-course-picker-empty">Kurse werden geladen …</span>';
+ }
+ // Die Kursleiste bleibt stehen: nur aktiven Link und Ziel-Ansicht ändern.
+ for(const link of nav.querySelectorAll('[data-course-choice]')){
+  const active=link.dataset.courseChoice===current;
+  link.href='?'+view+'='+encodeURIComponent(link.dataset.courseChoice);
+  link.classList.toggle('current',active);
+  if(active)link.setAttribute('aria-current','page');
+  else link.removeAttribute('aria-current');
+ }
  const selected=nav.querySelector('[aria-current="page"]');
  if(selected){
-  const left=selected.getBoundingClientRect().left-nav.getBoundingClientRect().left+nav.scrollLeft;
-  nav.scrollLeft=Math.max(0,left-(nav.clientWidth-selected.getBoundingClientRect().width)/2);
+  const outer=nav.getBoundingClientRect(),inner=selected.getBoundingClientRect();
+  if(inner.left<outer.left)nav.scrollLeft+=inner.left-outer.left-12;
+  else if(inner.right>outer.right)nav.scrollLeft+=inner.right-outer.right+12;
  }
 }
 
@@ -61,20 +82,12 @@ function syncNavigation(courseId,view,courses){
  const picker=document.getElementById('hblCourseTabs');
  if(picker){
   picker.dataset.courseId=courseId;picker.dataset.courseView=view;
-  delete picker.dataset.stamp;
   renderCourseSwitcher(courses||page?.courses?.()||[]);
  }
 }
 function navigate(courseId,mode){
  if(!page)return;
- const picker=document.getElementById('hblCourseTabs');
- const changed=picker?.dataset.courseId!==courseId||picker?.dataset.courseView!==mode;
  page.id=courseId;page.mode=mode;
- if(changed){
-  seatView=null;
-  document.getElementById('coursePageContent')?.replaceChildren();
-  status('');
- }
  syncNavigation(courseId,mode,page.courses?.());
  refresh();
 }
@@ -83,7 +96,7 @@ function status(message){
  if(el)el.textContent=message;
 }
 function mount(options){
- page=options;
+ if(page)Object.assign(page,options);else page=options;
  if(window.hblActivateView?.('course')){navigate(page.id,page.mode);return;}
  window.hblSetView('course','<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace hbl-course-layout"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
   courseSwitcher(page.id,page.mode==='noten'?'noten':'kurs')+
@@ -98,6 +111,8 @@ function refresh(){
  if(!page)return;
  const {meta,data}=page.read(),host=document.getElementById('coursePageContent');
  if(!host)return;
+ const key=page.mode+':'+page.id;
+ switchCourseContent(host,key);
  if(typeof page.courses==='function')renderCourseSwitcher(page.courses());
  const title=document.getElementById('coursePageTitle');
  if(!meta){title.textContent='Kurs nicht gefunden';host.replaceChildren();return;}
@@ -105,12 +120,16 @@ function refresh(){
  title.textContent=name;
  document.getElementById('coursePageMeta').textContent=(data?.students?.length??0)+' Lernende · '+(page.mode==='noten'?'Notenbuch':'Sitzplan und Schülerliste');
  document.title=(page.mode==='noten'?'Noten · ':'Kurs · ')+name+' · Schul-Dashboard';
+ const stamp=JSON.stringify({meta,data,mode:page.mode,gradeView,
+  rooms:page.mode==='kurs'?page.rooms?.():null});
+ if(renderStamps.get(key)===stamp&&host.childNodes.length)return;
+ renderStamps.set(key,stamp);
  if(page.mode==='kurs'){
   if(!host.querySelector('.seat-section')){
    host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><details class="part-pane course-roster"><summary></summary><button type="button" class="part-button" data-add-person>+ Person hinzufügen</button><ul></ul></details>';
-   seatView=window.hblCreateSeatView(host.querySelector('.seat-section'),page);
+   seatViews.set(key,window.hblCreateSeatView(host.querySelector('.seat-section'),page));
   }
-  seatView.render();
+  seatViews.get(key)?.render();
   const roster=host.querySelector('.course-roster'),students=data?.students||[];
   roster.querySelector('summary').textContent='Schülerliste ('+students.length+')';
   roster.querySelector('ul').innerHTML=students.map(s=>'<li><button type="button" data-person="'+esc(s.id)+'" aria-label="'+esc(s.name)+' bearbeiten">'+esc(s.name)+'</button></li>').join('');

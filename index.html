@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.0.6">
-<title>Schul-Dashboard HBL · v7.0.6</title>
+<meta name="hbl-version" content="7.0.7">
+<title>Schul-Dashboard HBL · v7.0.7</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1367,11 +1367,11 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seating.js?v=5.9.21"></script>
 <script src="./hbl-seat-rating.js?v=5.9.21"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=7.0.6"></script>
+<script src="./hbl-course-page.js?v=7.0.7"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=7.0.5">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=7.0.4">
 <script defer src="./mein-hbl.js?v=7.0.6"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
-<script defer src="./mobile.js?v=7.0.6"></script>
+<script defer src="./mobile.js?v=7.0.7"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.10.3"></script>
@@ -1760,6 +1760,12 @@ function dayBlocks(date){
   return {...b,entries:unique,s:tmin(b.start),e:tmin(b.end)};
  }).filter(b=>b.entries.length&&!(typeof window.hblCancelled==="function"&&window.hblCancelled(key,b.n)));
 }
+const hblUnchangedHtml=new WeakMap();
+function hblUpdateHtml(element,markup){
+ if(hblUnchangedHtml.get(element)===markup)return;
+ hblUnchangedHtml.set(element,markup);
+ element.innerHTML=markup;
+}
 function renderToday(){
  const el=document.getElementById("todayLessons");if(!el)return;
  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -1772,8 +1778,8 @@ function renderToday(){
    upcoming.push({date,b,offset});
   }
  }
- if(!upcoming.length){el.innerHTML='<div class="nolesson">Keine anstehenden Blöcke.</div>';return}
- el.innerHTML=upcoming.slice(0,4).map(({date,b,offset},i)=>{
+ if(!upcoming.length){const text='<div class="nolesson">Keine anstehenden Blöcke.</div>';hblUpdateHtml(el,text);return}
+ const nextHtml=upcoming.slice(0,4).map(({date,b,offset},i)=>{
   const active=offset===0&&cur>=b.s&&cur<b.e;
   const label=active?"Jetzt":i===0?"Als Nächstes":"Danach";
   const dlabel=offset===0?"Heute":offset===1?"Morgen":DAYNAMES[date.getDay()]+" "+date.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
@@ -1783,6 +1789,7 @@ function renderToday(){
    <div class="lessonmain">${details}</div>
   </div>`;
  }).join("");
+ hblUpdateHtml(el,nextHtml);
 }
 
 function taskDateString(date){
@@ -1940,9 +1947,13 @@ function renderTasks(){
  const correctionList=document.getElementById("correctionList"),otherList=document.getElementById("taskList");
  const completedWeek=document.getElementById("completedWeekList"),olderList=document.getElementById("olderTasksList");
  if(!correctionList||!otherList||!completedWeek||!olderList)return;
+ const today=taskDateString(new Date()),monday=taskDateString(startOfWeek(new Date())),nextMonday=taskDateString(dayOffset(startOfWeek(new Date()),7));
+ // Aufgaben sind nur bei echten Änderungen neu aufzubauen.
+ const stamp=JSON.stringify({today,monday,tasks});
+ if(otherList.dataset.renderStamp===stamp)return;
+ otherList.dataset.renderStamp=stamp;
  correctionList.replaceChildren();otherList.replaceChildren();completedWeek.replaceChildren();olderList.replaceChildren();
  const open=tasks.filter(t=>!t.done).sort((a,b)=>a.due.localeCompare(b.due)||a.title.localeCompare(b.title,"de"));
- const today=taskDateString(new Date()),monday=taskDateString(startOfWeek(new Date())),nextMonday=taskDateString(dayOffset(startOfWeek(new Date()),7));
  for(const t of open){
   const row=document.createElement("div");
   row.className="taskentry"+(t.due<today?" overdue":t.due===today?" soon":"");
@@ -2016,7 +2027,8 @@ function renderPreparationWeek(offset){
   }
   html+="</div></div>";
  }
- target.innerHTML=html||'<div class="nolesson">Keine Unterrichtsblöcke.</div>';
+ const nextHtml=html||'<div class="nolesson">Keine Unterrichtsblöcke.</div>';
+ hblUpdateHtml(target,nextHtml);
 }
 function renderPreparationWeeks(){renderPreparationWeek(0);renderPreparationWeek(1)}
 function exportPreparation(){
@@ -2104,6 +2116,15 @@ function renderSchoolCalendar(){
   }
   weeks.push({date:new Date(date),cells});
  }
+ // Bei unveränderten Tagen und Schulveranstaltungen bleibt der DOM bestehen.
+ const stamp=JSON.stringify({
+  today,year:year.label,
+  weeks:weeks.map(w=>w.cells.map(c=>[c.key,c.valid,c.kind,c.label,c.past,c.now,
+   c.valid&&typeof window.hblSchoolEventsForDate==='function'?
+    window.hblSchoolEventsForDate(c.key).map(event=>[event.id,event.title]):[]]))
+ });
+ if(grid.dataset.renderStamp===stamp)return;
+ grid.dataset.renderStamp=stamp;
  grid.replaceChildren();axis.replaceChildren();weekLabels.replaceChildren();
  grid.style.setProperty("--school-weeks",weeks.length);
  axis.style.setProperty("--school-weeks",weeks.length);
@@ -2493,7 +2514,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.6 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.7 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2797,7 +2818,7 @@ function renderParticipationPage(courseId){
  const course=partCourseById(courseId);if(!course){renderHome();return;}
  const previous=currentParticipationCourse;
  currentParticipationCourse=courseId;
- if(hblActivateView('participation')){
+ if(hblActivateView('participation:'+courseId)){
   HblCoursePage.syncNavigation(courseId,'mitarbeit',PARTICIPATION_COURSES);
   const title=document.getElementById('hblCurrentCourseTitle');
   if(title)title.innerHTML=course.icon+' '+partEsc(course.label)+' <span>· '+partEsc(course.group)+'</span>';
@@ -2810,7 +2831,7 @@ function renderParticipationPage(courseId){
  }
  document.title=`Mitarbeit ${course.short} · Schul-Dashboard HBL`;
  const header=`${course.icon} ${partEsc(course.label)} <span>· ${partEsc(course.group)}</span>`;
- hblSetView('participation',`
+ hblSetView('participation:'+courseId,`
  <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
  <div class="part-shell hbl-course-layout">
   <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></div>
@@ -3025,7 +3046,11 @@ function saveParticipationComment(){
 function renderParticipationTable(){
  const host=document.getElementById("participationTableHost");if(!host||!currentParticipationCourse)return;
  const c=partCourseData(),students=c.students;
+ const stampForView=()=>JSON.stringify({courseId:currentParticipationCourse,month:participationMonthView,
+  students:c.students,dates:c.dates,marks:c.marks,finals:c.finals});
+ if(host.dataset.renderStamp===stampForView())return;
  refreshParticipationMonthSelector(c);
+ host.dataset.renderStamp=stampForView();
  const dates=participationMonthView==="all"?c.dates:c.dates.filter(d=>d.date.startsWith(participationMonthView));
  const prevScrollX=host.scrollLeft,prevScrollY=host.scrollTop;
  const stats=document.getElementById("partHeroStats");

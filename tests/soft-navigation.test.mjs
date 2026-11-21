@@ -10,7 +10,7 @@ test('Interne Navigation behält die App-Shell und den Browser-Verlauf',()=>{
  assert.match(html,/history\.pushState\(/);
  assert.match(html,/addEventListener\('popstate'/);
  assert.match(html,/hblActivateView\('home'\)/);
- assert.match(html,/hblActivateView\('participation'\)/);
+ assert.match(html,/hblActivateView\('participation:'\+courseId\)/);
  assert.doesNotMatch(html,/document\.body\.innerHTML\s*=/);
 });
 test('Kurswechsel ersetzt nicht den gesamten Body',()=>{

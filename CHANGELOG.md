@@ -1,3 +1,7 @@
+## v7.0.7 – 21.11.2026 · ChatGPT
+- Android/Tablet/Desktop: unveränderte Dashboard-Zeilen und der Schulkalender werden nicht periodisch neu gezeichnet. Mitarbeit wird je Kurs im DOM bewahrt; Kursinhalte je Ansicht/Kurs bleiben erhalten und werden bei tatsächlichen Änderungen neu dargestellt. Die Kursauswahl ändert aktive Markierung ohne HTML-Komplettaustausch. Die mobile Leiste ändert nur bei Wechsel der Ansichtsart ihr Layout; auch Übersicht/Noten sind auf dem Handy erreichbar.
+- Keine Änderung an Snapshot, Supabase-Schema, Auth oder Berechtigungen. JS-Syntax geprüft; automatische Tests und reales Geräteverhalten werden separat geprüft.
+
 ## v7.0.6 – 21.11.2026 · ChatGPT
 - Interne Kursnavigation mit History API, persistente Dashboard-/Mitarbeitsansichten und globale UI. Kurswechsel/Tabs und mobile Navigation angepasst, ohne Datenbankänderungen. Statische JS-Syntax geprüft; Gerätetests noch offen.
 

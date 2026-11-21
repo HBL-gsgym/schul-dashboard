@@ -15,13 +15,21 @@
   }
   let dispose=()=>{};
   function init(){
+    const onCourse=!!document.querySelector('.part-shell');
+    const onWorkspace=!!document.querySelector('.course-workspace');
+    const onDashboard=!!document.getElementById('dashboardBoard');
+    const mode=onCourse?'participation':onWorkspace?'course':onDashboard?'dashboard':'none';
+    const previous=document.getElementById('hblMobileNav');
+    // Kein Austausch derselben Leiste bei Kurs- oder Tabwechseln.
+    if(previous?.dataset.navMode===mode)return;
     dispose();
-    document.getElementById('hblMobileNav')?.remove();
+    previous?.remove();
+    if(mode==='none')return;
     const controller=new AbortController(),observers=[];
     dispose=()=>{controller.abort();observers.forEach(o=>o.disconnect());};
     const nav=document.createElement('nav');
-    nav.id='hblMobileNav';nav.className='hbl-mobile-nav';nav.setAttribute('aria-label','Handy-Schnellnavigation');
-    const onCourse=!!document.querySelector('.part-shell');
+    nav.id='hblMobileNav';nav.className='hbl-mobile-nav';nav.dataset.navMode=mode;
+    nav.setAttribute('aria-label','Handy-Schnellnavigation');
     if(onCourse){
       const link=document.createElement('a');link.href='./';
       const icon=document.createElement('span');icon.className='hbl-mobile-icon';icon.textContent='⌂';
@@ -38,7 +46,17 @@
         hint.textContent='↔ Tabelle seitlich wischen · Namen bleiben sichtbar';
         table.parentNode.insertBefore(hint,table);
       }
-    }else if(document.getElementById('dashboardBoard')){
+    }else if(onWorkspace){
+      const link=document.createElement('a');link.href='./';link.textContent='⌂ Start';nav.appendChild(link);
+      nav.appendChild(createButton('▦','Kurse',()=>jumpTo(document.querySelector('.hbl-course-picker'))));
+      for(const [icon,label,view] of [['▣','Übersicht','kurs'],['✎','Mitarbeit','mitarbeit'],['★','Noten','noten']]){
+        nav.appendChild(createButton(icon,label,()=>{
+          const id=document.getElementById('hblCourseTabs')?.dataset.courseId;
+          if(id)window.hblNavigate?.('?'+view+'='+encodeURIComponent(id));
+        }));
+      }
+      nav.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';
+    }else if(onDashboard){
       // Frühere Kachel-Schnellzugriffe bleiben erhalten. Konto und Chat sind
       // unabhängig von ausgeblendeten Kacheln immer über die Leiste erreichbar.
       const items=[['⌂','Heute','unterricht'],['☑','Aufgaben','aufgaben'],['▦','Kurse','mitarbeit'],['▦','Plan','stundenplan']];
