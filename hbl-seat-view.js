@@ -55,6 +55,85 @@ window.hblCreateSeatView=function(host,page){
   window.addEventListener('afterprint',()=>sheet.remove(),{once:true});
   try{window.print();}catch(error){sheet.remove();throw error;}
  }
+
+ // iPad-PWAs können window.print() blockieren. Ein echtes PDF lässt sich
+ // dagegen per Nutzertipp im Safari-PDF-Viewer öffnen oder in Dateien sichern.
+ async function createPdf(){
+  const {meta,data}=page.read(),plan=data?.seating;
+  if(!plan?.desks?.length)throw Error('Noch kein Sitzplan zum Ausgeben vorhanden.');
+  const people=new Map((data.students||[]).map(p=>[p.id,p.name]));
+  const canvas=document.createElement('canvas');
+  // A4 quer bei rund 200 dpi, vollständig lokal erzeugt.
+  canvas.width=2339;canvas.height=1654;
+  const ctx=canvas.getContext('2d',{alpha:false});
+  if(!ctx)throw Error('Die PDF-Erstellung wird auf diesem Gerät nicht unterstützt.');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#111';ctx.font='bold 55px Arial,sans-serif';
+  ctx.fillText('Sitzplan · '+meta.subject+' · '+meta.group,90,100);
+  ctx.font='33px Arial,sans-serif';
+  if(plan.room)ctx.fillText('Raum '+plan.room,90,158);
+  const top=204,margin=95;
+  const bottom=Math.max(1,...plan.desks.map(d=>d.y+model.size(d).h));
+  const worldW=model.width*50,worldH=bottom*34+85;
+  const scale=Math.min((canvas.width-2*margin)/worldW,(canvas.height-top-margin)/worldH);
+  ctx.save();ctx.translate((canvas.width-worldW*scale)/2,top);ctx.scale(scale,scale);
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#111';
+  ctx.font='bold 27px Arial,sans-serif';ctx.fillText('Tafel',worldW/2,34);
+  for(const desk of plan.desks){
+   for(let i=0;i<desk.seats.length;i++){
+    const id=desk.seats[i],name=String(people.get(id)||'Frei');
+    const x=(desk.x+(desk.vertical?0:i*3))*50;
+    const y=50+(desk.y+(desk.vertical?i*3:0))*34;
+    ctx.fillStyle='#fff';ctx.fillRect(x,y,150,102);
+    ctx.lineWidth=2;ctx.strokeStyle='#111';ctx.strokeRect(x,y,150,102);
+    ctx.fillStyle='#111';let font=22;
+    while(font>10){ctx.font=font+'px Arial,sans-serif';if(ctx.measureText(name).width<=137)break;font--;}
+    // Ein langer Name wird nicht abgeschnitten, sondern in zwei Zeilen aufgeteilt.
+    if(ctx.measureText(name).width>137&&name.includes(' ')){
+     const parts=name.split(/\s+/),lines=[''];
+     for(const part of parts){
+      const at=lines.length-1,trial=(lines[at]+' '+part).trim();
+      if(ctx.measureText(trial).width>137&&lines[at]&&lines.length<2)lines.push(part);
+      else lines[at]=trial;
+     }
+     lines.forEach((line,j)=>ctx.fillText(line,x+75,y+(lines.length===2?40+j*26:54),144));
+    }else ctx.fillText(name,x+75,y+54,144);
+   }
+  }
+  ctx.restore();
+  const jpg=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Bilddaten konnten nicht erzeugt werden.')),'image/jpeg',0.94));
+  const pixels=new Uint8Array(await jpg.arrayBuffer());
+  const encoder=new TextEncoder(),chunks=[];let length=0;
+  const append=part=>{const bytes=typeof part==='string'?encoder.encode(part):part;chunks.push(bytes);length+=bytes.length;};
+  const offsets=[0],obj=(number,body)=>{offsets[number]=length;append(number+' 0 obj\n');append(body);append('\nendobj\n');};
+  append('%PDF-1.4\n%HBL\n');
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 841.89 595.28] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+  offsets[4]=length;append('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+canvas.width+' /Height '+canvas.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+pixels.length+' >>\nstream\n');append(pixels);append('\nendstream\nendobj\n');
+  const commands='q\n841.89 0 0 595.28 0 0 cm\n/Im0 Do\nQ\n';
+  obj(5,'<< /Length '+encoder.encode(commands).length+' >>\nstream\n'+commands+'endstream');
+  const xref=length;append('xref\n0 6\n0000000000 65535 f \n');
+  for(let n=1;n<=5;n++)append(String(offsets[n]).padStart(10,'0')+' 00000 n \n');
+  append('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n');
+  return new Blob(chunks,{type:'application/pdf'});
+ }
+ async function exportPdf(){
+  const clicked=host.querySelector('[data-action="pdf"]')||host.querySelector('[data-action="print"]');
+  if(clicked)clicked.disabled=true;
+  try{
+   const file=await createPdf(),url=URL.createObjectURL(file);
+   const dialog=document.createElement('dialog');dialog.className='seat-pdf-dialog';
+   dialog.setAttribute('aria-label','Sitzplan als PDF ausgeben');
+   dialog.innerHTML='<h2>Sitzplan als PDF</h2><p>Das PDF wurde auf diesem Gerät erstellt. Du kannst es in Safari öffnen, über „Teilen“ sichern oder drucken.</p><div class="seat-pdf-actions"><a target="_blank" rel="noopener" href="#" data-view>PDF öffnen</a><a href="#" data-download download="HBL-Sitzplan.pdf">PDF sichern</a><button type="button" data-close>Schließen</button></div>';
+   dialog.querySelector('[data-view]').href=url;
+   dialog.querySelector('[data-download]').href=url;
+   dialog.querySelector('[data-close]').onclick=()=>dialog.close();
+   dialog.addEventListener('close',()=>{dialog.remove();URL.revokeObjectURL(url);},{once:true});
+   document.body.append(dialog);dialog.showModal();
+  }catch(error){alert('PDF konnte nicht erstellt werden: '+error.message);}
+  finally{if(clicked)clicked.disabled=false;}
+ }
  function render(){
   const data=page.read().data;
   if(draft&&(data!==source||baseline!==data?.seating||rosterKey!==JSON.stringify(data?.students))){
@@ -84,7 +163,8 @@ window.hblCreateSeatView=function(host,page){
    const handle=editing?'<button type="button" class="seat-handle" data-handle="'+esc(d.id)+'" aria-label="'+label+' verschieben">'+label+' ↔</button>':'<small>'+label+'</small>';
    return '<div class="seat-desk'+(d.vertical?' vertical':'')+(editing&&d.id===selected?' selected':'')+'" style="left:'+d.x/model.width*100+'%;top:'+d.y*unitY+'px;width:'+w/model.width*100+'%;height:'+h*unitY+'px"><div>'+handle+'<div class="seat-places">'+seats+'</div></div></div>';
   }).join('');
-  const controls=!draft?button('edit',capacity?'Sitzplan bearbeiten':'Sitzplan einrichten')+(capacity?button('print','Drucken / PDF'):''):
+  const appleTouch=/iPad|iPhone|iPod|Macintosh/i.test(navigator.userAgent)&&navigator.maxTouchPoints>1;
+  const controls=!draft?button('edit',capacity?'Sitzplan bearbeiten':'Sitzplan einrichten')+(capacity?(appleTouch?button('pdf','PDF erstellen'):button('print','Drucken')+button('pdf','PDF herunterladen')):''):
    preview?button('accept','Verteilung übernehmen')+button('reject','Vorschau verwerfen'):
    button('single','+ Einzeltisch')+button('double','+ Doppeltisch')+button('shuffle','Zufällig verteilen',!students.length||!capacity)+button('undo','Rückgängig',!undo);
   const board='<div class="seat-scroll" tabindex="0" aria-label="Raum mit Sitzplätzen"><div class="seat-room"><div class="seat-front">Tafel</div><div class="seat-board" style="--seat-columns:'+model.width+';height:'+Math.max(220,(bottom+(editing?3:0))*unitY)+'px">'+desks+(capacity?'':'<span class="seat-empty">Noch keine Tische eingerichtet.</span>')+'</div></div></div>';
@@ -143,6 +223,7 @@ window.hblCreateSeatView=function(host,page){
   try{
    switch(el.dataset.action){
     case 'print':printPlan();break;
+    case 'pdf':void exportPdf();break;
     case 'edit':
      source=data;baseline=data.seating;rosterKey=JSON.stringify(data.students);
      draft=structuredClone(baseline||model.empty());
