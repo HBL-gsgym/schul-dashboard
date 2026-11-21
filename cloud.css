@@ -35,3 +35,9 @@
 .hbl-cloud-dialog{border-radius:17px;padding:20px;margin-bottom:env(safe-area-inset-bottom,0px)}
 .hbl-cloud-dialog .hbl-cloud-actions{grid-template-columns:1fr 1fr}
 }
+
+/* Die Dashboard-Aktionen werden über Mein HBL bedient. Der Chat bleibt direkt erreichbar. */
+body:has(#dashboardBoard) #hblCloudControls :is(#hblAccountMore,#hblProfileButton,#hblCloudLogin,#hblCloudLogout,#hblLocalBackup,#hblCloudRefresh,#hblCloudRetry,#hblCloudImport){display:none}
+@media(max-width:710px){
+ body:has(#dashboardBoard) #hblCloudControls>.hbl-cloud-actions{grid-column:2;grid-row:1}
+}

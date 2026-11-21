@@ -4,6 +4,7 @@ Neue Einträge oben ergänzen. Die Spalte „Umgesetzt von“ nennt die Person o
 
 | Datum · Version | Umgesetzt von | Änderung | Geprüft durch |
 | --- | --- | --- | --- |
+| 21.11.2026 · v5.10.4 | Codex | Doppelte Design-, Konto- und Cloud-Bedienung aus dem Dashboard-Kopf entfernt. Speicherstatus und Chat bleiben sichtbar. | Automatisierte Tests. |
 | 21.11.2026 · v5.10.3 | Codex | Mein Konto mit Passwortwechsel, Daten und Synchronisierung sowie Zugang zur vorhandenen Owner-Verwaltung eingebunden. | Automatisierte Tests, Endgeräte und echter Passwortwechsel offen. |
 | 21.11.2026 · v5.10.2 | Codex | Mein HBL mit Desktop- und Handy-Einstieg, Designauswahl und Menüfuß ergänzt (Etappe 1 für v6.0). | Automatisierte Tests, echter Android-Test offen. |
 | 21.11.2026 · v5.10.1 | ChatGPT | Versions-Roadmap neu priorisiert und mit GitHub-Issues synchronisiert: persönliche Funktionen v6–v9, schulinterne v10–v12, Personal v15, Schüler v20, Mehrschulplattform v25; App-Version/PWA-Cache aktualisiert. | Dokumente, Versionsanzeigen, JSON und PWA-Cache statisch geprüft; Anwendung und Android-Aktualisierung noch nicht praktisch getestet. |

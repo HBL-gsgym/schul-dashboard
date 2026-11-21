@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.10.3</title>
+<title>Schul-Dashboard HBL · v5.10.4</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1249,7 +1249,7 @@ body:not(.dark) .demo-alert{color:#6f4200;background:#fff4dc;border-color:#e4c68
 
 </style>
 <link rel="stylesheet" href="./mobile.css?v=3.3">
-<link rel="stylesheet" href="./cloud.css?v=5.9.6-mobile">
+<link rel="stylesheet" href="./cloud.css?v=5.10.4">
 <style>
 /* HBL Dashboard v5.0: customizable A/B timetable */
 .hbl-plan-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
@@ -2410,7 +2410,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v5.10.3 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v5.10.4 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2432,15 +2432,7 @@ function renderHome(){
 </g>
 </svg></span></div>
           </div>
-          <button type="button" class="theme" onclick="openMeinHbl()">⚙ Mein HBL</button><div class="background-controls" aria-label="Design auswählen">
-            <span class="background-caption">Design</span>
-            <div class="background-options" role="group" aria-label="Design auswählen">
-              <button type="button" class="bg-option" data-scene="none" onclick="setBackdrop('none')">Neutral</button>
-              <button type="button" class="bg-option" data-scene="astro" onclick="setBackdrop('astro')">✦ Astro</button>
-              <button type="button" class="bg-option" data-scene="math" onclick="setBackdrop('math')">∑ Mathe</button>
-              <button type="button" class="bg-option" data-scene="physics" onclick="setBackdrop('physics')">∿ Physik</button>
-            </div>
-          </div>
+          <button type="button" class="theme" onclick="openMeinHbl()">⚙ Mein HBL</button>
         </div>
       </section>
       <nav class="music-shortcuts" aria-label="Musik zum Arbeiten">
@@ -2453,7 +2445,7 @@ function renderHome(){
         </nav>
 
       <aside class="clockbox">
-        <div class="clocktop"><span id="weekbadge" class="weekbadge"><span id="weekletter" class="weekletter"></span><span id="weektext" class="weektext"></span></span><button type="button" class="theme" onclick="toggleTheme()" title="Hell-/Dunkelmodus umschalten" aria-label="Hell-/Dunkelmodus umschalten">◐</button>
+        <div class="clocktop"><span id="weekbadge" class="weekbadge"><span id="weekletter" class="weekletter"></span><span id="weektext" class="weektext"></span></span>
         </div>
         <div class="time" id="time"></div>
         <div class="date" id="date"></div>
