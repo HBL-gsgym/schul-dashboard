@@ -1,3 +1,5 @@
+**v7.0.12 – Direkte Kurslinks:** Die zentrale Schülerverwaltung kann auch beim ersten Öffnen eines Mitarbeit- oder Kurs-Links starten, bevor der Stundenplan-/Kurskatalog initialisiert ist. Dafür wird die vorhandene gespeicherte Kursliste zunächst sicher als Rückfall verwendet, anschließend der vollständige Kurskatalog. Keine Änderung an Schüler-IDs oder Bewertungen.
+
 **v7.0.11 – Klassenlisten-Routing:** Das neue Klassenmodul verwendet die bereits bestehende, global veröffentlichte Kurskatalog-Schnittstelle und nicht mehr die nur im Stundenplanmodul sichtbare Funktion. Damit lässt sich die Klassenliste auch in der mobilen und normalen Kursnavigation laden.
 
 **v7.0.10 – Korrektur des Regressionstests:** Der Klassenlisten-Unit-Test vergleicht das leere Bewertungsobjekt über die Anzahl seiner Einträge, da das getestete Modul in einer separaten JavaScript-VM ausgeführt wird. Datenmodell und Fachfunktionen bleiben unverändert.
@@ -32,7 +34,7 @@
 
 **v6.1.0 – Schwebende Schnellleiste für Desktop/Tablet:** Profil/Anmelden, Chat (inklusive Ungelesen-Zähler) und Einstellungen (bisher „Mein HBL“) sind über eine frei verschiebbare Leiste erreichbar. Über den Griff mit Maus/Touch ziehen, per Pfeiltasten verschieben, mit dem Minimalschalter einklappen, per Doppelklick die Position zurücksetzen. Position und Zustand werden lokal je Konto gespeichert und bei Größenwechsel in den Bildschirm begrenzt. Auf Kursseiten bleiben die Cloud-/Chat-Aktionen technisch vorhanden, aber die obere Leiste wird ausgeblendet; persönliche Einstellungen sowie Push/Chat bleiben erreichbar. Smartphone nutzt weiter die untere Navigation. Die Kursseiten verlinken für Kachel- und Designeinstellungen ins Dashboard.
 
-**Stand: v7.0.11 · Pilotprojekt · 21.11.2026**
+**Stand: v7.0.12 · Pilotprojekt · 21.11.2026**
 
 Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 

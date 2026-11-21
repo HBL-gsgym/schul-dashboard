@@ -1,3 +1,7 @@
+## v7.0.12 – 21.11.2026 · ChatGPT
+- Frühstart über direkte Kurs-/Mitarbeitslinks abgesichert: Klasse-/Schülernummernlogik verwendet zunächst den gespeicherten Kurskatalog, falls die öffentliche hblReadCourses-Schnittstelle noch nicht initialisiert wurde. Danach erfolgt der Abgleich mit dem aktuellen Kurskatalog.
+- Regressionstest für frühen Einstieg und Skriptgrenze ergänzt. Konten, Rollen, Daten und Backend unverändert.
+
 ## v7.0.11 – 21.11.2026 · ChatGPT
 - Browser-Testfehler beim Zugriff auf Kurskatalog behoben: Klassenverwaltung verwendet jetzt die öffentliche `window.hblReadCourses()`-Schnittstelle, damit die zuständigen Inline-Skripte korrekt miteinander kommunizieren.
 - Zusätzlicher Regressionstest für diese Skriptgrenze. Daten, IDs, Konten und Berechtigungen bleiben unverändert. Browserprüfung erneut ausführen.

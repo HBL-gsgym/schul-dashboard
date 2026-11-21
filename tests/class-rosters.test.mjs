@@ -102,7 +102,8 @@ test('Blank Excel rows keep their classbook positions, without moving marks',()=
 
 test('Class UI uses the public course-catalog bridge across inline scripts',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- const beforeSecond=html.split('<script>\n/* HBL Schul-Dashboard v5.0')[0];
- assert.match(beforeSecond,/window\.hblReadCourses\(\)\.catalog/);
+ const beforeSecond=html.split(/<script>\r?\n\/\* HBL Schul-Dashboard v5\.0/)[0];
+ assert.match(beforeSecond,/if\(typeof window\.hblReadCourses==='function'\)return window\.hblReadCourses\(\)\?\.catalog/);
+ assert.match(beforeSecond,/function hblRosterCatalog\(\)/);
  assert.doesNotMatch(beforeSecond,/getCourseCatalog\(\)/);
 });
