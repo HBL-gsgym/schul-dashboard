@@ -1,10 +1,10 @@
-/* Persönliche Einstellungen auf dem Dashboard. */
+/* Persönliche Einstellungen auf Dashboard und Kursseiten. */
 window.openMeinHbl=function(){
  const dialog=document.createElement('dialog');
  dialog.className='mein-hbl';
  dialog.setAttribute('aria-labelledby','meinHblTitle');
  const opener=document.activeElement;
- dialog.innerHTML='<header><h2 id="meinHblTitle">Mein HBL</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button data-notifications>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p></p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
+ dialog.innerHTML='<header><h2 id="meinHblTitle">Einstellungen</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button data-notifications>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p></p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
  const get=selector=>dialog.querySelector(selector);
  const byId=id=>document.getElementById(id);
  const notifications=get('[data-notifications]');
@@ -19,6 +19,10 @@ window.openMeinHbl=function(){
  const tilesButton=get('[data-tiles]');
  tilesButton.onclick=()=>{
   openSection(tilesButton);
+  if(!byId('dashboardBoard')){
+   const p=document.createElement('p');p.textContent='Kacheln lassen sich auf dem Dashboard anpassen.';extra.append(p);
+   action('Zum Dashboard',()=>{location.href='./';});return;
+  }
   const app=hblLayoutProfile()==='app';
   const hint=document.createElement('p');
   hint.textContent=app?'Diese Einstellungen gelten für deine installierte App.':'Diese Einstellungen gelten für deinen Browser. Links, Stundenplan und Kurse bleiben erreichbar.';
@@ -64,7 +68,7 @@ window.openMeinHbl=function(){
   get('h2').textContent=origin.textContent;
   action('← Zurück',()=>{
    extra.replaceChildren();extra.hidden=true;get('[data-home]').hidden=false;
-   get('h2').textContent='Mein HBL';origin.focus();
+   get('h2').textContent='Einstellungen';origin.focus();
   }).focus();
  }
  function existing(id,label,leave){
@@ -133,12 +137,15 @@ window.openMeinHbl=function(){
  dialog.addEventListener('close',()=>window.removeEventListener('hbl-admin-rights-changed',syncAdminAccess),{once:true});
  function showDesign(detail){
   get('[data-home]').hidden=detail;get('[data-detail]').hidden=!detail;
-  get('h2').textContent=detail?'Design':'Mein HBL';
+  get('h2').textContent=detail?'Design':'Einstellungen';
   get('[data-mode]').value=document.body.classList.contains('dark')?'dark':'light';
   get('[data-scene-choice]').value=document.body.dataset.backdrop||'none';
   get(detail?'[data-back]':'[data-design]').focus();
  }
- get('[data-design]').onclick=()=>showDesign(true);
+ get('[data-design]').onclick=()=>{
+  if(!byId('dashboardBoard')){openSection(get('[data-design]'));const p=document.createElement('p');p.textContent='Design und Fachhintergründe kannst du auf dem Dashboard ändern.';extra.append(p);action('Zum Dashboard',()=>{location.href='./';});return;}
+  showDesign(true);
+ };
  get('[data-back]').onclick=()=>showDesign(false);
  get('[data-mode]').onchange=event=>{
   if((event.target.value==='dark')!==document.body.classList.contains('dark'))toggleTheme();
