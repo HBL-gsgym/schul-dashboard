@@ -19,4 +19,5 @@ test('Die manuelle Auswahl gilt für weitere Personen bis zum Block- oder Tagesw
  assert.equal(suggestedDate(dates,today,undefined,remembered),'');
  assert.equal(suggestedDate(dates,'2026-11-24',1,remembered),'');
  assert.equal(suggestedDate([dates[0]],today,1,remembered),'a');
+ assert.equal(suggestedDate(dates,today,1,{context:today+'|1',id:''}),'');
 });

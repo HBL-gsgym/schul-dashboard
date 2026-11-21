@@ -73,6 +73,7 @@ window.hblCreateSeatView=function(host,page){
   const room=model.roomName(plan.room);
   const headingRoom=!editing&&room?' · Raum '+esc(room):'';
   host.innerHTML='<div class="seat-heading"><h2>Sitzplan'+headingRoom+'</h2><span>'+summary+'</span></div><fieldset class="seat-fields"'+(busy?' disabled':'')+'>'+(editing?roomEditor():'')+'<div class="seat-tools">'+controls+'</div>'+
+   (!draft&&placed.size&&data.dates?.some(d=>!d.archived)?'<div class="seat-tools"><label>Unterrichtstermin <select data-rating-term></select></label><small data-rating-key hidden>✓ bereits bewertet</small></div>':'')+
    (preview?'<p><strong>Vorschau der Zufallsverteilung</strong></p>':'')+board+
    (count&&capacity?'<details><summary>Ohne Platz ('+count+')</summary><p>'+students.filter(s=>!placed.has(s.id)).map(s=>esc(person.get(s.id))).join(', ')+'</p></details>':'')+
    (editing?inspector(person,students):'')+
@@ -80,6 +81,7 @@ window.hblCreateSeatView=function(host,page){
    (editing?'<div class="seat-tools">'+button('save','Sitzplan speichern')+button('cancel','Abbrechen')+'</div>':'')+
    '</fieldset><p class="seat-status" role="status"></p>';
   host.querySelector('.seat-status').textContent=message;
+  rateSeat.sync(true);
   const scroll=host.querySelector('.seat-scroll');scroll.scrollLeft=left;scroll.scrollTop=top;
  }
  function inspector(person,students){
@@ -113,7 +115,7 @@ window.hblCreateSeatView=function(host,page){
  host.addEventListener('click',event=>{
   if(busy)return;
   const el=event.target.closest('button');if(!el)return;
-  if(el.hasAttribute('data-rate')){rateSeat(el);return;}
+  if(el.hasAttribute('data-rate')){rateSeat.open(el);return;}
   if(el.hasAttribute('data-handle')){pick(el.dataset.handle,0);focusDesk();return;}
   if(el.hasAttribute('data-desk')){pick(el.dataset.desk,Number(el.dataset.index));host.querySelector('[data-assign]')?.focus({preventScroll:true});return;}
   const desk=currentDesk(),data=page.read().data;

@@ -3,7 +3,7 @@
 'use strict';
 function suggestedDate(dates,today,block,remembered){
  const context=today+'|'+(block||'');
- if(remembered?.context===context&&dates.some(d=>d.id===remembered.id))return remembered.id;
+ if(remembered?.context===context&&(remembered.id===''||dates.some(d=>d.id===remembered.id)))return remembered.id;
  const sameDay=dates.filter(d=>d.date===today);
  const current=sameDay.filter(d=>block&&d.block===block);
  if(current.length===1)return current[0].id;
@@ -12,15 +12,52 @@ function suggestedDate(dates,today,block,remembered){
 if(typeof module!=='undefined'&&module.exports){module.exports={suggestedDate};return;}
 
 root.hblSeatRating=function(page,host,report){
- let remembered=null;
- return function open(button){
-  const {meta,data}=page.read(),id=button.dataset.rate;
-  const person=data?.students?.find(s=>s.id===id);
-  if(!meta||!person)return;
-  const api=page.participation,now=new Date(),today=api.today(now);
+ let remembered=null,timer;
+ const api=page.participation;
+ const dateLabel=d=>api.formatDate(d.date)+(d.block>0?' · Block '+d.block:' · ohne Block');
+ function selection(data){
+  const now=new Date(),today=api.today(now);
   const time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   const block=api.blocks.find(b=>b.start<=time&&time<b.end)?.n;
   const dates=(data.dates||[]).filter(d=>!d.archived);
+  return {dates,today,context:today+'|'+(block||''),id:suggestedDate(dates,today,block,remembered)};
+ }
+ function populate(select,{dates,today,id}){
+  select.replaceChildren(new Option('Termin wählen',''));
+  const groups=[['Heute',dates.filter(d=>d.date===today)],['Vergangene Termine',dates.filter(d=>d.date<today).reverse()],['Kommende Termine',dates.filter(d=>d.date>today)]];
+  for(const [label,items] of groups){
+   if(!items.length)continue;
+   const optgroup=document.createElement('optgroup');optgroup.label=label;
+   for(const d of items)optgroup.append(new Option(dateLabel(d),d.id));
+   select.append(optgroup);
+  }
+  select.value=id;
+ }
+ function sync(rebuild=false){
+  clearTimeout(timer);
+  const select=host.querySelector('[data-rating-term]'),data=page.read().data;
+  if(!host.isConnected||!select||!data)return;
+  const state=selection(data);
+  if(rebuild||select.dataset.today!==state.today){
+   populate(select,state);select.dataset.today=state.today;
+  }else select.value=state.id;
+  host.querySelector('[data-rating-key]').hidden=!state.id;
+  for(const button of host.querySelectorAll('[data-rate]')){
+   const marked=!!state.id&&api.ratings.includes(data.marks?.[button.dataset.rate]?.[state.id]?.rating);
+   button.toggleAttribute('data-rated',marked);
+   button.setAttribute('aria-label','Mitarbeit für '+button.textContent+' erfassen'+(marked?' · bereits bewertet':''));
+  }
+  select.onchange=()=>{
+   remembered={context:selection(data).context,id:select.value};
+   sync();
+  };
+  timer=setTimeout(sync,60000-Date.now()%60000);
+ }
+ function open(button){
+  const {meta,data}=page.read(),id=button.dataset.rate;
+  const person=data?.students?.find(s=>s.id===id);
+  if(!meta||!person)return;
+  const state=selection(data),dates=state.dates;
   const dialog=document.createElement('dialog');
   dialog.className='grade-dialog seat-rating';
   dialog.setAttribute('aria-labelledby','seatRatingTitle');
@@ -29,16 +66,7 @@ root.hblSeatRating=function(page,host,report){
   dialog.querySelector('[data-course]').textContent='Mitarbeit · '+meta.subject+' · '+meta.group;
   const select=dialog.querySelector('select'),group=dialog.querySelector('[role=group]'),status=dialog.querySelector('[role=status]');
   const clear=dialog.querySelector('[data-clear]'),close=dialog.querySelector('[data-close]');
-  const dateLabel=d=>api.formatDate(d.date)+(d.block>0?' · Block '+d.block:' · ohne Block');
-  select.add(new Option('Termin wählen',''));
-  const groups=[['Heute',dates.filter(d=>d.date===today)],['Vergangene Termine',dates.filter(d=>d.date<today).reverse()],['Kommende Termine',dates.filter(d=>d.date>today)]];
-  for(const [label,items] of groups){
-   if(!items.length)continue;
-   const optgroup=document.createElement('optgroup');optgroup.label=label;
-   for(const d of items)optgroup.append(new Option(dateLabel(d),d.id));
-   select.append(optgroup);
-  }
-  select.value=suggestedDate(dates,today,block,remembered);
+  populate(select,state);
   let saving=false,shown='';
   function reflect(){
    const dateId=select.value;
@@ -61,7 +89,8 @@ root.hblSeatRating=function(page,host,report){
    saving=true;select.disabled=true;close.disabled=true;reflect();status.textContent='Speichert …';
    try{
     await page.save();
-    remembered={context:today+'|'+(block||''),id:d.id};
+    remembered={context:state.context,id:d.id};
+    sync();
     dialog.close();
     report(person.name+' · '+dateLabel(d)+' · '+(value?'Mitarbeit '+value+' gespeichert.':'Eintrag geleert.'));
    }catch(error){
@@ -74,7 +103,11 @@ root.hblSeatRating=function(page,host,report){
    key.type='button';key.value=rating;key.textContent=rating.replaceAll('-','−');key.className='part-button';
    key.onclick=()=>save(rating);group.append(key);
   }
-  select.onchange=reflect;clear.onclick=()=>save('');close.onclick=()=>dialog.close();
+  select.onchange=()=>{
+   remembered={context:state.context,id:select.value};
+   reflect();sync();
+  };
+  clear.onclick=()=>save('');close.onclick=()=>dialog.close();
   dialog.oncancel=event=>{if(saving)event.preventDefault();};
   dialog.onclose=()=>{dialog.remove();host.querySelector('[data-rate="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});};
   reflect();
@@ -85,6 +118,7 @@ root.hblSeatRating=function(page,host,report){
   }
   document.body.append(dialog);dialog.showModal();
   (select.value?group.querySelector('[aria-pressed=true]')||group.firstElementChild:select).focus();
- };
+ }
+ return {open,sync};
 };
 })(typeof window==='undefined'?globalThis:window);

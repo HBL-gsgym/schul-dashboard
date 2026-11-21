@@ -66,3 +66,5 @@ button.seat-place{cursor:pointer}
 .seat-rating-values [aria-pressed=true]{background:var(--accent);color:white;outline:2px solid var(--text)}
 .seat-rating-values button:disabled{opacity:.55}
 .seat-rate:hover,.seat-rate:focus-visible{background:var(--panel2);text-decoration:underline}
+.seat-rate[data-rated]::before{content:"✓";display:inline-block;margin-inline-end:.25em;color:var(--accent);font-weight:800}
+.seat-tools [data-rating-key]{color:var(--muted)}
