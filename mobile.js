@@ -13,7 +13,8 @@
     button.append(pict,text);button.addEventListener('click',callback);
     return button;
   }
-  let dispose=()=>{};
+  const groups=new Map();
+  let syncDashboard;
   function init(){
     const onCourse=!!document.querySelector('.part-shell');
     const onWorkspace=!!document.querySelector('.course-workspace');
@@ -22,14 +23,19 @@
     const previous=document.getElementById('hblMobileNav');
     // Kein Austausch derselben Leiste bei Kurs- oder Tabwechseln.
     if(previous?.dataset.navMode===mode)return;
-    dispose();
-    previous?.remove();
-    if(mode==='none')return;
-    const controller=new AbortController(),observers=[];
-    dispose=()=>{controller.abort();observers.forEach(o=>o.disconnect());};
-    const nav=document.createElement('nav');
+    const nav=previous||document.createElement('nav');
+    if(previous)groups.set(previous.dataset.navMode,[...previous.childNodes]);
+    nav.replaceChildren();
+    nav.hidden=mode==='none';
+    nav.style.gridTemplateColumns='';
     nav.id='hblMobileNav';nav.className='hbl-mobile-nav';nav.dataset.navMode=mode;
     nav.setAttribute('aria-label','Handy-Schnellnavigation');
+    if(groups.has(mode)){
+      nav.append(...groups.get(mode));
+      if(mode==='dashboard')syncDashboard();
+      if(mode==='course')nav.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';
+      return;
+    }
     if(onCourse){
       const link=document.createElement('a');link.href='./';
       const icon=document.createElement('span');icon.className='hbl-mobile-icon';icon.textContent='⌂';
@@ -99,6 +105,7 @@
         chatButton.setAttribute('aria-label',text?'Chat: '+text+' ungelesene Nachrichten':'Kollegium-Chat');
       }
       function syncShortcuts(){
+        if(nav.dataset.navMode!=='dashboard')return;
         let visible=3; // Chat, Konto und Mein HBL bleiben immer erreichbar.
         for(const button of nav.querySelectorAll('[data-tile-link]')){
           const tile=document.querySelector('.dashboard-tile[data-tile="'+button.dataset.tileLink+'"]');
@@ -107,16 +114,16 @@
         }
         nav.style.gridTemplateColumns='repeat('+visible+',minmax('+(visible>4?'76px':'0')+',1fr))';
       }
-      syncShortcuts();syncAccount();syncChat();
+      syncDashboard=()=>{syncShortcuts();syncAccount();syncChat();};syncDashboard();
       const shortcutsObserver=new MutationObserver(syncShortcuts);
-      shortcutsObserver.observe(document.getElementById('dashboardBoard'),{attributes:true,attributeFilter:['hidden'],subtree:true});observers.push(shortcutsObserver);
+      shortcutsObserver.observe(document.getElementById('dashboardBoard'),{attributes:true,attributeFilter:['hidden'],subtree:true});
       const cloudActions=document.querySelector('#hblCloudControls .hbl-cloud-actions');
-      if(cloudActions){const chatObserver=new MutationObserver(syncChat);chatObserver.observe(cloudActions,{attributes:true,attributeFilter:['hidden'],childList:true,characterData:true,subtree:true});observers.push(chatObserver);}
-      window.addEventListener('hbl-cloud-status',()=>{syncAccount();syncChat();},{signal:controller.signal});
-      window.addEventListener('hbl-profile-changed',syncAccount,{signal:controller.signal});
-      window.addEventListener('hbl-chat-access-changed',syncChat,{signal:controller.signal});
+      if(cloudActions){const chatObserver=new MutationObserver(syncChat);chatObserver.observe(cloudActions,{attributes:true,attributeFilter:['hidden'],childList:true,characterData:true,subtree:true});}
+      window.addEventListener('hbl-cloud-status',()=>{syncAccount();syncChat();});
+      window.addEventListener('hbl-profile-changed',syncAccount);
+      window.addEventListener('hbl-chat-access-changed',syncChat);
     }else{return;}
-    document.body.appendChild(nav);
+    if(!previous)document.body.appendChild(nav);
   }
   window.addEventListener('hbl-route-changed',init);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});

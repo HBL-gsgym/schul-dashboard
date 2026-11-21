@@ -152,7 +152,7 @@ function renderUpcomingWithDuties(){
  const host=document.getElementById("todayLessons");if(!host)return;
  const cur=new Date(),now=cur.getHours()*60+cur.getMinutes();
  const upcoming=upcomingEvents();
- if(!upcoming.length){host.innerHTML='<div class="nolesson">Keine anstehenden Unterrichtsblöcke oder Aufsichten.</div>';return;}
+ if(!upcoming.length){hblUpdateHtml(host,'<div class="nolesson">Keine anstehenden Unterrichtsblöcke oder Aufsichten.</div>');return;}
  const lessons=upcoming.filter(event=>event.kind==="lesson").slice(0,4);
  const duties=upcoming.filter(event=>event.kind==="duty").slice(0,2);
  const moreOpen=host.querySelector('.hbl-upcoming-more')?.open||false;
@@ -163,12 +163,12 @@ function renderUpcomingWithDuties(){
   const details=event.block.entries.map(([f,k,r])=>'<strong>'+safe(f)+' · '+safe(k)+'</strong>'+(r?'<span class="hbl-today-room">Raum '+safe(r)+'</span>':"")).join("");
   return '<div class="lessonrow hbl-today-lesson '+(active?"current":"")+'"><div class="lessontime"><span class="hbl-today-label">'+label+'</span><strong>'+safe(dateLabel(event))+'</strong><span>'+event.block.start+'–'+event.block.end+'</span><small>'+event.block.n+'. Block · Woche '+safe(weekCycle(event.date))+'</small></div><div class="lessonmain">'+details+'</div></div>';
  };
- host.innerHTML=(lessons.length?lessons.slice(0,2).map(lessonHtml).join(""):'<div class="nolesson">Kein anstehender Unterricht.</div>')+
+ hblUpdateHtml(host,(lessons.length?lessons.slice(0,2).map(lessonHtml).join(""):'<div class="nolesson">Kein anstehender Unterricht.</div>')+
   (duties.length?'<div class="hbl-today-duties" aria-label="Anstehende Aufsichten"><span class="hbl-today-duty-heading">Aufsichten</span>'+duties.map(event=>{
    const active=event.offset===0&&now>=event.s&&now<event.e;
    return '<button type="button" class="hbl-today-duty '+(active?'current':'')+'" onclick="hblOpenDutyDetails('+event.date.getDay()+',\''+event.type.id+'\')" title="'+safe(fullPlace(event.place))+'"><span>'+safe(active?'Jetzt':dateLabel(event))+' · '+event.type.start+'</span><strong>'+safe(compactPlace(event.place))+'</strong></button>';
   }).join('')+'</div>':'')+
-  (lessons.length>2?'<details class="hbl-upcoming-more" '+(moreOpen?'open':'')+'><summary>Weiterer Unterricht ('+(lessons.length-2)+')</summary>'+lessons.slice(2).map((event,index)=>lessonHtml(event,index+2)).join('')+'</details>':'');
+  (lessons.length>2?'<details class="hbl-upcoming-more" '+(moreOpen?'open':'')+'><summary>Weiterer Unterricht ('+(lessons.length-2)+')</summary>'+lessons.slice(2).map((event,index)=>lessonHtml(event,index+2)).join('')+'</details>':''));
 }
 window.renderToday=renderUpcomingWithDuties;
 window.hblDutyAfterLoad=()=>{renderTimetable();renderToday();};

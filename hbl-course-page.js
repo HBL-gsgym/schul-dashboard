@@ -20,6 +20,7 @@ function switchCourseContent(host,key){
  contentKey=key;
 }
 let gradeView='year';
+const gradeFilters=new Map();
 const periodLabel={first:'1. Halbjahr',second:'2. Halbjahr',year:'Schuljahr'};
 function link(view,label,style='part-button'){
  return '<a class="'+style+'" href="?'+view+'='+encodeURIComponent(page.id)+'">'+label+'</a>';
@@ -88,8 +89,8 @@ function syncNavigation(courseId,view,courses){
 function navigate(courseId,mode){
  if(!page)return;
  page.id=courseId;page.mode=mode;
+ gradeView=gradeFilters.get(courseId)||'year';
  syncNavigation(courseId,mode,page.courses?.());
- refresh();
 }
 function status(message){
  const el=document.getElementById('gradeStatus');
@@ -115,13 +116,14 @@ function refresh(){
  switchCourseContent(host,key);
  if(typeof page.courses==='function')renderCourseSwitcher(page.courses());
  const title=document.getElementById('coursePageTitle');
- if(!meta){title.textContent='Kurs nicht gefunden';host.replaceChildren();return;}
+ if(!meta){title.textContent='Kurs nicht gefunden';host.replaceChildren();renderStamps.delete(key);return;}
  const name=meta.subject+' · '+meta.group;
  title.textContent=name;
  document.getElementById('coursePageMeta').textContent=(data?.students?.length??0)+' Lernende · '+(page.mode==='noten'?'Notenbuch':'Sitzplan und Schülerliste');
  document.title=(page.mode==='noten'?'Noten · ':'Kurs · ')+name+' · Schul-Dashboard';
- const stamp=JSON.stringify({meta,data,mode:page.mode,gradeView,
-  rooms:page.mode==='kurs'?page.rooms?.():null});
+ const stamp=JSON.stringify(page.mode==='kurs'?
+  [data?.students,data?.seating,data?.dates,data?.marks,page.rooms?.()]:
+  [data?.students,data?.gradebook,gradeView]);
  if(renderStamps.get(key)===stamp&&host.childNodes.length)return;
  renderStamps.set(key,stamp);
  if(page.mode==='kurs'){
@@ -197,7 +199,7 @@ async function commit(change){
 function onChange(event){
  const el=event.target,d=el.dataset;
  if(el.matches('[data-view]')){
-  gradeView=el.value;refresh();document.querySelector('[data-view]')?.focus({preventScroll:true});return;
+  gradeView=el.value;gradeFilters.set(page.id,gradeView);refresh();document.querySelector('[data-view]')?.focus({preventScroll:true});return;
  }
  if(!el.matches('[data-scale],[data-mode],[data-student]'))return;
  commit((book,data)=>{
@@ -217,7 +219,7 @@ function onClick(event){
  if(!button||!page.read().data)return;
  if(page.mode==='kurs'){
   if(!button.closest('.course-roster'))return;
-  if(seatView.isEditing()){status('Bitte den Sitzplanentwurf zuerst speichern oder schließen.');return;}
+  if(seatViews.get(contentKey)?.isEditing()){status('Bitte den Sitzplanentwurf zuerst speichern oder schließen.');return;}
   personEditor(button);return;
  }
  const book=grades.forCourse(page.read().data),d=button.dataset;

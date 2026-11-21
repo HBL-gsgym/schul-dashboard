@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.0.7">
-<title>Schul-Dashboard HBL · v7.0.7</title>
+<meta name="hbl-version" content="7.0.8">
+<title>Schul-Dashboard HBL · v7.0.8</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1367,15 +1367,15 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seating.js?v=5.9.21"></script>
 <script src="./hbl-seat-rating.js?v=5.9.21"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=7.0.7"></script>
+<script src="./hbl-course-page.js?v=7.0.8"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=7.0.5">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=7.0.4">
 <script defer src="./mein-hbl.js?v=7.0.6"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
-<script defer src="./mobile.js?v=7.0.7"></script>
+<script defer src="./mobile.js?v=7.0.8"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.10.3"></script>
-<script defer src="./hbl-v55.js?v=6.0.6"></script>
+<script defer src="./hbl-v55.js?v=7.0.8"></script>
 <script defer src="./hbl-v56.js?v=6.0.8"></script>
 <script defer src="./hbl-v57.js?v=5.9.7-chat"></script>
 <script defer src="./hbl-v58.js?v=5.9.5"></script>
@@ -1439,6 +1439,7 @@ function weekInfo(date){
   return {kw, color:green?"green":"blue", label:green?"Grüne Woche":"Blaue Woche"};
 }
 function updateClock(){
+  if(!document.getElementById("time"))return;
   const now=new Date();
   const info=weekInfo(now);
   const compact=window.matchMedia("(max-width:710px)").matches;
@@ -2223,6 +2224,9 @@ function renderTimetable(){
   const content=(entry,week)=>entry?`<span class="hbl-slot-item ${week}" title="${window.hblTimetableEditing?'Bearbeiten':'Unterricht'}"><b>${week==='shared'?'A+B':week}</b><strong>${partEsc(entry[0])} · ${partEsc(entry[1])}</strong><small>${partEsc(entry[2]||'Ohne Raum')}</small></span>`:'';
   html+=`<button type="button" class="blockcell hbl-slot-cell ${cls}" onclick="${window.hblTimetableEditing?'hblOpenSlotEditor':'hblOpenSlotDetails'}(${day},${block})" ${!window.hblTimetableEditing&&!A&&!B?'disabled':''} title="${window.hblTimetableEditing?'Block bearbeiten':'Unterrichtsdetails öffnen'}"><span class="blocknum">${block}. Block ${window.hblTimetableEditing?'<span>✎</span>':''}</span><span class="hbl-slot-parts">${same?content(A,'shared'):(content(A,'A')+content(B,'B'))||(window.hblTimetableEditing?'<span class="hbl-empty-label">+ Belegung hinzufügen</span>':'<span class="hbl-empty-label">Freiblock</span>')}</span></button>`;
  }
+ const tableStamp=JSON.stringify([html,prepDone.__dutiesV1,!!window.hblDecorateDutyTable]);
+ if(host.dataset.tableStamp===tableStamp)return;
+ host.dataset.tableStamp=tableStamp;
  host.innerHTML=html;
  if(typeof window.hblDecorateDutyTable==='function')window.hblDecorateDutyTable(host);
  const toggle=document.querySelector('.hbl-plan-manage');if(toggle)toggle.textContent=window.hblTimetableEditing?'✓ Bearbeiten beenden':'✎ Bearbeiten';
@@ -2364,7 +2368,12 @@ function restoreDashboardTileLayout(data){
   const oldOrder=Array.isArray(saved.order)?saved.order.filter(id=>names.has(id)):[];
   const newcomers=["musik","suche"].filter(id=>!oldOrder.includes(id));
   const order=new Set([...newcomers,...oldOrder,...names]);
-  for(const id of order){const tile=hblTileById(id);if(tile)board.appendChild(tile);}
+  let index=0;
+  for(const id of order){
+   const tile=hblTileById(id);if(!tile)continue;
+   if(board.children[index]!==tile)board.insertBefore(tile,board.children[index]||null);
+   index++;
+  }
  }
  for(const spec of HBL_TILE_SPECS){
   const tile=hblTileById(spec.id);if(!tile)continue;
@@ -2472,6 +2481,7 @@ function syncHeroClockPlacement(){
 /* Persistente App-Shell: Ansichten bleiben erhalten; globale Dialoge und
    Schnellleisten liegen dauerhaft außerhalb der wechselnden Inhalte. */
 const hblViewCache=new Map();
+const sharedCourseNav=new Map();
 let hblCurrentView=null;
 function hblAppRoot(){
  let host=document.getElementById('hblAppRoot');
@@ -2482,6 +2492,10 @@ function hblSetView(view,markup){
  const host=hblAppRoot();
  if(hblCurrentView===view){if(markup!==null)host.innerHTML=markup;return;}
  if(hblCurrentView){
+  for(const selector of ['.hbl-course-picker','.hbl-course-tabs']){
+   const nav=host.querySelector(selector);
+   if(nav){const slot=document.createElement('template');slot.className=selector.slice(1);nav.replaceWith(slot);sharedCourseNav.set(selector,nav);}
+  }
   const previous=document.createDocumentFragment();
   while(host.firstChild)previous.append(host.firstChild);
   hblViewCache.set(hblCurrentView,previous);
@@ -2489,6 +2503,10 @@ function hblSetView(view,markup){
  const saved=hblViewCache.get(view);
  if(saved){host.append(saved);hblViewCache.delete(view);}
  else host.innerHTML=markup||'';
+ for(const [selector,nav] of sharedCourseNav){
+  const slot=host.querySelector(selector);
+  if(slot)slot.replaceWith(nav);
+ }
  hblCurrentView=view;
 }
 function hblActivateView(view){
@@ -2514,7 +2532,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.7 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.8 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2645,8 +2663,8 @@ function renderHome(){
   syncHeroClockPlacement();
   updateClock(); renderToday(); renderPreparationWeeks(); renderTimetable(); initTaskForm(); renderTasks(); renderSchoolCalendar(); renderParticipationOverview();
   setBackdrop(readPreference("schoolBackdrop")||"astro",false);
-  loadPrepFromServer(); window.addEventListener('resize',syncHeroClockPlacement);
-  setInterval(updateClock,1000); setInterval(renderToday,30000);
+  if(serverReady)applyPrepData(prepDone);else loadPrepFromServer(); window.addEventListener('resize',syncHeroClockPlacement);
+  setInterval(updateClock,1000); setInterval(()=>renderToday(),30000);
   setInterval(renderPreparationWeeks,60000);setInterval(renderTasks,60000);setInterval(renderSchoolCalendar,60000);
 }
 
@@ -2727,20 +2745,43 @@ function participationInfo(c){
 function renderParticipationOverview(){
  const host=document.getElementById("participationOverview");if(!host)return;
  const root=prepDone.__participation?.classes||{};
- if(!PARTICIPATION_COURSES.length){host.innerHTML=`<div class="hbl-empty-courses">Noch keine Kurse eingerichtet. <button type="button" onclick="hblOpenCourseManager()">Ersten Kurs anlegen</button></div>`;return;}
- host.innerHTML=PARTICIPATION_COURSES.filter(c=>!c.archived).map(c=>{
+ if(!PARTICIPATION_COURSES.length){hblUpdateHtml(host,`<div class="hbl-empty-courses">Noch keine Kurse eingerichtet. <button type="button" onclick="hblOpenCourseManager()">Ersten Kurs anlegen</button></div>`);return;}
+ const existing=new Map([...host.querySelectorAll('article[data-overview-id]')].map(el=>[el.dataset.overviewId,el]));
+ if(!existing.size)host.replaceChildren();
+ PARTICIPATION_COURSES.filter(c=>!c.archived).forEach((c,index)=>{
   const data=root[c.id];
   const progress=typeof window.hblCourseProgress==='function'?window.hblCourseProgress(c.id):null;
   const percent=progress&&progress.total?Math.round(progress.past/progress.total*100):0;
   const progressHtml=progress?'<div class="pcourse-remaining"><strong>'+progress.remaining+' Blöcke offen</strong><small>'+progress.past+' von '+progress.total+' geplanten Blöcken vorbei</small><span class="pcourse-progress"><i style="width:'+percent+'%"></i></span></div>':'';
   const note=prepDone.__coursesV1?.courses?.[c.id]?.note||"";
-  return `<article class="participation-course-link" data-subject="${c.subject}">
+  const markup=`<article class="participation-course-link" data-overview-id="${partEsc(c.id)}" data-subject="${c.subject}">
    <span class="pcourse-top"><strong>${partEsc(c.short)}</strong><span class="pcourse-icon">${c.icon}</span></span>
    <span class="pcourse-info">${partEsc(participationInfo(data))}</span>
    ${progressHtml}
    <button type="button" class="pcourse-note" data-course-id="${partEsc(c.id)}" aria-label="Kursnotiz für ${partEsc(c.short)} bearbeiten" onclick="editCourseNote(this)">${note?'<strong>Kursnotiz</strong> · '+partEsc(note):'+ Kursnotiz'}</button>
    <a class="pcourse-action" href="?kurs=${encodeURIComponent(c.id)}" aria-label="Kurs ${partEsc(c.short)} öffnen">Kurs öffnen →</a></article>`;
- }).join("");
+  let card=existing.get(c.id);
+  if(!card||hblUnchangedHtml.get(card)!==markup){
+   const template=document.createElement('template');template.innerHTML=markup;
+   const fresh=template.content.firstElementChild;
+   if(!card)card=fresh;
+   else{
+    card.dataset.subject=fresh.dataset.subject;
+    const parts=new Map([...card.children].map(el=>[el.className,el]));
+    [...fresh.children].forEach((el,i)=>{
+     const old=parts.get(el.className);parts.delete(el.className);
+     if(old&&old.outerHTML!==el.outerHTML)old.replaceWith(el);
+     else if(!old)card.insertBefore(el,card.children[i]||null);
+    });
+    for(const obsolete of parts.values())obsolete.remove();
+   }
+   hblUnchangedHtml.set(card,markup);
+  }
+  existing.delete(c.id);
+  if(host.children[index]!==card)host.insertBefore(card,host.children[index]||null);
+ });
+ for(const obsolete of existing.values())obsolete.remove();
+ hblUnchangedHtml.delete(host);
 }
 function editCourseNote(button){
  const id=button.dataset.courseId;
@@ -2866,7 +2907,7 @@ function renderParticipationPage(courseId){
    <div class="part-modal-actions"><button type="button" class="part-button" onclick="closeParticipationComment()">Abbrechen</button><button type="button" class="part-button primary" onclick="saveParticipationComment()">Kommentar speichern</button></div>
   </div>
  </div>`);
- HblCoursePage.renderCourseSwitcher(PARTICIPATION_COURSES);
+ HblCoursePage.syncNavigation(courseId,'mitarbeit',PARTICIPATION_COURSES);
  document.getElementById("participationNewDate").value=taskDateString(new Date());
  setBackdrop(readPreference("schoolBackdrop")||({math:"math",physics:"physics",astro:"astro",wat:"none"}[course.subject]),false);
  renderParticipationTable();if(!serverReady)loadPrepFromServer();else initializeParticipationRoster();
@@ -3095,6 +3136,7 @@ if(readPreference("schoolTheme")==="dark") document.body.classList.add("dark");
 let coursePageId=null,coursePageMode='kurs';
 let hblCurrentRoute=null;
 const hblRouteScroll=new Map();
+const hblRouteFocus=new Map();
 function hblRouteFor(url){
  const p=url.searchParams;
  if(p.has('noten')&&HblCourseIds.valid(p.get('noten')))return {kind:'course',mode:'noten',id:p.get('noten')};
@@ -3137,14 +3179,17 @@ function hblNavigate(href,fromHistory=false){
  if(oldKey===nextKey&&!fromHistory)return true;
  const oldY=window.scrollY;
  if(oldKey)hblRouteScroll.set(oldKey,oldY);
+ if(oldKey&&document.activeElement!==document.body)hblRouteFocus.set(oldKey,document.activeElement);
  if(!fromHistory)history.pushState({hblRoute:true},'',url.href);
  hblRenderRoute(next);
  const sameWorkspace=previous&&previous.kind!=='home'&&next.kind!=='home';
- const y=sameWorkspace?oldY:(hblRouteScroll.get(nextKey)||0);
- requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:'instant'}));
+ const y=hblRouteScroll.get(nextKey)??(sameWorkspace?oldY:0);
+ const focus=hblRouteFocus.get(nextKey);
+ if(document.activeElement===document.body&&focus?.isConnected)focus.focus({preventScroll:true});
+ requestAnimationFrame(()=>{if(hblCurrentRoute===next)window.scrollTo({top:y,left:0,behavior:'instant'});});
  return true;
 }
-window.hblNavigate=href=>hblNavigate(href);
+// Die globale Funktionsdeklaration stellt hblNavigate bereits für die mobile Navigation bereit.
 if('scrollRestoration' in history)history.scrollRestoration='manual';
 document.addEventListener('click',event=>{
  const link=event.target.closest?.('a[href]');

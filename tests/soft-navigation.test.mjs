@@ -22,5 +22,5 @@ test('Kurswechsel ersetzt nicht den gesamten Body',()=>{
 test('Mobile Navigation reagiert auf Routenwechsel ohne kumulierende Listener',()=>{
  const mobile=source('mobile.js');
  assert.match(mobile,/addEventListener\('hbl-route-changed',init\)/);
- assert.match(mobile,/controller\.abort\(\)/);
+ assert.match(mobile,/if\(groups\.has\(mode\)\)/);
 });

@@ -1,3 +1,6 @@
+## v7.0.8 · Codex
+- Rekursiven Routeraufruf und unnötige DOM-Wechsel im Dashboard und bei der Kursnavigation behoben. In Desktop-Chrome und Android-Emulation geprüft. Physischer Android-/PWA-Test offen.
+
 ## v7.0.7 – 21.11.2026 · ChatGPT
 - Android/Tablet/Desktop: unveränderte Dashboard-Zeilen und der Schulkalender werden nicht periodisch neu gezeichnet. Mitarbeit wird je Kurs im DOM bewahrt; Kursinhalte je Ansicht/Kurs bleiben erhalten und werden bei tatsächlichen Änderungen neu dargestellt. Die Kursauswahl ändert aktive Markierung ohne HTML-Komplettaustausch. Die mobile Leiste ändert nur bei Wechsel der Ansichtsart ihr Layout; auch Übersicht/Noten sind auf dem Handy erreichbar.
 - Keine Änderung an Snapshot, Supabase-Schema, Auth oder Berechtigungen. JS-Syntax geprüft; automatische Tests und reales Geräteverhalten werden separat geprüft.
