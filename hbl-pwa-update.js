@@ -4,6 +4,13 @@
 const VERSION=document.querySelector('meta[name="hbl-version"]')?.content||'';
 const CHECK_INTERVAL=300000;
 let last=0,checking=false,dismissed='';
+function newerThan(available,installed){
+ const parse=value=>/^(\d+)\.(\d+)\.(\d+)$/.exec(value)?.slice(1).map(Number);
+ const next=parse(available),current=parse(installed);
+ if(!next||!current)return false;
+ for(let i=0;i<3;i++){if(next[i]!==current[i])return next[i]>current[i];}
+ return false;
+}
 function promptUpdate(version){
  if(document.getElementById('hblUpdateNotice')||dismissed===version)return;
  const host=document.createElement('aside');host.id='hblUpdateNotice';host.setAttribute('role','status');
@@ -12,7 +19,12 @@ function promptUpdate(version){
  const update=document.createElement('button');update.textContent='Jetzt aktualisieren';update.type='button';
  update.style.cssText='border:0;border-radius:9px;background:#dce8ff;color:#18253c;padding:10px;font:700 13px system-ui,sans-serif;cursor:pointer';
  update.onclick=()=>{
-  const url=new URL(location.href);
+  // Auf index.html mit neuer URL wechseln (nicht auf die möglicherweise
+  // alt gecachte Verzeichnis-URL "./"). Den aktuellen Kurs dabei behalten.
+  const url=new URL('./index.html',location.href);
+  for(const [key,value] of new URL(location.href).searchParams){
+   if(key!=='hbl_reload'&&key!=='hbl_version_check')url.searchParams.append(key,value);
+  }
   url.searchParams.set('hbl_reload',String(Date.now()));
   location.assign(url.href);
  };
@@ -33,7 +45,8 @@ async function check(){
   if(!response.ok)return;
   const html=await response.text();
   const current=html.match(/name="hbl-version" content="([^"]+)"/)?.[1]||html.match(/<title>[^<]*v([0-9.]+)</)?.[1];
-  if(current&&VERSION&&current!==VERSION)promptUpdate(current);
+  // Keine Rückwärts-"Updates" anzeigen, falls eine CDN-Kante später reagiert.
+  if(current&&VERSION&&newerThan(current,VERSION))promptUpdate(current);
  }catch(_){/* Offline und Netzfehler: still erneut prüfen. */}
  finally{checking=false;}
 }
