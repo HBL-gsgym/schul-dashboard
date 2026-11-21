@@ -45,7 +45,7 @@ root.hblSeatRating=function(page,host,report){
   for(const button of host.querySelectorAll('[data-rate]')){
    const marked=!!state.id&&api.ratings.includes(data.marks?.[button.dataset.rate]?.[state.id]?.rating);
    button.toggleAttribute('data-rated',marked);
-   button.setAttribute('aria-label','Mitarbeit für '+button.textContent+' erfassen'+(marked?' · bereits bewertet':''));
+   button.setAttribute('aria-label','Mitarbeit für '+button.textContent+' erfassen'+(button.hasAttribute('data-fixed')?' · fester Platz':'')+(marked?' · bereits bewertet':''));
   }
   select.onchange=()=>{
    remembered={context:selection(data).context,id:select.value};

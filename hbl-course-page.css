@@ -26,6 +26,8 @@
 .seat-place+.seat-place{border-left:1px solid var(--line)}
 .seat-desk.vertical .seat-place+.seat-place{border-left:0;border-top:1px solid var(--line)}
 button.seat-place{cursor:pointer}
+.seat-place[data-fixed]{position:relative;padding-inline-end:1.15em}
+.seat-place[data-fixed]::after{content:"📌";position:absolute;inset-inline-end:1px;top:1px;font-size:.75em}
 .seat-place[aria-pressed=true]{box-shadow:inset 0 -2px var(--accent);font-weight:bold}
 .seat-inspector{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:8px}
 .seat-status:empty{display:none}

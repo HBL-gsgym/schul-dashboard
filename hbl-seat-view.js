@@ -58,8 +58,10 @@ window.hblCreateSeatView=function(host,page){
    const label='Tisch '+(i+1);
    const seats=d.seats.map((id,j)=>{
     const name=person.get(id)||'Frei';
-    if(!draft&&person.has(id))return '<button type="button" class="seat-place seat-rate" data-rate="'+esc(id)+'" aria-label="Mitarbeit für '+esc(name)+' erfassen">'+esc(name)+'</button>';
-    return editing?'<button type="button" class="seat-place" data-desk="'+esc(d.id)+'" data-index="'+j+'" aria-label="'+label+', Platz '+(j+1)+': '+esc(name)+'" aria-pressed="'+(d.id===selected&&seat===j)+'">'+esc(name)+'</button>':'<span class="seat-place" title="'+esc(name)+'">'+esc(name)+'</span>';
+    const fixed=person.has(id)&&model.isFixed(d,j);
+    const marker=fixed?' data-fixed':'',description=fixed?' · fester Platz':'';
+    if(!draft&&person.has(id))return '<button type="button" class="seat-place seat-rate"'+marker+' data-rate="'+esc(id)+'" aria-label="Mitarbeit für '+esc(name)+' erfassen'+description+'">'+esc(name)+'</button>';
+    return editing?'<button type="button" class="seat-place"'+marker+' data-desk="'+esc(d.id)+'" data-index="'+j+'" aria-label="'+label+', Platz '+(j+1)+': '+esc(name)+description+'" aria-pressed="'+(d.id===selected&&seat===j)+'">'+esc(name)+'</button>':'<span class="seat-place"'+marker+' title="'+esc(name)+description+'">'+esc(name)+'</span>';
    }).join('');
    const handle=editing?'<button type="button" class="seat-handle" data-handle="'+esc(d.id)+'" aria-label="'+label+' verschieben">'+label+' ↔</button>':'<small>'+label+'</small>';
    return '<div class="seat-desk'+(d.vertical?' vertical':'')+(editing&&d.id===selected?' selected':'')+'" style="left:'+d.x/model.width*100+'%;top:'+d.y*unitY+'px;width:'+w/model.width*100+'%;height:'+h*unitY+'px"><div>'+handle+'<div class="seat-places">'+seats+'</div></div></div>';
@@ -88,10 +90,11 @@ window.hblCreateSeatView=function(host,page){
   const desk=currentDesk();
   if(!desk)return '';
   const index=draft.desks.indexOf(desk)+1,id=desk.seats[seat],name=person.get(id);
+  const fixedButton=button('fix',model.isFixed(desk,seat)?'Fixierung lösen':'Platz fixieren');
   const options=students.map(s=>'<option value="'+esc(s.id)+'"'+(s.id===id?' selected':'')+'>'+esc(person.get(s.id))+'</option>').join('');
   return '<div class="seat-inspector"><strong>Tisch '+index+'</strong><div class="seat-tools"><label>Spalte <input data-col type="number" step="1" min="1" max="'+(model.width-model.size(desk).w+1)+'" value="'+(desk.x+1)+'"></label><label>Reihe <input data-row type="number" min="1" step="1" value="'+(desk.y+1)+'"></label>'+button('move','Verschieben')+(desk.seats.length===2?button('rotate','Drehen'):'')+button('remove','Tisch entfernen')+'</div>'+
    '<div class="seat-tools"><label>Platz '+(seat+1)+' besetzen <select data-assign><option value="">Frei</option>'+options+'</select></label>'+
-   (name!==undefined?'<label>Name <input data-name maxlength="100" value="'+esc(name)+'"></label>'+button('rename','Namen übernehmen'):'')+'</div></div>';
+   (name!==undefined?fixedButton+'<label>Name <input data-name maxlength="100" value="'+esc(name)+'"></label>'+button('rename','Namen übernehmen'):'')+'</div></div>';
  }
  async function save(){
   if(!draft||busy)return;
@@ -139,6 +142,9 @@ window.hblCreateSeatView=function(host,page){
     case 'move':update(()=>model.move(draft,desk,host.querySelector('[data-col]').valueAsNumber-1,host.querySelector('[data-row]').valueAsNumber-1));focusDesk();break;
     case 'rotate':update(()=>model.rotate(draft,desk));focusDesk();break;
     case 'remove':update(()=>{draft.desks=draft.desks.filter(d=>d!==desk);selected=null;});break;
+    case 'fix':
+     update(()=>model.setFixed(desk,seat,!model.isFixed(desk,seat)));
+     host.querySelector('[data-action="fix"]').focus({preventScroll:true});break;
     case 'rename':{
      const value=host.querySelector('[data-name]').value.trim();
      if(!value)throw Error('Bitte einen Namen eingeben.');

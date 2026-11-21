@@ -30,11 +30,13 @@ test('Raumkopie übernimmt nur die Geometrie, mit neuen Tisch-IDs und freien Pl�
  const origin=s.empty(),target=s.empty();
  origin.room='D1';const a=s.add(origin,1,'a'),b=s.add(origin,2,'b');s.rotate(origin,b);s.assign(origin,a,0,'alt');
  target.room='D2';assert.throws(()=>s.copyLayout(target,origin,()=>''));assert.equal(target.desks.length,0);
+ s.setFixed(a,0,true);
  target.room='d1';let i=0;s.copyLayout(target,origin,()=>String(++i));
  assert.deepEqual([...target.desks.map(d=>d.id)],['1','2']);
  assert.equal(target.desks[1].vertical,true);assert.equal(target.desks[1].x,b.x);
  assert.ok(target.desks.every(d=>d.seats.every(id=>id===null)));
  s.assign(target,target.desks[0],0,'neu');assert.equal(a.seats[0],'alt');
+ assert.equal(s.isFixed(target.desks[0],0),false);
 });
 test('Einzel- und Doppeltische passen in den Raum, ohne sich zu überdecken',()=>{
  const plan=s.empty(),a=s.add(plan,1,'a'),b=s.add(plan,2,'b');
@@ -65,4 +67,29 @@ test('Zufallsvorschau erhält Grundriss und Original bei zu vielen oder zu wenig
   assert.ok(ids.every(id=>students.some(s=>s.id===id)));
   assert.equal(JSON.stringify(preview.desks.map(({seats,...layout})=>layout)),JSON.stringify(plan.desks.map(({seats,...layout})=>layout)));
  }
+});
+test('Fixierte Personen behalten auch bei Platzmangel ihren genauen Sitz',()=>{
+ for(const count of [1,2,3,5]){
+  const plan=s.empty(),desk=s.add(plan,2,'d');
+  s.add(plan,1,'e');
+  const students=Array.from({length:count},(_,i)=>({id:'p'+i}));
+  s.assign(plan,desk,1,'p0');s.setFixed(desk,1,true);
+  const saved=JSON.stringify(plan);
+  const preview=s.shuffledPlan(JSON.parse(saved),students,()=>0);
+  assert.equal(JSON.stringify(plan),saved);
+  assert.equal(preview.desks[0].seats[1],'p0');assert.ok(s.isFixed(preview.desks[0],1));
+  const placed=preview.desks.flatMap(d=>d.seats).filter(Boolean);
+  assert.equal(new Set(placed).size,Math.min(3,count));assert.equal(placed.length,new Set(placed).size);
+ }
+});
+test('Fixierungen lassen sich lösen und gehen beim Tausch oder Entfernen nicht auf andere Personen über',()=>{
+ const plan=s.empty(),desk=s.add(plan,2,'d');
+ s.assign(plan,desk,0,'a');s.assign(plan,desk,1,'b');
+ s.setFixed(desk,0,true);s.setFixed(desk,1,true);s.setFixed(desk,1,false);
+ assert.ok(s.isFixed(desk,0));assert.equal(s.isFixed(desk,1),false);
+ s.setFixed(desk,1,true);s.assign(plan,desk,0,'b');
+ assert.equal(desk.fixedSeats,undefined);
+ s.setFixed(desk,0,true);s.setFixed(desk,1,true);
+ s.clearMissing(plan,[{id:'a'}]);
+ assert.equal(desk.seats[0],null);assert.deepEqual([...desk.fixedSeats],[1]);
 });

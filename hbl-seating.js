@@ -64,6 +64,15 @@ function rotate(plan,desk){
  if(!fits(plan,rotated,desk.x,desk.y))throw Error('Zum Drehen braucht der Tisch mehr Platz.');
  desk.vertical=rotated.vertical;
 }
+function isFixed(desk,index){
+ return !!desk.seats[index]&&!!desk.fixedSeats?.includes(index);
+}
+function setFixed(desk,index,fixed){
+ const indices=(desk.fixedSeats||[]).filter(i=>i!==index);
+ if(fixed&&desk.seats[index])indices.push(index);
+ if(indices.length)desk.fixedSeats=indices;
+ else delete desk.fixedSeats;
+}
 function assign(plan,desk,index,studentId){
  if(!Number.isInteger(index)||index<0||index>=desk.seats.length)throw Error('Unbekannter Platz.');
  const previous=desk.seats[index];
@@ -71,30 +80,41 @@ function assign(plan,desk,index,studentId){
  if(studentId!==null){
   for(const source of plan.desks){
    const from=source.seats.indexOf(studentId);
-   if(from!==-1){source.seats[from]=previous;break;}
+   if(from!==-1){setFixed(source,from,false);source.seats[from]=previous;break;}
   }
  }
+ setFixed(desk,index,false);
  desk.seats[index]=studentId;
 }
 function shuffledPlan(plan,students,random=Math.random){
  const next=structuredClone(plan);
- const values=students.map(s=>s.id);
- const capacity=next.desks.reduce((n,d)=>n+d.seats.length,0);
- while(values.length<capacity)values.push(null);
+ clearMissing(next,students);
+ const fixedIds=new Set(),available=[];
+ for(const desk of next.desks){
+  desk.seats.forEach((id,index)=>{
+   if(isFixed(desk,index))fixedIds.add(id);
+   else available.push({desk,index});
+  });
+ }
+ const values=students.map(s=>s.id).filter(id=>!fixedIds.has(id));
+ while(values.length<available.length)values.push(null);
  for(let i=values.length-1;i>0;i--){
   const j=Math.floor(random()*(i+1));
   [values[i],values[j]]=[values[j],values[i]];
  }
- let index=0;
- for(const desk of next.desks)desk.seats=desk.seats.map(()=>values[index++]);
+ available.forEach(({desk,index},i)=>{desk.seats[index]=values[i];});
  return next;
 }
 function clearMissing(plan,students){
  if(plan?.version!==1)return;
  const ids=new Set(students.map(s=>s.id));
- for(const desk of plan.desks)desk.seats=desk.seats.map(id=>ids.has(id)?id:null);
+ for(const desk of plan.desks){
+  desk.seats.forEach((id,index)=>{
+   if(!ids.has(id)){desk.seats[index]=null;setFixed(desk,index,false);}
+  });
+ }
 }
-const api={empty,width,size,fits,add,move,rotate,assign,shuffledPlan,clearMissing,roomsForCourse,roomName,roomKey,copyLayout};
+const api={empty,width,size,fits,add,move,rotate,assign,isFixed,setFixed,shuffledPlan,clearMissing,roomsForCourse,roomName,roomKey,copyLayout};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 else root.HblSeating=api;
 })(typeof window==='undefined'?globalThis:window);
