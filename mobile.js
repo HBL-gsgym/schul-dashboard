@@ -44,6 +44,8 @@
           jumpTo(tile);
         }));
       }
+      nav.appendChild(createButton('⚙','Mein HBL',()=>window.openMeinHbl()));
+      nav.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';
     }else{return;}
     document.body.appendChild(nav);
   }
