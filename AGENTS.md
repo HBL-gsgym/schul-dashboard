@@ -34,7 +34,9 @@ Der aktuelle [Architekturplan](docs/PRODUCT_ARCHITECTURE.md) unterscheidet pers�
 
 ## Zusammenarbeit und Änderungsprotokoll
 
-Michael nutzt den GPT-Chat für kleine Änderungen und Codex für Meilensteine und gezielte Prüfungen. Für jede umgesetzte Änderung im selben Commit eine Zeile in [CHANGELOG.md](CHANGELOG.md) ergänzen. Datum, aktuelle Version, tatsächliche Umsetzung (Michael, ChatGPT oder Codex), Änderung und Prüfstand nennen. Bei offener Prüfung „offen“ eintragen. Spätere Prüfergebnisse in derselben Zeile nachtragen.
+Michael nutzt den GPT-Chat für kleine Änderungen und Codex für Meilensteine und gezielte Prüfungen. Für jede umgesetzte Änderung im selben Commit eine Zeile in [CHANGELOG.md](CHANGELOG.md) ergänzen. Datum, aktuelle Version, tatsächliche Umsetzung (Michael, ChatGPT oder Codex), Änderung und Prüfstand nennen.
+
+**Versionierungsregel ab v5.10.0 (21.11.2026):** Jede veröffentlichte Änderung erhält eine **neue, höhere Versionsnummer**. Kleine Folgeänderungen auf der Linie v5.10.x erhöhen die Patchnummer (v5.10.1, v5.10.2 usw.); größere Versionssprünge nur nach ausdrücklichem Auftrag. In **demselben Commit** den sichtbaren Versionshinweis und den `<title>` in `index.html`, die Versionsangabe in `package.json` und `README.md`, den PWA-Cache-Namen in `sw.js` sowie **eine neue Zeile mit derselben Versionsnummer in `CHANGELOG.md`** aktualisieren. Falls JS/CSS-Assets geändert werden, zusätzlich die entsprechenden Datei-Query-Versionen in `index.html` und `sw.js` synchronisieren. Das gilt gleichermaßen für ChatGPT und Codex; keine Veröffentlichung mit unveränderter Versionsnummer. Bei offener Prüfung „offen“ eintragen. Spätere Prüfergebnisse in derselben Zeile nachtragen.
 
 ## Tokenbewusst und zügig arbeiten (20.11.2026)
 

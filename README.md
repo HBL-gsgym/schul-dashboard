@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.22 · Pilotprojekt · 21.11.2026**
+**Stand: v5.10.0 · Pilotprojekt · 21.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
