@@ -1,5 +1,7 @@
 # Schul-Dashboard HBL
 
+**v7.0.1 – Mitarbeit-Reihenfolge:** Die drei Kursbereichs-Buttons **Übersicht | Mitarbeit | Noten** stehen nun **oberhalb** der Kursinformationen (Kursname, Beschreibung, Bewertungslegende) auf der Mitarbeit-Seite. Die übrigen Kursansichten, Mitarbeitseingaben, Schüler-IDs und gespeicherten Daten sind unverändert.
+
 **v7.0.0 – Erste Etappe Classmanagement (Navigation):** Die Dashboard-Kachel heißt jetzt **Kursverwaltung**, behält aber ihre bisherige ID (`mitarbeit`) und damit die gespeicherte Position. Alle Kursseiten haben die drei Bereiche **Übersicht | Mitarbeit | Noten** mit sichtbarer Aktiv-Markierung. Auf der Übersicht steht der bestehende interaktive Sitzplan im Mittelpunkt; die gemeinsame Schülerliste folgt darunter. Mitarbeitstabelle und gewichtetes Notenbuch bleiben erhalten, ebenso die Direktlinks `?kurs=`, `?mitarbeit=`, `?noten=`. Kurskarten öffnen im selben PWA-Fenster, statt auf dem iPad einen neuen Tab anzufordern. **Keine Datenmigration, keine Löschung und keine Änderung an Benutzerkonten oder Berechtigungen.** Weitere v7.x-Etappen zu Schülerpflege, Bewertungslogik und Schuljahresverwaltung sind noch offen.
 
 **v6.1.3 – PWA-Updates auf iPad:** Ein eigenes Update-Modul prüft bei App-Start und nach dem Zurückkehren (frühestens nach fünf Minuten), ob auf GitHub eine neuere Version verfügbar ist. Service Worker aktualisieren und eine URL mit Zeitparameter abfragen verhindern einen reinen Versionsvergleich mit der alten Cache-Datei. Der Hinweis **„Jetzt aktualisieren“ / „Später“** vermeidet einen unerwarteten Reload und mögliche Verluste nicht gespeicherter Eingaben. Die aktuelle App-Version steht zusätzlich im `hbl-version`-Metatag. Bereits installierte ältere Apps müssen diese Version mindestens einmal laden, um von der neuen Prüfung zu profitieren; ein vollständig festgefahrener alter App-Cache wird durch die neue Funktion nicht rückwirkend korrigiert.
@@ -10,7 +12,7 @@
 
 **v6.1.0 – Schwebende Schnellleiste für Desktop/Tablet:** Profil/Anmelden, Chat (inklusive Ungelesen-Zähler) und Einstellungen (bisher „Mein HBL“) sind über eine frei verschiebbare Leiste erreichbar. Über den Griff mit Maus/Touch ziehen, per Pfeiltasten verschieben, mit dem Minimalschalter einklappen, per Doppelklick die Position zurücksetzen. Position und Zustand werden lokal je Konto gespeichert und bei Größenwechsel in den Bildschirm begrenzt. Auf Kursseiten bleiben die Cloud-/Chat-Aktionen technisch vorhanden, aber die obere Leiste wird ausgeblendet; persönliche Einstellungen sowie Push/Chat bleiben erreichbar. Smartphone nutzt weiter die untere Navigation. Die Kursseiten verlinken für Kachel- und Designeinstellungen ins Dashboard.
 
-**Stand: v7.0.0 · Pilotprojekt · 21.11.2026**
+**Stand: v7.0.1 · Pilotprojekt · 21.11.2026**
 
 Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 

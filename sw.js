@@ -1,5 +1,5 @@
 /* HBL v5.5 – Offline-App-Shell & Push-Empfang. Keine Nutzerdaten im SW-Cache. */
-const CACHE="hbl-pwa-shell-v700-course-tabs";
+const CACHE="hbl-pwa-shell-v701-course-tab-order";
 const ASSETS=["./hbl-pwa-update.js?v=6.1.3","./hbl-quickbar.css?v=6.1.0","./hbl-quickbar.js?v=6.1.0","./hbl-music.js?v=6.0.1","./supabase/functions/hbl-push-dispatch/push-policy.mjs?v=6.0.0","./mein-hbl.js?v=6.1.0","./hbl-grades.js?v=5.9.20","./hbl-seating.js?v=5.9.21","./hbl-seat-rating.js?v=5.9.21","./hbl-seat-view.js?v=6.1.2","./hbl-course-page.js?v=7.0.0","./hbl-course-page.css?v=7.0.0","./hbl-courses.js?v=5.9.13","./hbl-course-ids.js?v=5.9.10","./","./index.html","./mobile.css?v=6.0.6","./cloud.css?v=6.1.0",
  "./hbl-v55.css?v=6.0.6","./hbl-v56.css?v=5.6","./hbl-v57.css?v=5.9.7-chat","./hbl-v58.css?v=5.8","./hbl-v59.css?v=5.9.11-courses","./mobile.js?v=6.0.6","./cloud.js?v=5.10.3",
  "./hbl-v55.js?v=6.0.6","./hbl-v56.js?v=6.0.8","./hbl-v57.js?v=5.9.7-chat","./hbl-v58.js?v=5.9.5","./hbl-v59.js?v=6.0.7","./manifest.webmanifest","./hbl-icon.svg","./hbl-icon-192.png","./hbl-icon-512.png","./hbl-icon-180.png"];
