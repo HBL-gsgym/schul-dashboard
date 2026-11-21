@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v6.0.0</title>
+<title>Schul-Dashboard HBL · v6.0.1</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -447,6 +447,23 @@ body.dark .music-shortcut{background:rgba(255,255,255,.055)}
 .music-shortcut>span:first-child{font-size:14px;color:var(--accent);font-weight:900}
 .music-external{font-size:13px;color:var(--muted);font-weight:700}
 @media(max-width:800px){.music-shortcuts{align-items:flex-start;flex-direction:column;gap:9px}.music-shortcut-links{gap:6px}}
+/* Musik als reguläre Dashboard-Kachel mit Inline-Verwaltung. */
+.dashboard-board .music-shortcuts.dashboard-tile{margin:0!important;padding:16px 18px!important;border-top:2px solid var(--hbl-highlight,var(--line));gap:10px;align-items:center}
+.dashboard-board .music-shortcuts .tile-controls{width:100%;flex-basis:100%}
+.dashboard-board .music-shortcut-links{flex:1;min-width:0}
+.music-edit-button,.music-editor-actions button,.music-editor-remove{min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.music-edit-button:hover,.music-editor-actions button:hover,.music-editor-remove:hover{border-color:var(--accent)}
+.music-editor{width:100%;flex-basis:100%;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px}
+.music-editor[hidden]{display:none!important}
+.music-editor-rows{display:grid;gap:10px}
+.music-editor-row{display:grid;grid-template-columns:minmax(140px,1fr) minmax(190px,2fr) auto;align-items:end;gap:8px}
+.music-editor-row label{display:grid;gap:4px;font-size:12px;font-weight:750;color:var(--muted)}
+.music-editor-row input{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);padding:9px 10px;font:inherit;font-size:14px}
+.music-editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.music-editor-actions .music-save{background:var(--accent);color:#fff}
+#hblMusicStatus{margin:8px 0 0;font-size:12px;color:var(--muted)}
+@media(max-width:650px){.music-editor-row{grid-template-columns:minmax(0,1fr)}.music-editor-remove{justify-self:start}.dashboard-board .music-shortcuts.dashboard-tile{align-items:stretch}.music-shortcut-links{width:100%}}
+
 
 
 /* ---- Kopfzeile mit Autoren-Signatur und Versionsanzeige ---- */
@@ -1343,7 +1360,8 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seat-view.js?v=5.9.22"></script>
 <script src="./hbl-course-page.js?v=5.9.20"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=5.9.22">
-<script defer src="./mein-hbl.js?v=6.0.0"></script><script defer src="./mobile.js?v=5.10.5"></script>
+<script defer src="./mein-hbl.js?v=6.0.0"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
+<script defer src="./mobile.js?v=5.10.5"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.10.3"></script>
@@ -1670,6 +1688,7 @@ function applyPrepData(data){
  prepDone=data;
  restoreDashboardSettings(data);
  restoreDashboardTileLayout(data);
+ window.hblRenderMusicLinks?.();
  renderPreparationWeeks();
  renderTasks();
  renderParticipationOverview();
@@ -2213,6 +2232,7 @@ const HBL_TILE_SPECS=[
  {id:"vorbereitung-diese",selector:".planninggrid > .planningpanel:nth-child(3)",title:"Vorbereitung – diese Woche",span:3},
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
  {id:"kalender",selector:".schoolyear-card",title:"Schuljahreskalender",span:12},
+ {id:"musik",selector:"section.music-shortcuts",title:"Musik zum Arbeiten",span:12},
  {id:"links",core:true,selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
  {id:"stundenplan",core:true,selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
@@ -2306,7 +2326,8 @@ function restoreDashboardTileLayout(data){
  const names=new Set(HBL_TILE_SPECS.map(x=>x.id));
  {
   // Nur die bekannten IDs sortieren. Neue Kacheln bleiben erhalten.
-  const order=new Set([...(Array.isArray(saved.order)?saved.order:[]).filter(id=>names.has(id)),...names]);
+  const oldOrder=Array.isArray(saved.order)?saved.order.filter(id=>names.has(id)):[];
+  const order=new Set([...(oldOrder.includes("musik")?[]:["musik"]),...oldOrder,...names]);
   for(const id of order){const tile=hblTileById(id);if(tile)board.appendChild(tile);}
  }
  for(const spec of HBL_TILE_SPECS){
@@ -2414,7 +2435,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.0 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2439,14 +2460,7 @@ function renderHome(){
           <button type="button" class="theme" onclick="openMeinHbl()">⚙ Mein HBL</button>
         </div>
       </section>
-      <nav class="music-shortcuts" aria-label="Musik zum Arbeiten">
-          <span class="music-caption"><span class="music-caption-icon" aria-hidden="true">♫</span> Musik zum Arbeiten</span>
-          <div class="music-shortcut-links">
-            <a class="music-shortcut" href="https://www.youtube.com/watch?v=Su6ak0ZQBNI" target="_blank" rel="noopener noreferrer" title="Entspannende klassische Musik auf YouTube öffnen"><span aria-hidden="true">♬</span> Klassik &amp; Entspannung <span class="music-external" aria-hidden="true">↗</span></a>
-            <a class="music-shortcut" href="https://www.youtube.com/watch?v=oPVte6aMprI" target="_blank" rel="noopener noreferrer" title="Deep Focus – Musik für Arbeit und Konzentration auf YouTube öffnen"><span aria-hidden="true">◉</span> Work / Concentration <span class="music-external" aria-hidden="true">↗</span></a>
-            <a class="music-shortcut" href="https://www.youtube.com/watch?v=fzktWM990GA" target="_blank" rel="noopener noreferrer" title="Deep House Mix auf YouTube öffnen"><span aria-hidden="true">≋</span> Deep House Mix <span class="music-external" aria-hidden="true">↗</span></a>
-          </div>
-        </nav>
+
 
       <aside class="clockbox">
         <div class="clocktop"><span id="weekbadge" class="weekbadge"><span id="weekletter" class="weekletter"></span><span id="weektext" class="weektext"></span></span>
@@ -2461,6 +2475,21 @@ function renderHome(){
       <input name="q" placeholder="Mit Ecosia suchen …" autocomplete="off">
       <button type="submit">Suchen</button>
     </form>
+
+    <section class="music-shortcuts" aria-label="Musik zum Arbeiten">
+      <span class="music-caption"><span class="music-caption-icon" aria-hidden="true">♫</span> Musik zum Arbeiten</span>
+      <div class="music-shortcut-links" id="hblMusicLinks"></div>
+      <button type="button" class="music-edit-button" id="hblMusicEdit">✎ Links bearbeiten</button>
+      <form class="music-editor" id="hblMusicEditor" hidden>
+        <div id="hblMusicRows" class="music-editor-rows"></div>
+        <div class="music-editor-actions">
+          <button type="button" id="hblMusicAdd">+ Link hinzufügen</button>
+          <button type="submit" class="music-save">Speichern</button>
+          <button type="button" id="hblMusicCancel">Abbrechen</button>
+        </div>
+        <p id="hblMusicStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
 
     <section class="planninggrid">
   <div class="todaybox planningpanel"><div class="todayhead"><h2>Heute & Ausblick</h2><span class="versionhint">Unterricht und Aufsichten</span></div><div id="todayLessons"></div>

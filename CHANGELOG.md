@@ -4,6 +4,7 @@ Neue Einträge oben ergänzen. Die Spalte „Umgesetzt von“ nennt die Person o
 
 | Datum · Version | Umgesetzt von | Änderung | Geprüft durch |
 | --- | --- | --- | --- |
+| 21.11.2026 · v6.0.1 | ChatGPT | „Musik zum Arbeiten“ als reguläre, minimier- und ausblendbare Dashboard-Kachel; bis zu vier persönliche Musiklinks mit frei wählbarem Namen/HTTPS-Adresse hinzufügen, bearbeiten und entfernen, bestehende drei als Startwerte erhalten; PWA-Cache aktualisiert. | Gezielt statisch geprüft: Kachel-Registrierung, sichere URL-Prüfung, Speicher-/Ladeintegration, Asset-Referenzen und Versionsgleichheit; echter Browser-/Android-Test offen. |
 | 21.11.2026 · v6.0.0 | Codex | Mein HBL mit vier persönlichen Push-Kategorien und gemeinsamem Zeitfenster für Chat und Unterricht/Aufsichten. Kalender und Mitteilungen sind vorgemerkt. | Automatisierte Tests; Empfang auf Endgeräten offen. |
 | 21.11.2026 · v5.10.5 | Codex | Kacheln pro Browser- und App-Ansicht ausblenden, minimieren und zurücksetzen. | Automatisierte Tests; echtes Android-Gerät offen. |
 | 21.11.2026 · v5.10.4 | Codex | Doppelte Design-, Konto- und Cloud-Bedienung aus dem Dashboard-Kopf entfernt. Speicherstatus und Chat bleiben sichtbar. | Automatisierte Tests. |

@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.0 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.1 · Pilotprojekt · 21.11.2026**
+
+Die Kachel **„Musik zum Arbeiten“** ist verschiebbar, minimierbar und in **Mein HBL → Dashboard anpassen** ausblendbar. Die bisher drei Musiklinks bleiben voreingestellt und lassen sich über **„Links bearbeiten“** ändern, entfernen und bis maximal vier Verknüpfungen ergänzen; die Speicherung erfolgt persönlich über den bestehenden Snapshot.
 
 Unter **Mein HBL → Benachrichtigungen** gelten die gewählten Wochentage und Uhrzeiten gemeinsam für Chatnachrichten und Erinnerungen an Unterricht und Aufsichten. Die Auswahl für den persönlichen Kalender (v8.0) und Mitteilungen (v12.0) wird für später gespeichert. Jedes Gerät benötigt eine eigene Push-Freigabe.
 
