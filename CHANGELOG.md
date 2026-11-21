@@ -1,3 +1,6 @@
+## v7.0.6 – 21.11.2026 · ChatGPT
+- Interne Kursnavigation mit History API, persistente Dashboard-/Mitarbeitsansichten und globale UI. Kurswechsel/Tabs und mobile Navigation angepasst, ohne Datenbankänderungen. Statische JS-Syntax geprüft; Gerätetests noch offen.
+
 # Änderungsprotokoll
 
 Neue Einträge oben ergänzen. Die Spalte „Umgesetzt von“ nennt die Person oder das Werkzeug, das die Änderung vorgenommen hat.

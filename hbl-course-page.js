@@ -48,17 +48,48 @@ function renderCourseSwitcher(courses){
   nav.scrollLeft=Math.max(0,left-(nav.clientWidth-selected.getBoundingClientRect().width)/2);
  }
 }
+
+function syncNavigation(courseId,view,courses){
+ const tabs=document.querySelector('.hbl-course-tabs');
+ if(tabs)for(const anchor of tabs.querySelectorAll('a')){
+  const type=new URL(anchor.href,location.href).searchParams.keys().next().value;
+  anchor.href='?'+type+'='+encodeURIComponent(courseId);
+  anchor.classList.toggle('current',type===view);
+  if(type===view)anchor.setAttribute('aria-current','page');
+  else anchor.removeAttribute('aria-current');
+ }
+ const picker=document.getElementById('hblCourseTabs');
+ if(picker){
+  picker.dataset.courseId=courseId;picker.dataset.courseView=view;
+  delete picker.dataset.stamp;
+  renderCourseSwitcher(courses||page?.courses?.()||[]);
+ }
+}
+function navigate(courseId,mode){
+ if(!page)return;
+ const picker=document.getElementById('hblCourseTabs');
+ const changed=picker?.dataset.courseId!==courseId||picker?.dataset.courseView!==mode;
+ page.id=courseId;page.mode=mode;
+ if(changed){
+  seatView=null;
+  document.getElementById('coursePageContent')?.replaceChildren();
+  status('');
+ }
+ syncNavigation(courseId,mode,page.courses?.());
+ refresh();
+}
 function status(message){
  const el=document.getElementById('gradeStatus');
  if(el)el.textContent=message;
 }
 function mount(options){
  page=options;
- document.body.innerHTML='<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace hbl-course-layout"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
+ if(window.hblActivateView?.('course')){navigate(page.id,page.mode);return;}
+ window.hblSetView('course','<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace hbl-course-layout"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
   courseSwitcher(page.id,page.mode==='noten'?'noten':'kurs')+
   courseTabs(page.id,page.mode==='noten'?'noten':'kurs')+
   '<header class="hbl-course-heading"><p class="hbl-course-eyebrow">MEIN KURS</p><h1 id="coursePageTitle">Kurs wird geladen …</h1><p class="hbl-course-meta" id="coursePageMeta"></p></header>'+
-  '<div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>';
+  '<div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>');
  const host=document.getElementById('coursePageContent');
  host.addEventListener('click',onClick);
  host.addEventListener('change',onChange);
@@ -299,5 +330,5 @@ function editor(kind,area,column){
  dialog.onclose=()=>dialog.remove();
  document.body.appendChild(dialog);dialog.showModal();fields.title.focus();
 }
-window.HblCoursePage={mount,refresh,courseTabs,courseSwitcher,renderCourseSwitcher};
+window.HblCoursePage={mount,refresh,navigate,syncNavigation,courseTabs,courseSwitcher,renderCourseSwitcher};
 })();

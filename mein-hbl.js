@@ -21,7 +21,7 @@ window.openMeinHbl=function(){
   openSection(tilesButton);
   if(!byId('dashboardBoard')){
    const p=document.createElement('p');p.textContent='Kacheln lassen sich auf dem Dashboard anpassen.';extra.append(p);
-   action('Zum Dashboard',()=>{location.href='./';});return;
+   action('Zum Dashboard',()=>{if(!window.hblNavigate?.('./'))location.href='./';});return;
   }
   const app=hblLayoutProfile()==='app';
   const hint=document.createElement('p');
@@ -143,7 +143,7 @@ window.openMeinHbl=function(){
   get(detail?'[data-back]':'[data-design]').focus();
  }
  get('[data-design]').onclick=()=>{
-  if(!byId('dashboardBoard')){openSection(get('[data-design]'));const p=document.createElement('p');p.textContent='Design und Fachhintergründe kannst du auf dem Dashboard ändern.';extra.append(p);action('Zum Dashboard',()=>{location.href='./';});return;}
+  if(!byId('dashboardBoard')){openSection(get('[data-design]'));const p=document.createElement('p');p.textContent='Design und Fachhintergründe kannst du auf dem Dashboard ändern.';extra.append(p);action('Zum Dashboard',()=>{if(!window.hblNavigate?.('./'))location.href='./';});return;}
   showDesign(true);
  };
  get('[data-back]').onclick=()=>showDesign(false);

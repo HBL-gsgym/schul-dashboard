@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.0.5">
-<title>Schul-Dashboard HBL · v7.0.5</title>
+<meta name="hbl-version" content="7.0.6">
+<title>Schul-Dashboard HBL · v7.0.6</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1367,11 +1367,11 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seating.js?v=5.9.21"></script>
 <script src="./hbl-seat-rating.js?v=5.9.21"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=7.0.5"></script>
+<script src="./hbl-course-page.js?v=7.0.6"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=7.0.5">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=7.0.4">
-<script defer src="./mein-hbl.js?v=6.1.0"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
-<script defer src="./mobile.js?v=6.0.6"></script>
+<script defer src="./mein-hbl.js?v=7.0.6"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
+<script defer src="./mobile.js?v=7.0.6"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.10.3"></script>
@@ -1382,7 +1382,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script defer src="./hbl-v59.js?v=6.0.7"></script>
 <script defer src="./hbl-pwa-update.js?v=7.0.3"></script>
 <script defer src="./hbl-quickbar.js?v=7.0.4"></script>
-<style>#dashboardBoard>.dashboard-tile[hidden],#hblMobileNav button[hidden]{display:none!important}.mein-hbl fieldset{min-width:0;border:1px solid var(--line);border-radius:8px}.mein-hbl fieldset label{display:flex;align-items:center;min-height:40px}.mein-hbl{box-sizing:border-box;width:min(28rem,94vw);max-height:85dvh;overflow:auto;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem}.mein-hbl::backdrop{background:#10182077}.mein-hbl header{display:flex;align-items:center;justify-content:space-between}.mein-hbl section:not([hidden]),.mein-hbl label{display:grid;gap:.5rem}.mein-hbl button,.mein-hbl select{min-height:44px;padding:.5rem .8rem;border:1px solid var(--line);border-radius:8px;color:inherit;background:var(--panel2);font:inherit}.mein-hbl button:disabled{opacity:.6}.mein-hbl footer{border-top:1px solid var(--line);padding-top:.75rem}.mein-hbl a{color:var(--accent)}</style></head>
+<style>#dashboardBoard>.dashboard-tile[hidden],#hblMobileNav button[hidden]{display:none!important}.mein-hbl fieldset{min-width:0;border:1px solid var(--line);border-radius:8px}.mein-hbl fieldset label{display:flex;align-items:center;min-height:40px}.mein-hbl{box-sizing:border-box;width:min(28rem,94vw);max-height:85dvh;overflow:auto;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem}.mein-hbl::backdrop{background:#10182077}.mein-hbl header{display:flex;align-items:center;justify-content:space-between}.mein-hbl section:not([hidden]),.mein-hbl label{display:grid;gap:.5rem}.mein-hbl button,.mein-hbl select{min-height:44px;padding:.5rem .8rem;border:1px solid var(--line);border-radius:8px;color:inherit;background:var(--panel2);font:inherit}.mein-hbl button:disabled{opacity:.6}.mein-hbl footer{border-top:1px solid var(--line);padding-top:.75rem}.mein-hbl a{color:var(--accent)}</style><style>#hblAppRoot{display:contents}</style></head>
 <body>
 <script>
 /* =========================
@@ -2447,15 +2447,53 @@ function syncHeroClockPlacement(){
  }
  updateClock();
 }
+
+/* Persistente App-Shell: Ansichten bleiben erhalten; globale Dialoge und
+   Schnellleisten liegen dauerhaft außerhalb der wechselnden Inhalte. */
+const hblViewCache=new Map();
+let hblCurrentView=null;
+function hblAppRoot(){
+ let host=document.getElementById('hblAppRoot');
+ if(!host){host=document.createElement('div');host.id='hblAppRoot';document.body.prepend(host);}
+ return host;
+}
+function hblSetView(view,markup){
+ const host=hblAppRoot();
+ if(hblCurrentView===view){if(markup!==null)host.innerHTML=markup;return;}
+ if(hblCurrentView){
+  const previous=document.createDocumentFragment();
+  while(host.firstChild)previous.append(host.firstChild);
+  hblViewCache.set(hblCurrentView,previous);
+ }
+ const saved=hblViewCache.get(view);
+ if(saved){host.append(saved);hblViewCache.delete(view);}
+ else host.innerHTML=markup||'';
+ hblCurrentView=view;
+}
+function hblActivateView(view){
+ if(hblCurrentView===view)return true;
+ if(!hblViewCache.has(view))return false;
+ hblSetView(view,null);
+ return true;
+}
+window.hblSetView=hblSetView;
+window.hblActivateView=hblActivateView;
 function renderHome(){
-  document.body.innerHTML=`
+ if(hblActivateView('home')){
+  document.title='Schul-Dashboard HBL';
+  restoreDashboardSettings(prepDone);restoreDashboardTileLayout(prepDone);
+  renderToday();renderPreparationWeeks();renderTimetable();renderTasks();renderSchoolCalendar();renderParticipationOverview();
+  setBackdrop(readPreference('schoolBackdrop')||'astro',false);
+  return;
+ }
+  hblSetView('home',`
   <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
   <div class="wrapper">
     <header>
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.5 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.6 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2581,7 +2619,7 @@ function renderHome(){
 
 
 
-  </div>`;
+  </div>`);
   initializeDashboardTiles();
   syncHeroClockPlacement();
   updateClock(); renderToday(); renderPreparationWeeks(); renderTimetable(); initTaskForm(); renderTasks(); renderSchoolCalendar(); renderParticipationOverview();
@@ -2757,10 +2795,22 @@ function partDateFormat(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return s;return s.s
 function partWeekText(s){const date=new Date(s+"T12:00:00");if(isNaN(date))return "";return `KW ${isoWeek(date)}`;}
 function renderParticipationPage(courseId){
  const course=partCourseById(courseId);if(!course){renderHome();return;}
+ const previous=currentParticipationCourse;
  currentParticipationCourse=courseId;
+ if(hblActivateView('participation')){
+  HblCoursePage.syncNavigation(courseId,'mitarbeit',PARTICIPATION_COURSES);
+  const title=document.getElementById('hblCurrentCourseTitle');
+  if(title)title.innerHTML=course.icon+' '+partEsc(course.label)+' <span>· '+partEsc(course.group)+'</span>';
+  document.title='Mitarbeit '+course.short+' · Schul-Dashboard HBL';
+  if(previous!==courseId)participationMonthView=taskDateString(new Date()).slice(0,7);
+  renderParticipationTable();
+  if(serverReady)initializeParticipationRoster();
+  setBackdrop(readPreference('schoolBackdrop')||({math:'math',physics:'physics',astro:'astro',wat:'none'}[course.subject]),false);
+  return;
+ }
  document.title=`Mitarbeit ${course.short} · Schul-Dashboard HBL`;
  const header=`${course.icon} ${partEsc(course.label)} <span>· ${partEsc(course.group)}</span>`;
- document.body.innerHTML=`
+ hblSetView('participation',`
  <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
  <div class="part-shell hbl-course-layout">
   <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></div>
@@ -2794,11 +2844,11 @@ function renderParticipationPage(courseId){
    <textarea id="participationCommentText" maxlength="450" placeholder="Kurze Beobachtung zur Mitarbeit"></textarea>
    <div class="part-modal-actions"><button type="button" class="part-button" onclick="closeParticipationComment()">Abbrechen</button><button type="button" class="part-button primary" onclick="saveParticipationComment()">Kommentar speichern</button></div>
   </div>
- </div>`;
+ </div>`);
  HblCoursePage.renderCourseSwitcher(PARTICIPATION_COURSES);
  document.getElementById("participationNewDate").value=taskDateString(new Date());
  setBackdrop(readPreference("schoolBackdrop")||({math:"math",physics:"physics",astro:"astro",wat:"none"}[course.subject]),false);
- renderParticipationTable();loadPrepFromServer();
+ renderParticipationTable();if(!serverReady)loadPrepFromServer();else initializeParticipationRoster();
 }
 function toggleParticipationRoster(force){
  const target=document.getElementById("participationRoster");if(!target)return;
@@ -3005,7 +3055,7 @@ function renderParticipationTable(){
 function renderSubject(key){
   const s=CONFIG.subjects[key]||{name:"Fach",icon:"📘"};
   document.title=s.name+" – Schul-Dashboard";
-  document.body.innerHTML=`
+  hblSetView('subject:'+key,`
     <div class="subject-page">
       <a class="back" href="./">← Startseite</a>
       <section class="subject-head">
@@ -3013,26 +3063,72 @@ function renderSubject(key){
         <div class="mini-note">Eigene Links, Materialien und Tools für dieses Fach.</div>
       </section>
       <div class="mini-note">Diese Fachseite bleibt vorerst leer und kann später individuell aufgebaut werden.</div>
-    </div>`;
+    </div>`);
 }
 function readPreference(key){try{return localStorage.getItem(key)}catch(e){return null}}
 if(readPreference("schoolTheme")==="dark") document.body.classList.add("dark");
-const params=new URLSearchParams(location.search);
-const fach=params.get("fach"),mitarbeit=params.get("mitarbeit");
-const coursePageMode=params.has("noten")?"noten":"kurs";
-const coursePageId=params.get(coursePageMode);
-if(coursePageId&&HblCourseIds.valid(coursePageId)){
- HblCoursePage.mount({id:coursePageId,mode:coursePageMode,
-  courses:()=>PARTICIPATION_COURSES,
-  removeStudent:removeCourseStudent,
-  participation:{blocks:BLOCKS,ratings:PART_OPTIONS.filter(Boolean),today:taskDateString,formatDate:partDateFormat,write:writeParticipationMark},
-  rooms:()=>HblSeating.roomsForCourse(coursePageId,prepDone.__timetableV1?.slots,prepDone.__coursesV1?.courses,prepDone.__participation?.classes),
-  read:()=>({meta:prepDone.__coursesV1?.courses?.[coursePageId],data:prepDone.__participation?.classes?.[coursePageId]}),
-  save:()=>savePrepFile()});
- loadPrepFromServer();
-}else if(mitarbeit&&HblCourseIds.valid(mitarbeit))renderParticipationPage(mitarbeit);
-else if(fach)renderSubject(fach);
-else renderHome();
+let coursePageId=null,coursePageMode='kurs';
+let hblCurrentRoute=null;
+const hblRouteScroll=new Map();
+function hblRouteFor(url){
+ const p=url.searchParams;
+ if(p.has('noten')&&HblCourseIds.valid(p.get('noten')))return {kind:'course',mode:'noten',id:p.get('noten')};
+ if(p.has('kurs')&&HblCourseIds.valid(p.get('kurs')))return {kind:'course',mode:'kurs',id:p.get('kurs')};
+ if(p.has('mitarbeit')&&HblCourseIds.valid(p.get('mitarbeit')))return {kind:'participation',mode:'mitarbeit',id:p.get('mitarbeit')};
+ if(p.has('fach'))return {kind:'subject',id:p.get('fach')};
+ if([...p.keys()].every(k=>k==='hbl_reload'||k==='hbl_version_check'))return {kind:'home'};
+ return null;
+}
+function hblRouteKey(r){return r.kind+':'+(r.id||'')+':'+(r.mode||'');}
+function hblRenderRoute(route){
+ coursePageId=route.kind==='course'?route.id:null;
+ coursePageMode=route.kind==='course'?route.mode:'kurs';
+ if(route.kind==='course'){
+  if(hblCurrentView==='course')HblCoursePage.navigate(route.id,route.mode);
+  else HblCoursePage.mount({
+   id:route.id,mode:route.mode,courses:()=>PARTICIPATION_COURSES,
+   removeStudent:removeCourseStudent,
+   participation:{blocks:BLOCKS,ratings:PART_OPTIONS.filter(Boolean),today:taskDateString,formatDate:partDateFormat,write:writeParticipationMark},
+   rooms:()=>HblSeating.roomsForCourse(coursePageId,prepDone.__timetableV1?.slots,prepDone.__coursesV1?.courses,prepDone.__participation?.classes),
+   read:()=>({meta:prepDone.__coursesV1?.courses?.[coursePageId],data:prepDone.__participation?.classes?.[coursePageId]}),
+   save:()=>savePrepFile()
+  });
+  if(!serverReady)void loadPrepFromServer();
+  else HblCoursePage.refresh();
+ }else if(route.kind==='participation')renderParticipationPage(route.id);
+ else if(route.kind==='subject')renderSubject(route.id);
+ else renderHome();
+ hblCurrentRoute=route;
+ window.dispatchEvent(new CustomEvent('hbl-route-changed',{detail:{view:route.kind,mode:route.mode||'',id:route.id||''}}));
+}
+function hblNavigate(href,fromHistory=false){
+ const url=new URL(href,location.href);
+ if(url.origin!==location.origin)return false;
+ const basePath=pathname=>pathname.replace(/index\.html$/,'');
+ if(basePath(url.pathname)!==basePath(location.pathname))return false;
+ const next=hblRouteFor(url);
+ if(!next||next.kind==='subject')return false;
+ const previous=hblCurrentRoute,oldKey=previous&&hblRouteKey(previous),nextKey=hblRouteKey(next);
+ if(oldKey===nextKey&&!fromHistory)return true;
+ const oldY=window.scrollY;
+ if(oldKey)hblRouteScroll.set(oldKey,oldY);
+ if(!fromHistory)history.pushState({hblRoute:true},'',url.href);
+ hblRenderRoute(next);
+ const sameWorkspace=previous&&previous.kind!=='home'&&next.kind!=='home';
+ const y=sameWorkspace?oldY:(hblRouteScroll.get(nextKey)||0);
+ requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:'instant'}));
+ return true;
+}
+window.hblNavigate=href=>hblNavigate(href);
+if('scrollRestoration' in history)history.scrollRestoration='manual';
+document.addEventListener('click',event=>{
+ const link=event.target.closest?.('a[href]');
+ if(!link||event.defaultPrevented||event.button!==0||event.ctrlKey||event.shiftKey||event.metaKey||event.altKey)return;
+ if(link.download||link.target&&link.target!=='_self')return;
+ if(hblNavigate(link.href))event.preventDefault();
+});
+window.addEventListener('popstate',()=>{if(!hblNavigate(location.href,true))location.reload();});
+hblRenderRoute(hblRouteFor(new URL(location.href))||{kind:'home'});
 </script>
 <script>
 /* HBL Schul-Dashboard v5.0 – personal timetable + automatic per-block participation dates.
@@ -3087,8 +3183,7 @@ function hblUpdateCurrentCourse(){
  const c=partCourseById(currentParticipationCourse);
  const title=byId('hblCurrentCourseTitle');
  if(title&&c)title.innerHTML=`${c.icon} ${escapeHtml(c.label)} <span>· ${escapeHtml(c.group)}</span>`;
- const tabs=byId('hblCourseTabs');
- if(tabs)tabs.innerHTML=PARTICIPATION_COURSES.map(x=>`<a class="part-tab ${x.id===currentParticipationCourse?'current':''}" href="?mitarbeit=${encodeURIComponent(x.id)}">${escapeHtml(x.short)}</a>`).join('');
+  if(document.getElementById('participationTableHost'))HblCoursePage.syncNavigation(currentParticipationCourse,'mitarbeit',PARTICIPATION_COURSES);
  const sub=byId('partHeroStats');if(sub){const root=prepDone.__participation?.classes||{};sub.textContent=participationInfo(root[currentParticipationCourse]);}
  if(c)document.title=`Mitarbeit ${c.short} · Schul-Dashboard`;
 }

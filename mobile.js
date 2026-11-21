@@ -13,8 +13,12 @@
     button.append(pict,text);button.addEventListener('click',callback);
     return button;
   }
+  let dispose=()=>{};
   function init(){
-    if(document.getElementById('hblMobileNav'))return;
+    dispose();
+    document.getElementById('hblMobileNav')?.remove();
+    const controller=new AbortController(),observers=[];
+    dispose=()=>{controller.abort();observers.forEach(o=>o.disconnect());};
     const nav=document.createElement('nav');
     nav.id='hblMobileNav';nav.className='hbl-mobile-nav';nav.setAttribute('aria-label','Handy-Schnellnavigation');
     const onCourse=!!document.querySelector('.part-shell');
@@ -86,15 +90,17 @@
         nav.style.gridTemplateColumns='repeat('+visible+',minmax('+(visible>4?'76px':'0')+',1fr))';
       }
       syncShortcuts();syncAccount();syncChat();
-      new MutationObserver(syncShortcuts).observe(document.getElementById('dashboardBoard'),{attributes:true,attributeFilter:['hidden'],subtree:true});
+      const shortcutsObserver=new MutationObserver(syncShortcuts);
+      shortcutsObserver.observe(document.getElementById('dashboardBoard'),{attributes:true,attributeFilter:['hidden'],subtree:true});observers.push(shortcutsObserver);
       const cloudActions=document.querySelector('#hblCloudControls .hbl-cloud-actions');
-      if(cloudActions)new MutationObserver(syncChat).observe(cloudActions,{attributes:true,attributeFilter:['hidden'],childList:true,characterData:true,subtree:true});
-      window.addEventListener('hbl-cloud-status',()=>{syncAccount();syncChat();});
-      window.addEventListener('hbl-profile-changed',syncAccount);
-      window.addEventListener('hbl-chat-access-changed',syncChat);
+      if(cloudActions){const chatObserver=new MutationObserver(syncChat);chatObserver.observe(cloudActions,{attributes:true,attributeFilter:['hidden'],childList:true,characterData:true,subtree:true});observers.push(chatObserver);}
+      window.addEventListener('hbl-cloud-status',()=>{syncAccount();syncChat();},{signal:controller.signal});
+      window.addEventListener('hbl-profile-changed',syncAccount,{signal:controller.signal});
+      window.addEventListener('hbl-chat-access-changed',syncChat,{signal:controller.signal});
     }else{return;}
     document.body.appendChild(nav);
   }
+  window.addEventListener('hbl-route-changed',init);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
 })();

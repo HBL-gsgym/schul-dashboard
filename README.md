@@ -1,3 +1,5 @@
+**v7.0.6 – Flüssige Navigation:** Das Dashboard und die Kursansichten bleiben in einem geladenen Dokument. Kurs- und Tabwechsel verwenden Browser-History statt vollständigem Neuladen. Bereits geöffnete Dashboard-/Mitarbeitsansichten behalten ihre DOM-Elemente und Scrollposition; Kurs-Navigation und Titelzeile bleiben beim Wechsel Übersicht/Noten bestehen. Globale Konto-, Chat- und Schnellleisten-Elemente bleiben verfügbar. Die mobile Schnellnavigation wird je Ansicht aktualisiert. Keine Datenbank-/Datenmodelländerungen. iPad-/Desktop-/Android-Gerätetest noch offen.
+
 # Schul-Dashboard HBL
 
 **v7.0.5 – Kurswechsel in allen drei Bereichen:** Die schmale horizontal scrollbarere Kursleiste aus der Mitarbeit sitzt jetzt bei **Übersicht, Mitarbeit und Noten direkt über den drei Bereichsbuttons**. Ein Klick auf einen Kurs öffnet genau denselben Bereich des gewählten Kurses (z. B. Noten zu Noten); der aktive Kurs wird hervorgehoben und bleibt im sichtbaren Ausschnitt. Auf iPad und Smartphones lässt sich die Leiste seitlich wischen; auf Desktop horizontal scrollen. Die Liste wird nach dem Laden/Aktualisieren der persönlichen Kurse erneut abgeglichen, archivierte aktive Kurse bleiben über ihren bestehenden Direktlink erreichbar. Die alte separate Leiste unter den Mitarbeit-Informationen entfällt. Schülerlisten, Sitzpläne, Mitarbeit, Noten, Konten und Datenhaltung bleiben unverändert.
@@ -20,7 +22,7 @@
 
 **v6.1.0 – Schwebende Schnellleiste für Desktop/Tablet:** Profil/Anmelden, Chat (inklusive Ungelesen-Zähler) und Einstellungen (bisher „Mein HBL“) sind über eine frei verschiebbare Leiste erreichbar. Über den Griff mit Maus/Touch ziehen, per Pfeiltasten verschieben, mit dem Minimalschalter einklappen, per Doppelklick die Position zurücksetzen. Position und Zustand werden lokal je Konto gespeichert und bei Größenwechsel in den Bildschirm begrenzt. Auf Kursseiten bleiben die Cloud-/Chat-Aktionen technisch vorhanden, aber die obere Leiste wird ausgeblendet; persönliche Einstellungen sowie Push/Chat bleiben erreichbar. Smartphone nutzt weiter die untere Navigation. Die Kursseiten verlinken für Kachel- und Designeinstellungen ins Dashboard.
 
-**Stand: v7.0.5 · Pilotprojekt · 21.11.2026**
+**Stand: v7.0.6 · Pilotprojekt · 21.11.2026**
 
 Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 
