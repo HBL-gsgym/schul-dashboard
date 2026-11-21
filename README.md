@@ -1,12 +1,14 @@
 # Schul-Dashboard HBL
 
+**v6.1.3 – PWA-Updates auf iPad:** Ein eigenes Update-Modul prüft bei App-Start und nach dem Zurückkehren (frühestens nach fünf Minuten), ob auf GitHub eine neuere Version verfügbar ist. Service Worker aktualisieren und eine URL mit Zeitparameter abfragen verhindern einen reinen Versionsvergleich mit der alten Cache-Datei. Der Hinweis **„Jetzt aktualisieren“ / „Später“** vermeidet einen unerwarteten Reload und mögliche Verluste nicht gespeicherter Eingaben. Die aktuelle App-Version steht zusätzlich im `hbl-version`-Metatag. Bereits installierte ältere Apps müssen diese Version mindestens einmal laden, um von der neuen Prüfung zu profitieren; ein vollständig festgefahrener alter App-Cache wird durch die neue Funktion nicht rückwirkend korrigiert.
+
 **v6.1.2 – Sitzplan-PDF auf dem iPad:** Auf iPad/iPhone wird im Sitzplan statt `window.print()` der Button **„PDF erstellen“** angeboten. HBL erstellt ein A4-Querformat-PDF vollständig lokal aus dem Sitzplan und bietet **PDF öffnen** sowie **PDF sichern** als direkt antippbare Links an (in Safari über „Teilen“ auch Drucken/Dateien). Auf Desktop bleiben **Drucken** und die neue direkte PDF-Ausgabe getrennt verfügbar. Keine Datenübermittlung an einen PDF-Dienst. Die PDF-Ausgabe ist bildbasiert, nicht textdurchsuchbar; gespeicherte Kurs-/Schülerdaten werden nicht verändert.
 
 **v6.1.1 – Stundenplan auf iPad/Desktop aufgeräumt:** In „Stundenplan bearbeiten“ wurden die zusätzlichen Aktionen Musterplan übernehmen, Dateiimport, JSON-/CSV-Export und „Stundenplan leeren“ aus der Oberfläche entfernt. **Meine Kurse** und das normale Bearbeiten von Unterricht und Aufsichten bleiben zugänglich; vorhandene Stundenplandaten werden nicht verändert. Die Import-/Export-Routinen bleiben vorerst ohne regulären UI-Einstieg erhalten und dürfen bei einem späteren schulischen Admin-Konzept gezielt mit Berechtigungsprüfung wieder aufgegriffen werden.
 
 **v6.1.0 – Schwebende Schnellleiste für Desktop/Tablet:** Profil/Anmelden, Chat (inklusive Ungelesen-Zähler) und Einstellungen (bisher „Mein HBL“) sind über eine frei verschiebbare Leiste erreichbar. Über den Griff mit Maus/Touch ziehen, per Pfeiltasten verschieben, mit dem Minimalschalter einklappen, per Doppelklick die Position zurücksetzen. Position und Zustand werden lokal je Konto gespeichert und bei Größenwechsel in den Bildschirm begrenzt. Auf Kursseiten bleiben die Cloud-/Chat-Aktionen technisch vorhanden, aber die obere Leiste wird ausgeblendet; persönliche Einstellungen sowie Push/Chat bleiben erreichbar. Smartphone nutzt weiter die untere Navigation. Die Kursseiten verlinken für Kachel- und Designeinstellungen ins Dashboard.
 
-**Stand: v6.1.2 · Pilotprojekt · 21.11.2026**
+**Stand: v6.1.3 · Pilotprojekt · 21.11.2026**
 
 Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 
