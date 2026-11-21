@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.1 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.2 · Pilotprojekt · 21.11.2026**
+
+Auf Android ist die Kopfkachel kompakter, die Wochen-/Uhrzeit-/Datums-/KW-Information steht in einer Zeile, die Autoren-Signatur ist dezent und der doppelte „Mein HBL“-Button oben wird ausgeblendet (Zugang über mobile Navigation bleibt). Die **Ecosia-Websuche** ist nun eine optionale Dashboard-Kachel, die sich über **Mein HBL → Dashboard anpassen** verschieben, minimieren und ausblenden lässt; bestehende individuelle Layouts und Suchverhalten bleiben erhalten.
 
 Die Kachel **„Musik zum Arbeiten“** ist verschiebbar, minimierbar und in **Mein HBL → Dashboard anpassen** ausblendbar. Die bisher drei Musiklinks bleiben voreingestellt und lassen sich über **„Links bearbeiten“** ändern, entfernen und bis maximal vier Verknüpfungen ergänzen; die Speicherung erfolgt persönlich über den bestehenden Snapshot.
 

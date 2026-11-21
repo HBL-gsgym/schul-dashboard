@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v6.0.1</title>
+<title>Schul-Dashboard HBL · v6.0.2</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1265,7 +1265,7 @@ body.dark .tile-tool:hover,body.dark .tile-grip:hover{background:rgba(255,255,25
 body:not(.dark) .demo-alert{color:#6f4200;background:#fff4dc;border-color:#e4c68a}
 
 </style>
-<link rel="stylesheet" href="./mobile.css?v=3.3">
+<link rel="stylesheet" href="./mobile.css?v=6.0.2">
 <link rel="stylesheet" href="./cloud.css?v=5.10.4">
 <style>
 /* HBL Dashboard v5.0: customizable A/B timetable */
@@ -1429,15 +1429,16 @@ function weekInfo(date){
 function updateClock(){
   const now=new Date();
   const info=weekInfo(now);
-  const t=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  const d=now.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"});
+  const compact=window.matchMedia("(max-width:710px)").matches;
+  const t=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",...(compact?{}:{second:"2-digit"})});
+  const d=now.toLocaleDateString("de-DE",compact?{day:"2-digit",month:"2-digit",year:"2-digit"}:{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"});
   document.getElementById("time").textContent=t;
   document.getElementById("date").textContent=d;
-  document.getElementById("kw").textContent="Kalenderwoche "+info.kw;
+  document.getElementById("kw").textContent=(compact?"KW ":"Kalenderwoche ")+info.kw;
   const badge=document.getElementById("weekbadge");
   badge.className="weekbadge "+info.color;
   document.getElementById("weekletter").textContent=info.color==="green"?"A":"B";
-  document.getElementById("weektext").textContent=info.label;
+  document.getElementById("weektext").textContent=compact?(info.color==="green"?"Grün":"Blau"):info.label;
 }
 function toggleTheme(){
   const dark=!document.body.classList.contains("dark");
@@ -2233,6 +2234,7 @@ const HBL_TILE_SPECS=[
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
  {id:"kalender",selector:".schoolyear-card",title:"Schuljahreskalender",span:12},
  {id:"musik",selector:"section.music-shortcuts",title:"Musik zum Arbeiten",span:12},
+ {id:"suche",selector:"form.searchbar",title:"Websuche",span:12},
  {id:"links",core:true,selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
  {id:"stundenplan",core:true,selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
@@ -2327,7 +2329,8 @@ function restoreDashboardTileLayout(data){
  {
   // Nur die bekannten IDs sortieren. Neue Kacheln bleiben erhalten.
   const oldOrder=Array.isArray(saved.order)?saved.order.filter(id=>names.has(id)):[];
-  const order=new Set([...(oldOrder.includes("musik")?[]:["musik"]),...oldOrder,...names]);
+  const newcomers=["musik","suche"].filter(id=>!oldOrder.includes(id));
+  const order=new Set([...newcomers,...oldOrder,...names]);
   for(const id of order){const tile=hblTileById(id);if(tile)board.appendChild(tile);}
  }
  for(const spec of HBL_TILE_SPECS){
@@ -2435,7 +2438,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.2 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2457,7 +2460,7 @@ function renderHome(){
 </g>
 </svg></span></div>
           </div>
-          <button type="button" class="theme" onclick="openMeinHbl()">⚙ Mein HBL</button>
+          <button type="button" class="theme hbl-hero-settings" onclick="openMeinHbl()">⚙ Mein HBL</button>
         </div>
       </section>
 

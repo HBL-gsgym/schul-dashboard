@@ -3,7 +3,8 @@
 Neue Einträge oben ergänzen. Die Spalte „Umgesetzt von“ nennt die Person oder das Werkzeug, das die Änderung vorgenommen hat.
 
 | Datum · Version | Umgesetzt von | Änderung | Geprüft durch |
-| --- | --- | --- | --- |
+| --- | --- | --- |
+| 21.11.2026 · v6.0.2 | ChatGPT | Smartphone-Kopfbereich verdichtet: Hero flacher, Signatur dezenter, doppelten Mein-HBL-Knopf mobil ausgeblendet; A/B-Woche, Uhrzeit, Datum und KW kompakt nebeneinander. Ecosia-Suchleiste als optionale Dashboard-Kachel mit Verschieben, Minimieren und Ausblenden integriert; PWA-Cache aktualisiert. | CSS/JS und Kachel-/Versionsverknüpfung statisch geprüft; echter Android-Sichttest offen. |
 | 21.11.2026 · v6.0.1 | ChatGPT | „Musik zum Arbeiten“ als reguläre, minimier- und ausblendbare Dashboard-Kachel; bis zu vier persönliche Musiklinks mit frei wählbarem Namen/HTTPS-Adresse hinzufügen, bearbeiten und entfernen, bestehende drei als Startwerte erhalten; PWA-Cache aktualisiert. | Gezielt statisch geprüft: Kachel-Registrierung, sichere URL-Prüfung, Speicher-/Ladeintegration, Asset-Referenzen und Versionsgleichheit; echter Browser-/Android-Test offen. |
 | 21.11.2026 · v6.0.0 | Codex | Mein HBL mit vier persönlichen Push-Kategorien und gemeinsamem Zeitfenster für Chat und Unterricht/Aufsichten. Kalender und Mitteilungen sind vorgemerkt. | Automatisierte Tests; Empfang auf Endgeräten offen. |
 | 21.11.2026 · v5.10.5 | Codex | Kacheln pro Browser- und App-Ansicht ausblenden, minimieren und zurücksetzen. | Automatisierte Tests; echtes Android-Gerät offen. |

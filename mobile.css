@@ -109,3 +109,37 @@ header.part-hero{border-radius:17px;padding:15px!important;margin-bottom:13px!im
 }
 @media(max-width:355px){.dashboard-board .dashboard-tile .participation-grid{grid-template-columns:1fr}.part-actions{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* v6.0.2: kompakte Smartphone-Kopfzeile; Desktop und Tablet unverändert. */
+@media(max-width:710px){
+  header .hero-content{padding:12px 14px!important;gap:7px!important;min-height:0!important}
+  header .hero-intro{min-width:0;width:100%;flex:1}
+  header .hero h1{font-size:clamp(23px,6.5vw,29px);margin:0 0 3px;line-height:1.06}
+  header .hero p{font-size:12px;line-height:1.3;margin:3px 0 0}
+  header .hero .demo-alert{font-size:10px;line-height:1.25;padding:6px 9px;margin-top:7px}
+  header .hero-headline{gap:5px}
+  header .dashboard-version{font-size:9px;padding:4px 7px;margin:0 0 2px}
+  header .hbl-hero-settings{display:none!important}
+  header .dashboard-creator{margin-top:4px;gap:5px;opacity:.6;display:flex;align-items:center;flex-wrap:nowrap}
+  header .creator-label{font-size:7px;padding:0;width:auto;letter-spacing:.08em;white-space:nowrap}
+  header .creator-signature{width:115px;max-width:115px;min-width:0}
+  header .creator-logo{max-height:17px;filter:none}
+  header>.clockbox{display:flex!important;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:6px;width:100%!important;min-width:0;padding:9px 11px!important}
+  header>.clockbox .clocktop{margin:0;min-width:0;flex:0 0 auto}
+  header>.clockbox .weekbadge{padding:5px 7px;font-size:10px;white-space:nowrap;max-width:none}
+  header>.clockbox .weekletter{font-size:17px;margin-right:5px;padding-right:5px}
+  header>.clockbox .weektext{font-size:10px}
+  header>.clockbox .time{font-size:clamp(16px,4.6vw,21px)!important;letter-spacing:0;white-space:nowrap;flex:0 0 auto}
+  header>.clockbox .date{font-size:11px;margin:0;white-space:nowrap;flex:0 0 auto}
+  header>.clockbox .kw{font-size:11px;margin:0;white-space:nowrap;flex:0 0 auto}
+  .dashboard-board .dashboard-tile[data-tile="suche"]{padding:10px 12px!important}
+  .dashboard-board .dashboard-tile[data-tile="suche"] .searchbar{margin:0!important}
+  .dashboard-board .dashboard-tile[data-tile="suche"] .searchbar input{min-width:0}
+  .dashboard-board .dashboard-tile[data-tile="suche"] .searchbar button[type="submit"]{padding:0 11px}
+}
+@media(max-width:365px){
+ header>.clockbox{gap:4px;padding:8px!important}
+ header>.clockbox .weekbadge{padding:4px 6px}
+ header>.clockbox .weekletter{font-size:15px}
+ header>.clockbox .weektext,header>.clockbox .date,header>.clockbox .kw{font-size:10px}
+ header>.clockbox .time{font-size:16px!important}
+}
