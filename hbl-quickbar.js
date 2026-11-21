@@ -37,7 +37,16 @@ function mount(){
  function end(e){if(!drag||e.pointerId!==drag.id)return;drag=null;box.classList.remove("hbl-q-dragging");save()}
  handle.addEventListener("pointerup",end);handle.addEventListener("pointercancel",end);
  function restore(){const s=read();location=s;fold(!!s?.small,false);account();chat()}
- restore();window.addEventListener("hbl-cloud-status",restore);
+ // Die Cloud-Anmeldung ist asynchron. Bis sie den aktiven Benutzer bestätigt,
+ // darf die Leiste ihre vorläufige "local"-Position oben rechts NICHT zeigen.
+ function reveal(){restore();box.classList.add("hbl-q-ready");}
+ restore();
+ window.addEventListener("hbl-cloud-status",reveal);
+ // Falls die Anmeldung bereits vor dem Mounten fertig war, direkt anzeigen.
+ if(current()||!window.hblCloudClient)reveal();
+ // Bei einem Netzwerk-/Authentifizierungsfehler bleibt die Bedienung erreichbar.
+ // Die Position wird erneut aus der dann bekannten Benutzerkennung gelesen.
+ else setTimeout(()=>{if(!box.classList.contains("hbl-q-ready"))reveal();},6000);
  window.addEventListener("hbl-profile-changed",account);
  window.addEventListener("hbl-chat-access-changed",chat);
  const controls=document.querySelector("#hblCloudControls .hbl-cloud-actions");
