@@ -99,3 +99,10 @@ test('Blank Excel rows keep their classbook positions, without moving marks',()=
  assert.equal(state.__participation.classes.ma.students[1].name,'Newton');
  assert.equal(state.__participation.classes.ma.marks.a.d.rating,'+');
 });
+
+test('Class UI uses the public course-catalog bridge across inline scripts',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const beforeSecond=html.split('<script>\n/* HBL Schul-Dashboard v5.0')[0];
+ assert.match(beforeSecond,/window\.hblReadCourses\(\)\.catalog/);
+ assert.doesNotMatch(beforeSecond,/getCourseCatalog\(\)/);
+});

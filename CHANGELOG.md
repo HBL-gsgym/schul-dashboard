@@ -1,3 +1,7 @@
+## v7.0.11 – 21.11.2026 · ChatGPT
+- Browser-Testfehler beim Zugriff auf Kurskatalog behoben: Klassenverwaltung verwendet jetzt die öffentliche `window.hblReadCourses()`-Schnittstelle, damit die zuständigen Inline-Skripte korrekt miteinander kommunizieren.
+- Zusätzlicher Regressionstest für diese Skriptgrenze. Daten, IDs, Konten und Berechtigungen bleiben unverändert. Browserprüfung erneut ausführen.
+
 ## v7.0.10 – 21.11.2026 · ChatGPT
 - Fehler in einem neuen Unit-Test behoben: ein leeres Bewertungsobjekt wird jetzt unabhängig von seiner VM-Laufzeitumgebung geprüft. Keine Änderungen an Schüler-IDs, Snapshot-Schema, Bewertungslogik oder Benutzerkonten.
 - Browser-/Automatiktests werden nach dieser Korrektur erneut ausgeführt.

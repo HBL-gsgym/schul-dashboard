@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.0.10">
-<title>Schul-Dashboard HBL · v7.0.10</title>
+<meta name="hbl-version" content="7.0.11">
+<title>Schul-Dashboard HBL · v7.0.11</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -2533,7 +2533,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.10 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.11 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2694,10 +2694,10 @@ function partId(){return "p"+Date.now().toString(36)+Math.random().toString(36).
 let hblRosterConflicts=new Set();
 function hblCurrentRosterYear(){return currentSchoolYear(new Date()).label;}
 function hblCourseRosterKey(courseId){
- const meta=getCourseCatalog().courses[courseId];
+ const meta=window.hblReadCourses().catalog.courses[courseId];
  return meta&&HblClassRosters.key(meta,hblCurrentRosterYear());
 }
-function hblEnsureClassRosters(catalog=getCourseCatalog()){
+function hblEnsureClassRosters(catalog=window.hblReadCourses().catalog){
  if(!serverReady)return false;
  const root=getParticipationRoot();
  // Die kanonische Klasse existiert auch bei persönlich angelegten Kursen ohne Stundenplan.
@@ -2711,13 +2711,13 @@ function hblEnsureClassRosters(catalog=getCourseCatalog()){
 }
 function hblEditClassStudent(courseId,change){
  if(!hblCourseRosterKey(courseId))return false;
- HblClassRosters.edit(prepDone,getCourseCatalog(),courseId,hblCurrentRosterYear(),change,partId);
+ HblClassRosters.edit(prepDone,window.hblReadCourses().catalog,courseId,hblCurrentRosterYear(),change,partId);
  renderParticipationOverview();renderParticipationTable();
  return true;
 }
 function hblLinkClassRoster(courseId){
  if(!hblRosterConflicts.has(courseId))return;
- const roster=HblClassRosters.membership(prepDone,getCourseCatalog(),courseId,hblCurrentRosterYear())?.roster;
+ const roster=HblClassRosters.membership(prepDone,window.hblReadCourses().catalog,courseId,hblCurrentRosterYear())?.roster;
  const previous=prepDone.__participation?.classes?.[courseId]?.students||[];
  if(!roster)return;
  const comparison=previous.slice(0,12).map((p,i)=>{
@@ -2728,7 +2728,7 @@ function hblLinkClassRoster(courseId){
   'Bitte prüfe die Zuordnung. Vorhandene Noten, Mitarbeit und Sitzplätze bleiben ihren Schülernummern zugeordnet.\n\n'+comparison+
   (previous.length>12?'\n… weitere Einträge':'')))return;
  try{
-  HblClassRosters.linkByNumber(prepDone,getCourseCatalog(),courseId,hblCurrentRosterYear());
+  HblClassRosters.linkByNumber(prepDone,window.hblReadCourses().catalog,courseId,hblCurrentRosterYear());
   const changed=hblEnsureClassRosters();
   HblCoursePage.refresh();renderParticipationTable();renderParticipationOverview();
   void savePrepFile().catch(error=>alert('Speichern fehlgeschlagen: '+error.message));
@@ -2984,7 +2984,7 @@ function replaceParticipationRoster(){
  if(hblCourseRosterKey(currentParticipationCourse)){
   if(!confirm('Klassenliste nach Klassenbuchnummern 1 bis '+names.length+' abgleichen?\nVorhandene Schüler-IDs, Noten, Sitzplätze und Mitarbeit bleiben erhalten. Nicht enthaltene Schüler werden NICHT gelöscht. Prüfe vorher, ob die Reihenfolge dem Klassenbuch entspricht.'))return;
   try{
-   HblClassRosters.importNames(prepDone,getCourseCatalog(),currentParticipationCourse,hblCurrentRosterYear(),names,partId);
+   HblClassRosters.importNames(prepDone,window.hblReadCourses().catalog,currentParticipationCourse,hblCurrentRosterYear(),names,partId);
    document.getElementById("participationNewStudents").value="";
    toggleParticipationRoster(false);renderParticipationTable();renderParticipationOverview();HblCoursePage.refresh();partPersist();
   }catch(error){setParticipationStatus(error.message,true);}
@@ -3009,11 +3009,11 @@ function pruneParticipationPlaceholders(){
  if(!participationCanEdit())return;
  const c=partCourseData(true);
  if(hblCourseRosterKey(currentParticipationCourse)){
-  const roster=HblClassRosters.membership(prepDone,getCourseCatalog(),currentParticipationCourse,hblCurrentRosterYear())?.roster;
+  const roster=HblClassRosters.membership(prepDone,window.hblReadCourses().catalog,currentParticipationCourse,hblCurrentRosterYear())?.roster;
   let removed=0;
   for(const student of [...(roster?.students||[])]){
    if(!partPlaceholder(student.name))continue;
-   try{HblClassRosters.edit(prepDone,getCourseCatalog(),currentParticipationCourse,hblCurrentRosterYear(),{id:student.id,remove:true},partId);removed++;}
+   try{HblClassRosters.edit(prepDone,window.hblReadCourses().catalog,currentParticipationCourse,hblCurrentRosterYear(),{id:student.id,remove:true},partId);removed++;}
    catch(_){/* Bewertete oder platzierte Schüler bleiben erhalten. */}
   }
   if(removed){renderParticipationTable();renderParticipationOverview();HblCoursePage.refresh();partPersist();}
@@ -3069,7 +3069,7 @@ function addParticipationStudents(){
   for(const name of names){
    const normalized=name.toLocaleLowerCase("de-DE");if(existing.has(normalized))continue;
    if(hblCourseRosterKey(currentParticipationCourse)){
-    HblClassRosters.edit(prepDone,getCourseCatalog(),currentParticipationCourse,hblCurrentRosterYear(),{name,number:nextNumber++},partId);
+    HblClassRosters.edit(prepDone,window.hblReadCourses().catalog,currentParticipationCourse,hblCurrentRosterYear(),{name,number:nextNumber++},partId);
    }else c.students.push({id:partId(),name,number:nextNumber++});
    existing.add(normalized);added++;
   }
