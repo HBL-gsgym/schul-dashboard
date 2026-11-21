@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.5 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.6 · Pilotprojekt · 21.11.2026**
+
+Auf Smartphones enthält die feste untere Leiste jetzt **Chat** (mit Ungelesen-Zähler), **Anmelden/Benutzername** (öffnet das persönliche Konto bzw. Login) und **Mein HBL**, zusätzlich zu den vorhandenen sichtbaren Kachel-Schnellzugriffen. Bei vielen Elementen ist die Leiste horizontal scrollbar. Die separate Push-Gerätebox wurde aus dem Stundenplan in **Mein HBL → Benachrichtigungen** integriert; Registrierung, Deaktivierung und Installationsfunktion bleiben erhalten.
 
 Der zuletzt noch sichtbare separate Cloud-Balken aus `cloud.js` ist auf dem Dashboard ebenfalls ausgeblendet; die Funktionen bleiben erhalten und der Chat ist jetzt auch über **Mein HBL → Kollegium-Chat** erreichbar. Ein eventueller alter Board-Toolbar-Rest wird bei der Initialisierung entfernt.
 

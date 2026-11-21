@@ -285,7 +285,9 @@ function mountPushSettings(){
  '<button type="button" id="hblPushDisable" hidden>Benachrichtigungen deaktivieren</button>'+
  '<button type="button" id="hblPwaInstall" hidden>App installieren</button></div>'+
  '<p class="hbl-push-note">Android: Browsermenü → App installieren. iPhone (iOS 16.4+): Safari → Teilen → Zum Home-Bildschirm. Auf dem iPhone erst die installierte App öffnen, dann Erinnerungen aktivieren. Mitteilungen benötigen Internet und deine Zustimmung.</p>';
- const wrapper=table.parentElement;wrapper.appendChild(panel);
+ // Einstellungen ausschließlich im gemeinsamen Benachrichtigungsdialog.
+ const settings=byId('hblChatPushOverlay')?.querySelector('.hbl-chat-push-dialog');
+ (settings||document.body).appendChild(panel);
  byId("hblPushEnable").onclick=()=>void enablePush();
  byId("hblPushDisable").onclick=()=>void disablePush();
  installBtn=byId("hblPwaInstall");

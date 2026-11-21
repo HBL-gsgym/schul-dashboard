@@ -35,6 +35,8 @@
         table.parentNode.insertBefore(hint,table);
       }
     }else if(document.getElementById('dashboardBoard')){
+      // Frühere Kachel-Schnellzugriffe bleiben erhalten. Konto und Chat sind
+      // unabhängig von ausgeblendeten Kacheln immer über die Leiste erreichbar.
       const items=[['⌂','Heute','unterricht'],['☑','Aufgaben','aufgaben'],['▦','Kurse','mitarbeit'],['▦','Plan','stundenplan']];
       for(const [icon,label,id] of items){
         const shortcut=createButton(icon,label,()=>{
@@ -45,18 +47,51 @@
         });
         shortcut.dataset.tileLink=id;nav.appendChild(shortcut);
       }
+      const chatButton=createButton('💬','Chat',()=>{
+        const original=document.getElementById('hblChatToggle');
+        if(original&&!original.hidden){original.click();return;}
+        if(!window.hblCloudUser?.())document.getElementById('hblCloudLogin')?.click();
+        else alert('Der Kollegium-Chat ist für dieses Konto derzeit nicht freigeschaltet.');
+      });
+      chatButton.id='hblMobileChat';
+      const unread=document.createElement('span');unread.className='hbl-mobile-chat-badge';unread.hidden=true;
+      chatButton.appendChild(unread);nav.appendChild(chatButton);
+      const accountButton=createButton('👤','Anmelden',()=>{
+        if(!window.hblCloudUser?.()){document.getElementById('hblCloudLogin')?.click();return;}
+        window.openMeinHbl?.();
+        document.querySelector('dialog.mein-hbl [data-account]')?.click();
+      });
+      accountButton.id='hblMobileAccount';nav.appendChild(accountButton);
       nav.appendChild(createButton('⚙','Mein HBL',()=>window.openMeinHbl()));
+      function syncAccount(){
+        const user=window.hblCloudUser?.();
+        const name=user?String(window.hblCurrentUsername||user.email?.split('@')[0]||'Konto').trim():'Anmelden';
+        accountButton.querySelector('span:last-child').textContent=name;
+        accountButton.title=user?'Konto: '+name:'Mit dem Dashboard-Konto anmelden';
+        accountButton.setAttribute('aria-label',user?'Mein Konto: '+name:'Anmelden');
+      }
+      function syncChat(){
+        const source=document.getElementById('hblChatToggle'),badge=document.getElementById('hblChatBadge');
+        const text=source&&!source.hidden&&badge&&!badge.hidden?badge.textContent.trim():'';
+        unread.hidden=!text;unread.textContent=text;
+        chatButton.setAttribute('aria-label',text?'Chat: '+text+' ungelesene Nachrichten':'Kollegium-Chat');
+      }
       function syncShortcuts(){
-        let visible=1;
+        let visible=3; // Chat, Konto und Mein HBL bleiben immer erreichbar.
         for(const button of nav.querySelectorAll('[data-tile-link]')){
           const tile=document.querySelector('.dashboard-tile[data-tile="'+button.dataset.tileLink+'"]');
           button.hidden=!tile||tile.hidden;
           if(!button.hidden)visible++;
         }
-        nav.style.gridTemplateColumns='repeat('+visible+',minmax(0,1fr))';
+        nav.style.gridTemplateColumns='repeat('+visible+',minmax('+(visible>4?'76px':'0')+',1fr))';
       }
-      syncShortcuts();
+      syncShortcuts();syncAccount();syncChat();
       new MutationObserver(syncShortcuts).observe(document.getElementById('dashboardBoard'),{attributes:true,attributeFilter:['hidden'],subtree:true});
+      const cloudActions=document.querySelector('#hblCloudControls .hbl-cloud-actions');
+      if(cloudActions)new MutationObserver(syncChat).observe(cloudActions,{attributes:true,attributeFilter:['hidden'],childList:true,characterData:true,subtree:true});
+      window.addEventListener('hbl-cloud-status',()=>{syncAccount();syncChat();});
+      window.addEventListener('hbl-profile-changed',syncAccount);
+      window.addEventListener('hbl-chat-access-changed',syncChat);
     }else{return;}
     document.body.appendChild(nav);
   }

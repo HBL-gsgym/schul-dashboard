@@ -45,6 +45,9 @@ function mount(){
  '<p class="hbl-chat-push-tip">iPhone: Dashboard in Safari zum Home-Bildschirm hinzufügen und anschließend die installierte App öffnen. Android: Browserberechtigung für Benachrichtigungen erteilen.</p>'+
  '</section>';
  document.body.appendChild(overlay);
+ // Geräte-Push-Aktionen aus dem Stundenplan in diese zentrale Steuerung holen.
+ const devicePanel=el('hblPushPanel');
+ if(devicePanel)overlay.querySelector('.hbl-chat-push-dialog').appendChild(devicePanel);
  el("hblChatPushClose").onclick=()=>showSettings(false);
  overlay.addEventListener("click",e=>{if(e.target===overlay)showSettings(false);});
  overlay.addEventListener("keydown",e=>{

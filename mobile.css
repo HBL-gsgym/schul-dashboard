@@ -163,3 +163,13 @@ header.part-hero{border-radius:17px;padding:15px!important;margin-bottom:13px!im
  header .hero .clockbox .weekletter{font-size:11px!important;margin-right:3px;padding-right:3px}
  header .hero .clockbox .weektext,header .hero .clockbox .time,header .hero .clockbox .date,header .hero .clockbox .kw{font-size:11px!important}
 }
+
+/* v6.0.6: Chat, Kontoname und Mein HBL ständig in der Handy-Navigation. */
+@media(max-width:710px){
+ .hbl-mobile-nav{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+ .hbl-mobile-nav::-webkit-scrollbar{display:none}
+ .hbl-mobile-nav button{position:relative}
+ .hbl-mobile-nav button>span:nth-child(2){min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .hbl-mobile-chat-badge{position:absolute;top:2px;right:6px;min-width:17px;height:17px;padding:0 3px;box-sizing:border-box;border-radius:9px;background:#b32635;color:#fff;font-size:10px;font-weight:850;line-height:17px;text-align:center}
+ .hbl-mobile-chat-badge[hidden]{display:none!important}
+}

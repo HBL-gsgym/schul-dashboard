@@ -44,3 +44,7 @@
  .hbl-push-header{align-items:flex-start;flex-direction:column;gap:3px}
  .hbl-push-actions button{width:100%;min-height:45px}
 }
+
+/* v6.0.6: keine eigenständige Push-Box im Stundenplan; Fallback bis Menü initialisiert. */
+body>#hblPushPanel{display:none!important}
+#hblChatPushOverlay .hbl-push-panel{margin-top:14px}
