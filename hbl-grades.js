@@ -2,6 +2,13 @@
 (function(root){
 'use strict';
 const empty=()=>({version:1,scale:'grades',areas:[]});
+function forCourse(data){
+ if(data?.gradebook)return data.gradebook;
+ const book=empty();
+ const columns=Array.from({length:5},(_,i)=>({id:'note-'+(i+1),title:'Note '+(i+1),date:'',scores:{}}));
+ book.areas.push({id:'noten',name:'Noten',weight:100,active:true,columns});
+ return book;
+}
 const limits=scale=>scale==='points'?[0,15]:[1,6];
 const columns=book=>book.areas.flatMap(area=>area.columns);
 const hasScores=column=>Object.keys(column.scores).length>0;
@@ -53,7 +60,7 @@ function results(book,studentId){
  }
  return {means,total:complete?total:null};
 }
-const model={empty,limits,hasStudent,setScale,saveArea,removeArea,removeColumn,setScore,weightTotal,results};
+const model={empty,forCourse,limits,hasStudent,setScale,saveArea,removeArea,removeColumn,setScore,weightTotal,results};
 if(typeof module!=='undefined'&&module.exports){module.exports=model;return;}
 root.HblGradebook=model;
 })(typeof window==='undefined'?globalThis:window);

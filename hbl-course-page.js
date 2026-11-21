@@ -32,14 +32,17 @@ function refresh(){
  document.title=title.textContent+' · Schul-Dashboard';
  if(page.mode==='kurs'){
   if(!host.querySelector('.seat-section')){
-   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><nav class="course-choices" aria-label="Kursbereiche">'+link('mitarbeit','Mitarbeit')+link('noten','Noten')+'</nav>';
+   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><nav class="course-choices" aria-label="Kursbereiche">'+link('mitarbeit','Mitarbeit')+link('noten','Noten')+'</nav><details class="part-pane course-roster"><summary></summary><button type="button" class="part-button" data-add-person>+ Person hinzufügen</button><ul></ul></details>';
    seatView=window.hblCreateSeatView(host.querySelector('.seat-section'),page);
   }
   seatView.render();
+  const roster=host.querySelector('.course-roster'),students=data?.students||[];
+  roster.querySelector('summary').textContent='Schülerliste ('+students.length+')';
+  roster.querySelector('ul').innerHTML=students.map(s=>'<li><button type="button" data-person="'+esc(s.id)+'" aria-label="'+esc(s.name)+' bearbeiten">'+esc(s.name)+'</button></li>').join('');
   return;
  }
  if(data?.gradebook&&data.gradebook.version!==1){host.textContent='Dieses Notenbuch benötigt eine neuere App-Version.';return;}
- const book=data?.gradebook||grades.empty();
+ const book=grades.forCourse(data);
  const expanded=host.querySelector('details')?.open??!book.areas.length;
  const formerTable=host.querySelector('.grade-scroll');
  const scroll=[formerTable?.scrollLeft||0,formerTable?.scrollTop||0];
@@ -69,13 +72,13 @@ function tableHtml(book,active,students){
   return '<tr><th scope="row">'+esc(s.name)+'</th>'+cells+'<td class="grade-total">'+(total===null?'Unvollständig':format(total))+'</td></tr>';
  }).join('');
  return '<div class="grade-scroll" tabindex="0" aria-label="Notentabelle"><table><thead><tr><th rowspan="2" scope="col">Name</th>'+groupHead+'<th rowspan="2" scope="col">Gesamtwert</th></tr><tr>'+headings+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
-  (students.length?'':'<p>Die Schülerliste kannst du unter '+link('mitarbeit','Mitarbeit','')+' pflegen.</p>');
+  (students.length?'':'<p>Öffne die Schülerliste in der '+link('kurs','Kursübersicht','')+', um Personen hinzuzufügen.</p>');
 }
 async function commit(change){
  const {meta,data}=page.read();
  if(!meta||!data)throw Error('Kursdaten sind noch nicht verfügbar.');
  if(data.gradebook&&data.gradebook.version!==1)throw Error('Unbekanntes Notenformat.');
- const book=structuredClone(data.gradebook||grades.empty());
+ const book=structuredClone(grades.forCourse(data));
  change(book,data);
  data.gradebook=book;
  const version=++serial;
@@ -99,17 +102,63 @@ function onChange(event){
  host.querySelector(selector)?.focus({preventScroll:true});
 }
 function onClick(event){
- if(page.mode!=='noten')return;
  const button=event.target.closest('button');
  if(!button||!page.read().data)return;
- const book=page.read().data.gradebook||grades.empty(),d=button.dataset;
+ if(page.mode==='kurs'){
+  if(!button.closest('.course-roster'))return;
+  if(seatView.isEditing()){status('Bitte den Sitzplanentwurf zuerst speichern oder schließen.');return;}
+  personEditor(button);return;
+ }
+ const book=grades.forCourse(page.read().data),d=button.dataset;
  const area=book.areas.find(a=>a.id===(d.editArea||d.addColumn||d.area));
  if(button.hasAttribute('data-new-area')||d.editArea)editor('area',area);
  else if(area&&(d.addColumn||d.editColumn))editor('column',area,area.columns.find(c=>c.id===d.editColumn));
 }
+function personEditor(button){
+ const data=page.read().data,id=button.dataset.person;
+ const person=data.students.find(s=>s.id===id),originalName=person?.name;
+ if(id&&!person)return;
+ const dialog=document.createElement('dialog');
+ dialog.className='grade-dialog';dialog.setAttribute('aria-labelledby','personTitle');
+ dialog.innerHTML='<form><h2 id="personTitle">'+(person?'Name bearbeiten':'Person hinzufügen')+'</h2><label>Name<input required maxlength="100" autocomplete="off"></label><div class="grade-actions"><button class="part-button primary">Speichern</button><button type="button" class="part-button" data-cancel>Abbrechen</button>'+
+  (person?'<button type="button" class="part-button" data-remove>Aus Kurs entfernen</button>':'')+'</div><p role="status"></p></form>';
+ const form=dialog.querySelector('form'),input=form.querySelector('input'),feedback=form.querySelector('[role=status]');
+ input.value=originalName||'';
+ let busy=false;
+ async function apply(remove){
+  if(busy)return;
+  if(page.read().data!==data||(person&&(!data.students.includes(person)||person.name!==originalName))){
+   feedback.textContent='Die Schülerliste hat sich geändert. Bitte erneut öffnen.';return;
+  }
+  const name=input.value.trim();
+  if(remove){
+   try{if(!page.removeStudent(data,id))return;}
+   catch(error){feedback.textContent=error.message;return;}
+  }else{
+   if(!name){feedback.textContent='Bitte einen Namen eingeben.';input.focus();return;}
+   if(person)person.name=name;
+   else data.students.push({id:makeId(),name});
+  }
+  busy=true;
+  form.querySelectorAll('input,button').forEach(el=>el.disabled=true);
+  try{await page.save();status('Schülerliste gespeichert.');}
+  catch(error){status('Speichern fehlgeschlagen. Speicherstatus prüfen: '+error.message);}
+  finally{refresh();dialog.close();}
+ }
+ form.onsubmit=event=>{event.preventDefault();apply(false);};
+ if(person)form.querySelector('[data-remove]').onclick=()=>apply(true);
+ form.querySelector('[data-cancel]').onclick=()=>dialog.close();
+ dialog.oncancel=event=>{if(busy)event.preventDefault();};
+ dialog.onclose=()=>{
+  dialog.remove();
+  const focus=id&&document.querySelector('[data-person="'+CSS.escape(id)+'"]');
+  (focus||document.querySelector('[data-add-person]'))?.focus({preventScroll:true});
+ };
+ document.body.append(dialog);dialog.showModal();input.focus();
+}
 function editor(kind,area,column){
  const data=page.read().data,original=data.gradebook,isArea=kind==='area';
- const areas=original?.areas||[],existing=isArea?area:column;
+ const book=grades.forCourse(data),areas=book.areas,existing=isArea?area:column;
  const dialog=document.createElement('dialog');dialog.className='grade-dialog';
  dialog.setAttribute('aria-labelledby','gradeEditorTitle');
  const positions=Array.from({length:areas.length+(area?0:1)},(_,i)=>'<option value="'+i+'">'+(i+1)+'</option>').join('');
@@ -121,9 +170,9 @@ function editor(kind,area,column){
  const form=dialog.querySelector('form'),fields=form.elements;
  fields.title.value=(isArea?area?.name:column?.title)||'';
  if(isArea){
-  fields.weight.value=area?.weight??Math.max(0,100-grades.weightTotal(original||grades.empty()));
+  fields.weight.value=area?.weight??Math.max(0,100-grades.weightTotal(book));
   fields.active.checked=area?.active??true;
-  fields.position.value=area?areas.indexOf(area):areas.length;
+  fields.position.value=area?areas.findIndex(a=>a.id===area.id):areas.length;
  }else fields.date.value=column?.date||'';
  const close=()=>dialog.close();
  form.querySelector('[data-cancel]').onclick=close;

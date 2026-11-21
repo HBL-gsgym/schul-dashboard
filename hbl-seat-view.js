@@ -194,6 +194,6 @@ window.hblCreateSeatView=function(host,page){
   focusDesk();
  });
  host.addEventListener('pointercancel',()=>{if(drag){drag=null;render();}});
- return {render};
+ return {render,isEditing:()=>!!draft};
 };
 })();

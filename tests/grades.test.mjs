@@ -6,6 +6,16 @@ import vm from 'node:vm';
 const context={module:{exports:{}}};
 vm.runInNewContext(readFileSync(new URL('../hbl-grades.js',import.meta.url),'utf8'),context);
 const api=context.module.exports;
+test('Sofortstart hat fünf unabhängige leere Spalten und wertet die erste Note zu 100 Prozent',()=>{
+ const book=api.forCourse({}),area=book.areas[0];
+ assert.equal(book.areas.length,1);assert.equal(api.weightTotal(book),100);
+ assert.equal(area.columns.length,5);assert.equal(new Set(area.columns.map(c=>c.id)).size,5);
+ assert.equal(api.results(book,'demo').total,null);
+ api.setScore(book,area.columns[4],'demo','2');
+ assert.equal(api.results(book,'demo').total,2);assert.deepEqual(Object.keys(area.columns[0].scores),[]);
+ assert.equal(api.results(api.forCourse({}),'demo').total,null);
+ const existing=api.empty();assert.equal(api.forCourse({gradebook:existing}),existing);
+});
 function example(){
  const book=api.empty();
  for(const [position,weight] of [40,60].entries()){
