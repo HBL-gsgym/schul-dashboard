@@ -24,6 +24,37 @@ function example(){
  }
  return book;
 }
+test('Sek I gewichtet alle Einzelleistungen je Bereich über das Jahr, auch bisher unzugeordnete',()=>{
+ const book=example(),[a,b]=book.areas;
+ for(const area of [a,b]){
+  area.columns[0].term='first';area.columns[1].term='second';
+ }
+ a.columns[0].scores.demo=1;a.columns[1].scores.demo=4;
+ a.columns.push({id:'weiter',term:'second',scores:{demo:4}});
+ b.columns[0].scores.demo=1;b.columns[1].scores.demo=3;
+ assert.equal(api.results(book,'demo','first').total,1);
+ assert.equal(api.results(book,'demo','second').total.toFixed(2),'3.40');
+ assert.equal(api.results(book,'demo','year').total.toFixed(2),'2.40');
+ delete b.columns[0].term;
+ assert.equal(api.results(book,'demo','first').total,null);
+ assert.equal(api.results(book,'demo','year').total.toFixed(2),'2.40');
+ book.mode='sek2';
+ assert.deepEqual([...api.periods(book)],['first','second']);
+ assert.equal(api.results(book,'demo','year').total,null);
+ assert.equal(api.results(book,'demo','second').total.toFixed(2),'3.40');
+});
+test('Manuelle Zeugnisnoten bleiben getrennt von Berechnung und schützen auch null Punkte',()=>{
+ const book=api.empty();api.setScale(book,'points');
+ api.setReportMark(book,'year','demo','0');api.setReportMark(book,'first','demo','12');
+ assert.equal(book.reportMarks.year.demo,0);
+ assert.equal(api.results(book,'demo').total,null);
+ assert.equal(api.hasStudent(book,'demo'),true);
+ assert.throws(()=>api.setScale(book,'grades'));
+ book.mode='sek2';assert.throws(()=>api.setReportMark(book,'year','demo','1'));
+ assert.equal(book.reportMarks.year.demo,0);
+ api.setReportMark(book,'first','demo','');book.mode='sek1';
+ api.setReportMark(book,'year','demo','');assert.equal(api.hasStudent(book,'demo'),false);
+});
 test('Issue #6: 40 und 60 Prozent ergeben 1,90, unabhängig von anderen Schülern',()=>{
  const book=example();
  const [a,b]=book.areas;

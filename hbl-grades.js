@@ -5,18 +5,20 @@ const empty=()=>({version:1,scale:'grades',areas:[]});
 function forCourse(data){
  if(data?.gradebook)return data.gradebook;
  const book=empty();
- const columns=Array.from({length:5},(_,i)=>({id:'note-'+(i+1),title:'Note '+(i+1),date:'',scores:{}}));
+ const columns=Array.from({length:5},(_,i)=>({id:'note-'+(i+1),title:'Note '+(i+1),date:'',term:'first',scores:{}}));
  book.areas.push({id:'noten',name:'Noten',weight:100,active:true,columns});
  return book;
 }
 const limits=scale=>scale==='points'?[0,15]:[1,6];
 const columns=book=>book.areas.flatMap(area=>area.columns);
 const hasScores=column=>Object.keys(column.scores).length>0;
-const hasStudent=(book,id)=>!!book&&columns(book).some(column=>Object.hasOwn(column.scores,id));
+const hasStudent=(book,id)=>!!book&&(columns(book).some(column=>Object.hasOwn(column.scores,id))||
+ Object.values(book.reportMarks||{}).some(marks=>Object.hasOwn(marks,id)));
+const periods=book=>book.mode==='sek2'?['first','second']:['first','second','year'];
 
 function setScale(book,scale){
  if(!['grades','points'].includes(scale))throw Error('Unbekannte Notenskala.');
- if(book.scale!==scale&&columns(book).some(hasScores))throw Error('Die Skala ist festgelegt, solange Noten eingetragen sind.');
+ if(book.scale!==scale&&(columns(book).some(hasScores)||Object.values(book.reportMarks||{}).some(marks=>Object.keys(marks).length)))throw Error('Die Skala ist festgelegt, solange Noten eingetragen sind.');
  book.scale=scale;
 }
 function saveArea(book,id,{name,weight,active,position}){
@@ -46,11 +48,17 @@ function setScore(book,column,studentId,value){
 function weightTotal(book){
  return book.areas.reduce((sum,area)=>sum+(area.active?Math.round(area.weight*100):0),0)/100;
 }
-function results(book,studentId){
+function setReportMark(book,period,id,value){
+ if(!periods(book).includes(period))throw Error('Dieser Zeitraum gehört nicht zur aktuellen Kursberechnung.');
+ book.reportMarks??={};
+ const scores=book.reportMarks[period]??={};
+ setScore(book,{scores},id,value);
+}
+function results(book,studentId,period='year'){
  const means=new Map();
- let total=0,complete=weightTotal(book)===100;
+ let total=0,complete=periods(book).includes(period)&&weightTotal(book)===100;
  for(const area of book.areas){
-  const values=area.columns.filter(c=>Object.hasOwn(c.scores,studentId)).map(c=>c.scores[studentId]);
+  const values=area.columns.filter(c=>(period==='year'||c.term===period)&&Object.hasOwn(c.scores,studentId)).map(c=>c.scores[studentId]);
   const mean=values.length?values.reduce((sum,n)=>sum+n,0)/values.length:null;
   means.set(area.id,mean);
   if(area.active&&area.weight>0){
@@ -60,7 +68,7 @@ function results(book,studentId){
  }
  return {means,total:complete?total:null};
 }
-const model={empty,forCourse,limits,hasStudent,setScale,saveArea,removeArea,removeColumn,setScore,weightTotal,results};
+const model={empty,forCourse,limits,hasStudent,periods,setScale,saveArea,removeArea,removeColumn,setScore,setReportMark,weightTotal,results};
 if(typeof module!=='undefined'&&module.exports){module.exports=model;return;}
 root.HblGradebook=model;
 })(typeof window==='undefined'?globalThis:window);
