@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.18 · Pilotprojekt · 21.11.2026**
+**Stand: v5.9.19 · Pilotprojekt · 21.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -43,9 +43,9 @@ Einen Platz antippen und eine Person aus der gemeinsamen Kursliste auswählen. I
 
 ## Kursübersicht und Noten in v5.9.13
 
-**Kurs öffnen** führt zur Übersicht mit Sitzplan. Über **Mitarbeit** und **Noten** öffnest du die jeweilige Seite für denselben Kurs. Die Schülerliste wird weiterhin in der Mitarbeit gepflegt. Vorhandene Mitarbeit-Direktlinks funktionieren weiter.
+**Kurs öffnen** führt zur Übersicht mit Sitzplan. Unter den Schaltflächen **Mitarbeit** und **Noten** kannst du die **Schülerliste** aufklappen. Tippe auf einen Namen zum Bearbeiten oder auf **+ Person hinzufügen**. Die Namen gelten für alle drei Ansichten. Personen mit eingetragenen Noten sind vor dem Entfernen geschützt.
 
-Unter **Noten → Bewertungsbereiche und Skala** wählst du pro Kurs Noten von 1 bis 6 oder Punkte von 0 bis 15. Lege Bereiche mit Prozentgewichten an und füge mit **+ Nachweis** einzelne Spalten hinzu. Titel und Datum sind optional. Über den Spaltenkopf kannst du einen Nachweis bearbeiten. Bereiche lassen sich umsortieren oder vorübergehend deaktivieren. Bewertete Bereiche und Spalten sind vor dem Entfernen geschützt.
+Neue Notenbücher starten mit **Note 1 bis Note 5** pro Person im Bereich **Noten (100 %)**. Du kannst direkt eine beliebige Spalte ausfüllen. Weitere Spalten, andere Gewichte und die Skala (Noten 1–6 oder Punkte 0–15) lassen sich unter **Bewertungsbereiche und Skala** einstellen. Über den Spaltenkopf kannst du Titel und Datum bearbeiten. Eigene Bereiche lassen sich umsortieren oder vorübergehend deaktivieren. Bewertete Bereiche und Spalten sind vor dem Entfernen geschützt.
 
 Jeder Bereichsmittelwert berücksichtigt die ausgefüllten Noten. Ein gewichteter Gesamtwert erscheint, sobald die aktiven Gewichte zusammen 100 % ergeben und für die Person in jedem positiv gewichteten Bereich mindestens eine Note steht. Der angezeigte Wert hat zwei Nachkommastellen. Die Entscheidung über eine Endnote bleibt bei der Lehrkraft. Die Einträge werden mit dem persönlichen Dashboard gespeichert. Im Pilotbetrieb ausschließlich erfundene Namen und Noten verwenden.
 
