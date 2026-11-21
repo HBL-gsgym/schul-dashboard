@@ -37,6 +37,24 @@ window.hblCreateSeatView=function(host,page){
   const {rooms,templates}=page.rooms();
   return '<div class="seat-tools"><label>Raum <input data-room list="seat-room-options" maxlength="40" required placeholder="z. B. 226" value="'+esc(draft.room)+'"></label><datalist id="seat-room-options">'+rooms.map(name=>'<option value="'+esc(name)+'"></option>').join('')+'</datalist></div><div class="seat-tools" data-template-tools>'+templateTools(draft.room,templates)+'</div>';
  }
+ function printPlan(){
+  const {meta,data}=page.read(),plan=data.seating;
+  const people=new Map(data.students.map(p=>[p.id,p.name]));
+  const width=model.width*50;
+  const bottom=Math.max(...plan.desks.map(d=>d.y+model.size(d).h));
+  const tables=plan.desks.map(d=>d.seats.map((id,i)=>{
+   const x=(d.x+(d.vertical?0:i*3))*50,y=50+(d.y+(d.vertical?i*3:0))*34;
+   const name=people.get(id)||'Frei';
+   const font=Math.min(21,235/Math.max(1,Array.from(name).length));
+   return '<rect x="'+x+'" y="'+y+'" width="150" height="102" fill="white" stroke="black"/><text x="'+(x+75)+'" y="'+(y+57)+'" font-size="'+font+'">'+esc(name)+'</text>';
+  }).join('')).join('');
+  document.querySelector('.seat-print-sheet')?.remove();
+  const sheet=document.createElement('section');sheet.className='seat-print-sheet';
+  sheet.innerHTML='<h1>Sitzplan · '+esc(meta.subject)+' · '+esc(meta.group)+'</h1><p>'+esc(plan.room?'Raum '+plan.room:'')+'</p><svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 0 '+(width+4)+' '+(bottom*34+52)+'" preserveAspectRatio="xMidYMin meet" text-anchor="middle"><text x="'+width/2+'" y="30" font-size="26">Tafel</text>'+tables+'</svg>';
+  document.body.append(sheet);
+  window.addEventListener('afterprint',()=>sheet.remove(),{once:true});
+  try{window.print();}catch(error){sheet.remove();throw error;}
+ }
  function render(){
   const data=page.read().data;
   if(draft&&(data!==source||baseline!==data?.seating||rosterKey!==JSON.stringify(data?.students))){
@@ -66,7 +84,7 @@ window.hblCreateSeatView=function(host,page){
    const handle=editing?'<button type="button" class="seat-handle" data-handle="'+esc(d.id)+'" aria-label="'+label+' verschieben">'+label+' ↔</button>':'<small>'+label+'</small>';
    return '<div class="seat-desk'+(d.vertical?' vertical':'')+(editing&&d.id===selected?' selected':'')+'" style="left:'+d.x/model.width*100+'%;top:'+d.y*unitY+'px;width:'+w/model.width*100+'%;height:'+h*unitY+'px"><div>'+handle+'<div class="seat-places">'+seats+'</div></div></div>';
   }).join('');
-  const controls=!draft?button('edit',capacity?'Sitzplan bearbeiten':'Sitzplan einrichten'):
+  const controls=!draft?button('edit',capacity?'Sitzplan bearbeiten':'Sitzplan einrichten')+(capacity?button('print','Drucken / PDF'):''):
    preview?button('accept','Verteilung übernehmen')+button('reject','Vorschau verwerfen'):
    button('single','+ Einzeltisch')+button('double','+ Doppeltisch')+button('shuffle','Zufällig verteilen',!students.length||!capacity)+button('undo','Rückgängig',!undo);
   const board='<div class="seat-scroll" tabindex="0" aria-label="Raum mit Sitzplätzen"><div class="seat-room"><div class="seat-front">Tafel</div><div class="seat-board" style="--seat-columns:'+model.width+';height:'+Math.max(220,(bottom+(editing?3:0))*unitY)+'px">'+desks+(capacity?'':'<span class="seat-empty">Noch keine Tische eingerichtet.</span>')+'</div></div></div>';
@@ -124,6 +142,7 @@ window.hblCreateSeatView=function(host,page){
   const desk=currentDesk(),data=page.read().data;
   try{
    switch(el.dataset.action){
+    case 'print':printPlan();break;
     case 'edit':
      source=data;baseline=data.seating;rosterKey=JSON.stringify(data.students);
      draft=structuredClone(baseline||model.empty());

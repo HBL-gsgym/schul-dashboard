@@ -78,3 +78,14 @@ button.seat-place{cursor:pointer}
 .grade-period select,.grade-total button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px}
 .grade-total button{cursor:pointer;min-height:36px}
 .grade-total small{display:block;font-weight:normal;white-space:nowrap}
+
+.seat-print-sheet{display:none}
+@media print{
+ @page seatplan{size:A4 landscape;margin:10mm}
+ body:has(>.seat-print-sheet){page:seatplan;display:block!important;margin:0!important;padding:0!important;background:white!important}
+ body:has(>.seat-print-sheet)>:not(.seat-print-sheet){display:none!important}
+ .seat-print-sheet{display:block;color:black;background:white;font-family:Arial,sans-serif;break-inside:avoid}
+ .seat-print-sheet h1{font-size:16pt;margin:0}
+ .seat-print-sheet p{font-size:11pt;margin:1mm 0}
+ .seat-print-sheet svg{display:block;width:100%;height:165mm}
+}
