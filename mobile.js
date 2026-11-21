@@ -37,15 +37,26 @@
     }else if(document.getElementById('dashboardBoard')){
       const items=[['⌂','Heute','unterricht'],['☑','Aufgaben','aufgaben'],['▦','Kurse','mitarbeit'],['▦','Plan','stundenplan']];
       for(const [icon,label,id] of items){
-        nav.appendChild(createButton(icon,label,()=>{
+        const shortcut=createButton(icon,label,()=>{
           const tile=document.querySelector('.dashboard-tile[data-tile="'+id+'"]');
           if(!tile)return;
           if(tile.classList.contains('tile-collapsed') && typeof hblSetTileFold==='function')hblSetTileFold(tile,false,true);
           jumpTo(tile);
-        }));
+        });
+        shortcut.dataset.tileLink=id;nav.appendChild(shortcut);
       }
       nav.appendChild(createButton('⚙','Mein HBL',()=>window.openMeinHbl()));
-      nav.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';
+      function syncShortcuts(){
+        let visible=1;
+        for(const button of nav.querySelectorAll('[data-tile-link]')){
+          const tile=document.querySelector('.dashboard-tile[data-tile="'+button.dataset.tileLink+'"]');
+          button.hidden=!tile||tile.hidden;
+          if(!button.hidden)visible++;
+        }
+        nav.style.gridTemplateColumns='repeat('+visible+',minmax(0,1fr))';
+      }
+      syncShortcuts();
+      new MutationObserver(syncShortcuts).observe(document.getElementById('dashboardBoard'),{attributes:true,attributeFilter:['hidden'],subtree:true});
     }else{return;}
     document.body.appendChild(nav);
   }

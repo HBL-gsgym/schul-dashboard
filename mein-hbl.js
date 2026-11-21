@@ -4,9 +4,36 @@ window.openMeinHbl=function(){
  dialog.className='mein-hbl';
  dialog.setAttribute('aria-labelledby','meinHblTitle');
  const opener=document.activeElement;
- dialog.innerHTML='<header><h2 id="meinHblTitle">Mein HBL</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button disabled>Benachrichtigungen</button><button data-design>Design</button><button disabled>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p>Weitere Einstellungen folgen mit den nächsten Etappen.</p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
+ dialog.innerHTML='<header><h2 id="meinHblTitle">Mein HBL</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button disabled>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p>Weitere Einstellungen folgen mit den nächsten Etappen.</p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
  const get=selector=>dialog.querySelector(selector);
  const byId=id=>document.getElementById(id);
+ const tilesButton=get('[data-tiles]');
+ tilesButton.onclick=()=>{
+  openSection(tilesButton);
+  const app=hblLayoutProfile()==='app';
+  const hint=document.createElement('p');
+  hint.textContent=app?'Diese Einstellungen gelten für deine installierte App.':'Diese Einstellungen gelten für deinen Browser. Links, Stundenplan und Kurse bleiben erreichbar.';
+  extra.append(hint);
+  function renderRows(){
+   extra.querySelectorAll('fieldset').forEach(row=>row.remove());
+   for(const el of byId('dashboardBoard').children){
+    const spec=HBL_TILE_SPECS.find(s=>s.id===el.dataset.tile);
+    if(!spec)continue;
+    const row=document.createElement('fieldset'),title=document.createElement('legend');
+    title.textContent=spec.title;row.append(title);
+    function option(label,checked,disabled,change){
+     const wrap=document.createElement('label'),control=document.createElement('input');
+     control.type='checkbox';control.checked=checked;control.disabled=disabled;
+     control.onchange=()=>change(control.checked);wrap.append(control,label);row.append(wrap);
+    }
+    option('Auf Dashboard anzeigen',!el.hidden,!app&&spec.core,value=>{el.hidden=!value;hblPersistTileLayout();});
+    option('Minimiert starten',el.classList.contains('tile-collapsed'),false,value=>hblSetTileFold(el,value,true));
+    extra.append(row);
+   }
+  }
+  action('Standardansicht wiederherstellen',()=>{hblResetTileLayout();renderRows();});
+  renderRows();
+ };
  const accountId=()=>window.hblCloudUser?.()?.id;
  const initialId=accountId();
  let handedOff=false;

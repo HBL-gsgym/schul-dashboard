@@ -1,7 +1,7 @@
 /* HBL v5.5 – Offline-App-Shell & Push-Empfang. Keine Nutzerdaten im SW-Cache. */
-const CACHE="hbl-pwa-shell-v5104-dashboard-kopf";
-const ASSETS=["./mein-hbl.js?v=5.10.3","./hbl-grades.js?v=5.9.20","./hbl-seating.js?v=5.9.21","./hbl-seat-rating.js?v=5.9.21","./hbl-seat-view.js?v=5.9.22","./hbl-course-page.js?v=5.9.20","./hbl-course-page.css?v=5.9.22","./hbl-courses.js?v=5.9.13","./hbl-course-ids.js?v=5.9.10","./","./index.html","./mobile.css?v=3.3","./cloud.css?v=5.10.4",
- "./hbl-v55.css?v=5.9.8-plan","./hbl-v56.css?v=5.6","./hbl-v57.css?v=5.9.7-chat","./hbl-v58.css?v=5.8","./hbl-v59.css?v=5.9.11-courses","./mobile.js?v=5.10.2","./cloud.js?v=5.10.3",
+const CACHE="hbl-pwa-shell-v5105-layoutprofile";
+const ASSETS=["./mein-hbl.js?v=5.10.5","./hbl-grades.js?v=5.9.20","./hbl-seating.js?v=5.9.21","./hbl-seat-rating.js?v=5.9.21","./hbl-seat-view.js?v=5.9.22","./hbl-course-page.js?v=5.9.20","./hbl-course-page.css?v=5.9.22","./hbl-courses.js?v=5.9.13","./hbl-course-ids.js?v=5.9.10","./","./index.html","./mobile.css?v=3.3","./cloud.css?v=5.10.4",
+ "./hbl-v55.css?v=5.9.8-plan","./hbl-v56.css?v=5.6","./hbl-v57.css?v=5.9.7-chat","./hbl-v58.css?v=5.8","./hbl-v59.css?v=5.9.11-courses","./mobile.js?v=5.10.5","./cloud.js?v=5.10.3",
  "./hbl-v55.js?v=5.9.9-today","./hbl-v56.js?v=5.9.5-invites","./hbl-v57.js?v=5.9.7-chat","./hbl-v58.js?v=5.9.5","./hbl-v59.js?v=5.9.3","./manifest.webmanifest","./hbl-icon.svg","./hbl-icon-192.png","./hbl-icon-512.png","./hbl-icon-180.png"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));

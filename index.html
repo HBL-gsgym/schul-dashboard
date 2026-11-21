@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v5.10.4</title>
+<title>Schul-Dashboard HBL · v5.10.5</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1343,7 +1343,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seat-view.js?v=5.9.22"></script>
 <script src="./hbl-course-page.js?v=5.9.20"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=5.9.22">
-<script defer src="./mein-hbl.js?v=5.10.3"></script><script defer src="./mobile.js?v=5.10.2"></script>
+<script defer src="./mein-hbl.js?v=5.10.5"></script><script defer src="./mobile.js?v=5.10.5"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 <script defer src="./cloud.js?v=5.10.3"></script>
@@ -1352,7 +1352,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script defer src="./hbl-v57.js?v=5.9.7-chat"></script>
 <script defer src="./hbl-v58.js?v=5.9.5"></script>
 <script defer src="./hbl-v59.js?v=5.9.3"></script>
-<style>.mein-hbl{box-sizing:border-box;width:min(28rem,94vw);max-height:85dvh;overflow:auto;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem}.mein-hbl::backdrop{background:#10182077}.mein-hbl header{display:flex;align-items:center;justify-content:space-between}.mein-hbl section:not([hidden]),.mein-hbl label{display:grid;gap:.5rem}.mein-hbl button,.mein-hbl select{min-height:44px;padding:.5rem .8rem;border:1px solid var(--line);border-radius:8px;color:inherit;background:var(--panel2);font:inherit}.mein-hbl button:disabled{opacity:.6}.mein-hbl footer{border-top:1px solid var(--line);padding-top:.75rem}.mein-hbl a{color:var(--accent)}</style></head>
+<style>#dashboardBoard>.dashboard-tile[hidden],#hblMobileNav button[hidden]{display:none!important}.mein-hbl fieldset{min-width:0;border:1px solid var(--line);border-radius:8px}.mein-hbl fieldset label{display:flex;align-items:center;min-height:40px}.mein-hbl{box-sizing:border-box;width:min(28rem,94vw);max-height:85dvh;overflow:auto;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem}.mein-hbl::backdrop{background:#10182077}.mein-hbl header{display:flex;align-items:center;justify-content:space-between}.mein-hbl section:not([hidden]),.mein-hbl label{display:grid;gap:.5rem}.mein-hbl button,.mein-hbl select{min-height:44px;padding:.5rem .8rem;border:1px solid var(--line);border-radius:8px;color:inherit;background:var(--panel2);font:inherit}.mein-hbl button:disabled{opacity:.6}.mein-hbl footer{border-top:1px solid var(--line);padding-top:.75rem}.mein-hbl a{color:var(--accent)}</style></head>
 <body>
 <script>
 /* =========================
@@ -2213,13 +2213,16 @@ const HBL_TILE_SPECS=[
  {id:"vorbereitung-diese",selector:".planninggrid > .planningpanel:nth-child(3)",title:"Vorbereitung – diese Woche",span:3},
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
  {id:"kalender",selector:".schoolyear-card",title:"Schuljahreskalender",span:12},
- {id:"links",selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
- {id:"stundenplan",selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
+ {id:"links",core:true,selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
+ {id:"stundenplan",core:true,selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
  {id:"faecher",selector:"section.subjects",title:"Fächer",span:12},
- {id:"mitarbeit",selector:"section.participation-overview",title:"Kurse",span:12}
+ {id:"mitarbeit",core:true,selector:"section.participation-overview",title:"Kurse",span:12}
 ];
 const HBL_TILE_WIDTHS=[2,3,4,6,12];
 let hblDraggedTile=null;
+const hblAppDisplay=matchMedia("(display-mode: standalone)");
+function hblLayoutProfile(){return hblAppDisplay.matches||navigator.standalone===true?"app":"desktop";}
+hblAppDisplay.addEventListener("change",()=>restoreDashboardTileLayout(prepDone));
 function hblTileById(id){
  const board=document.getElementById("dashboardBoard");
  return board?[...board.children].find(el=>el.dataset.tile===id):null;
@@ -2233,7 +2236,7 @@ function hblTileStore(){
   if(n.classList.contains("tile-collapsed"))collapsed[n.dataset.tile]=true;
   widths[n.dataset.tile]=Number(n.dataset.tileWidth)||3;
  }
- return {schema:1,order:nodes.map(n=>n.dataset.tile),collapsed,widths};
+ return {order:nodes.map(n=>n.dataset.tile),collapsed,widths,hidden:nodes.filter(n=>n.hidden).map(n=>n.dataset.tile)};
 }
 function hblPersistTileLayout(){
  const layout=hblTileStore();if(!layout)return;
@@ -2241,7 +2244,7 @@ function hblPersistTileLayout(){
   prepStatus("Ansicht geändert, aber nicht gespeichert: TESTVERSION · Browser-Speicherung aktiv.",true);
   return;
  }
- prepDone.__dashboardLayoutV1=layout;
+ prepDone.__dashboardLayoutsV2={...prepDone.__dashboardLayoutsV2,[hblLayoutProfile()]:layout};
  savePrepFile().catch(()=>{});
 }
 function hblSetTileFold(el,collapsed,persist=false){
@@ -2286,11 +2289,12 @@ function hblMoveTile(id,direction){
  tile.querySelector(".tile-grip")?.focus({preventScroll:true});
 }
 function hblResetTileLayout(){
- if(!confirm("Kacheln auf die ursprüngliche Reihenfolge, Breite und den ausgeklappten Zustand zurücksetzen?"))return;
+ if(!confirm("Für diese Ansicht alle Kacheln einblenden und Reihenfolge, Breite und Einklappzustand zurücksetzen?"))return;
  const board=document.getElementById("dashboardBoard");if(!board)return;
  for(const spec of HBL_TILE_SPECS){
   const tile=hblTileById(spec.id);if(!tile)continue;
   board.appendChild(tile);
+  tile.hidden=false;
   hblSetTileFold(tile,false);
   hblSetTileWidth(tile,spec.span);
  }
@@ -2298,16 +2302,16 @@ function hblResetTileLayout(){
 }
 function restoreDashboardTileLayout(data){
  const board=document.getElementById("dashboardBoard");if(!board)return;
- const saved=data&&typeof data.__dashboardLayoutV1==="object"?data.__dashboardLayoutV1:null;
- if(!saved)return;
+ const saved=data?.__dashboardLayoutsV2?.[hblLayoutProfile()]??data?.__dashboardLayoutV1??{};
  const names=new Set(HBL_TILE_SPECS.map(x=>x.id));
- if(Array.isArray(saved.order)){
+ {
   // Nur die bekannten IDs sortieren. Neue Kacheln bleiben erhalten.
-  const order=[...new Set(saved.order.filter(id=>typeof id==="string"&&names.has(id)))];
+  const order=new Set([...(Array.isArray(saved.order)?saved.order:[]).filter(id=>names.has(id)),...names]);
   for(const id of order){const tile=hblTileById(id);if(tile)board.appendChild(tile);}
  }
  for(const spec of HBL_TILE_SPECS){
   const tile=hblTileById(spec.id);if(!tile)continue;
+  tile.hidden=(hblLayoutProfile()==="app"||!spec.core)&&Array.isArray(saved.hidden)&&saved.hidden.includes(spec.id);
   hblSetTileFold(tile,Boolean(saved.collapsed?.[spec.id]));
   hblSetTileWidth(tile,saved.widths?.[spec.id]??spec.span);
  }
@@ -2410,7 +2414,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v5.10.4 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v5.10.5 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>

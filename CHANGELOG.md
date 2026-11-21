@@ -4,6 +4,7 @@ Neue Einträge oben ergänzen. Die Spalte „Umgesetzt von“ nennt die Person o
 
 | Datum · Version | Umgesetzt von | Änderung | Geprüft durch |
 | --- | --- | --- | --- |
+| 21.11.2026 · v5.10.5 | Codex | Kacheln pro Browser- und App-Ansicht ausblenden, minimieren und zurücksetzen. | Automatisierte Tests; echtes Android-Gerät offen. |
 | 21.11.2026 · v5.10.4 | Codex | Doppelte Design-, Konto- und Cloud-Bedienung aus dem Dashboard-Kopf entfernt. Speicherstatus und Chat bleiben sichtbar. | Automatisierte Tests. |
 | 21.11.2026 · v5.10.3 | Codex | Mein Konto mit Passwortwechsel, Daten und Synchronisierung sowie Zugang zur vorhandenen Owner-Verwaltung eingebunden. | Automatisierte Tests, Endgeräte und echter Passwortwechsel offen. |
 | 21.11.2026 · v5.10.2 | Codex | Mein HBL mit Desktop- und Handy-Einstieg, Designauswahl und Menüfuß ergänzt (Etappe 1 für v6.0). | Automatisierte Tests, echter Android-Test offen. |
