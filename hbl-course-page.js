@@ -11,14 +11,23 @@ const periodLabel={first:'1. Halbjahr',second:'2. Halbjahr',year:'Schuljahr'};
 function link(view,label,style='part-button'){
  return '<a class="'+style+'" href="?'+view+'='+encodeURIComponent(page.id)+'">'+label+'</a>';
 }
+// Eine gemeinsame, zugängliche Kursnavigation für alle drei bisherigen Routen.
+function courseTabs(courseId,selected){
+ const sections=[['kurs','Übersicht'],['mitarbeit','Mitarbeit'],['noten','Noten']];
+ return '<nav class="hbl-course-tabs" aria-label="Kursbereiche">'+sections.map(([view,label])=>
+  '<a class="hbl-course-tab'+(view===selected?' current':'')+'" href="?'+view+'='+encodeURIComponent(courseId)+'"'+(view===selected?' aria-current="page"':'')+'>'+label+'</a>'
+ ).join('')+'</nav>';
+}
 function status(message){
  const el=document.getElementById('gradeStatus');
  if(el)el.textContent=message;
 }
 function mount(options){
  page=options;
- document.body.innerHTML='<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a>'+
-  (page.mode==='noten'?link('kurs','Zur Kursübersicht','part-back'):'')+'</nav><header><h1 id="coursePageTitle">Kurs wird geladen …</h1></header><div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>';
+ document.body.innerHTML='<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
+  '<header class="hbl-course-heading"><p class="hbl-course-eyebrow">MEIN KURS</p><h1 id="coursePageTitle">Kurs wird geladen …</h1><p class="hbl-course-meta" id="coursePageMeta"></p></header>'+
+  courseTabs(page.id,page.mode==='noten'?'noten':'kurs')+
+  '<div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>';
  const host=document.getElementById('coursePageContent');
  host.addEventListener('click',onClick);
  host.addEventListener('change',onChange);
@@ -30,11 +39,12 @@ function refresh(){
  const title=document.getElementById('coursePageTitle');
  if(!meta){title.textContent='Kurs nicht gefunden';host.replaceChildren();return;}
  const name=meta.subject+' · '+meta.group;
- title.textContent=page.mode==='noten'?'Noten · '+name:name;
- document.title=title.textContent+' · Schul-Dashboard';
+ title.textContent=name;
+ document.getElementById('coursePageMeta').textContent=(data?.students?.length??0)+' Lernende · '+(page.mode==='noten'?'Notenbuch':'Sitzplan und Schülerliste');
+ document.title=(page.mode==='noten'?'Noten · ':'Kurs · ')+name+' · Schul-Dashboard';
  if(page.mode==='kurs'){
   if(!host.querySelector('.seat-section')){
-   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><nav class="course-choices" aria-label="Kursbereiche">'+link('mitarbeit','Mitarbeit')+link('noten','Noten')+'</nav><details class="part-pane course-roster"><summary></summary><button type="button" class="part-button" data-add-person>+ Person hinzufügen</button><ul></ul></details>';
+   host.innerHTML='<section class="part-pane seat-section" aria-label="Sitzplan"></section><details class="part-pane course-roster"><summary></summary><button type="button" class="part-button" data-add-person>+ Person hinzufügen</button><ul></ul></details>';
    seatView=window.hblCreateSeatView(host.querySelector('.seat-section'),page);
   }
   seatView.render();
@@ -257,5 +267,5 @@ function editor(kind,area,column){
  dialog.onclose=()=>dialog.remove();
  document.body.appendChild(dialog);dialog.showModal();fields.title.focus();
 }
-window.HblCoursePage={mount,refresh};
+window.HblCoursePage={mount,refresh,courseTabs};
 })();

@@ -95,3 +95,16 @@ button.seat-place{cursor:pointer}
 .seat-pdf-dialog h2{margin:0 0 10px}
 .seat-pdf-actions{display:flex;flex-wrap:wrap;gap:10px}
 .seat-pdf-actions a,.seat-pdf-actions button{border:1px solid var(--line,#ddd);border-radius:9px;padding:11px 13px;background:var(--panel2,#eef2f5);color:var(--text,#18202a);font:700 14px Arial,sans-serif;text-decoration:none;cursor:pointer}
+
+/* HBL v7.0: drei Bereiche für alle Kurse, der Sitzplan bleibt der Hauptinhalt. */
+.hbl-course-heading{margin:6px 0 0}
+.hbl-course-heading h1{margin:5px 0 3px}
+.hbl-course-eyebrow{margin:0;color:var(--muted);font-size:.72rem;letter-spacing:.12em;font-weight:800}
+.hbl-course-meta{margin:0 0 8px;color:var(--muted);font-size:.88rem}
+.hbl-course-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 20px}
+.hbl-course-tab{min-height:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;padding:11px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--text);font-size:1rem;font-weight:750;text-decoration:none;box-shadow:var(--shadow)}
+.hbl-course-tab:hover{border-color:var(--accent);text-decoration:none}
+.hbl-course-tab[aria-current="page"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.hbl-course-tab:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.course-workspace .seat-section{margin-bottom:15px}
+@media(max-width:710px){.hbl-course-tabs{gap:6px;margin:12px 0 15px}.hbl-course-tab{padding:10px 5px;min-height:46px;font-size:.88rem}.hbl-course-heading h1{font-size:clamp(22px,5vw,30px)}}
