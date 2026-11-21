@@ -1,7 +1,7 @@
 /* Positionen in Rastereinheiten. Jeder Platz ist durch Tisch-ID und Sitzindex bestimmt. */
 (function(root){
 'use strict';
-const width=24;
+const width=32;
 const empty=()=>({version:1,desks:[]});
 const roomName=value=>typeof value==='string'?value.trim().replace(/\s+/g,' '):'';
 const roomKey=value=>roomName(value).toLocaleLowerCase('de-DE');

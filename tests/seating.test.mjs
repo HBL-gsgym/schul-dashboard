@@ -5,6 +5,18 @@ import vm from 'node:vm';
 const ctx={module:{exports:{}},structuredClone};
 vm.runInNewContext(readFileSync(new URL('../hbl-seating.js',import.meta.url),'utf8'),ctx);
 const s=ctx.module.exports;
+test('Vier Doppeltische in einer Reihe lassen vier Rasterspalten als Mittelgang frei',()=>{
+ const plan=s.empty();
+ const starts=[1,8,18,25];
+ const desks=starts.map((x,i)=>{
+  const desk=s.add(plan,2,'d'+i);
+  s.move(plan,desk,x,3);
+  return desk;
+ });
+ assert.deepEqual(desks.map(d=>[d.x,d.y]),starts.map(x=>[x,3]));
+ assert.equal(desks[2].x-(desks[1].x+s.size(desks[1]).w),4);
+ assert.throws(()=>s.move(plan,desks[3],s.width-5,3));
+});
 test('Raumvorschlag berücksichtigt beide Wochen, Mehrdeutigkeit und ältere Pläne',()=>{
  const courses={a:{subject:'Mathe',group:'9'},b:{subject:'Physik',group:'8'}};
  const slots={'1-1':{A:{courseId:'a',room:' D1 '},B:{courseId:'a',room:'d1'}},'2-2':{A:{courseId:'b',room:'D2'}}};
@@ -29,7 +41,7 @@ test('Einzel- und Doppeltische passen in den Raum, ohne sich zu überdecken',()=
  assert.equal(a.seats.length,1);assert.equal(b.seats.length,2);
  assert.throws(()=>s.move(plan,b,a.x,a.y));
  s.move(plan,b,18,4);s.rotate(plan,b);assert.equal(b.vertical,true);
- assert.throws(()=>s.move(plan,b,23,4));
+ assert.throws(()=>s.move(plan,b,s.width-2,4));
  assert.throws(()=>s.move(plan,b,0,-1));
  assert.deepEqual([b.x,b.y],[18,4]);
 });

@@ -63,7 +63,7 @@ window.hblCreateSeatView=function(host,page){
   const controls=!draft?button('edit',capacity?'Sitzplan bearbeiten':'Sitzplan einrichten'):
    preview?button('accept','Verteilung übernehmen')+button('reject','Vorschau verwerfen'):
    button('single','+ Einzeltisch')+button('double','+ Doppeltisch')+button('shuffle','Zufällig verteilen',!students.length||!capacity)+button('undo','Rückgängig',!undo);
-  const board='<div class="seat-scroll" tabindex="0" aria-label="Raum mit Sitzplätzen"><div class="seat-room"><div class="seat-front">Tafel</div><div class="seat-board" style="height:'+Math.max(220,(bottom+(editing?3:0))*unitY)+'px">'+desks+(capacity?'':'<span class="seat-empty">Noch keine Tische eingerichtet.</span>')+'</div></div></div>';
+  const board='<div class="seat-scroll" tabindex="0" aria-label="Raum mit Sitzplätzen"><div class="seat-room"><div class="seat-front">Tafel</div><div class="seat-board" style="--seat-columns:'+model.width+';height:'+Math.max(220,(bottom+(editing?3:0))*unitY)+'px">'+desks+(capacity?'':'<span class="seat-empty">Noch keine Tische eingerichtet.</span>')+'</div></div></div>';
   const count=students.length-placed.size;
   const summary=capacity+' Plätze · '+placed.size+' belegt'+(count?' · '+count+' ohne Platz':'');
   const room=model.roomName(plan.room);
