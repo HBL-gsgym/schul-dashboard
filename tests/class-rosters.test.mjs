@@ -28,7 +28,7 @@ test('Class roster is shared by subject; marks, grades and seats remain subject-
  assert.equal(phys.marks.m1.d.rating,'+');
  assert.equal(phys.gradebook.areas[0].columns[0].scores.m2,2);
  assert.equal(phys.seating.desks[0].seats[0],'m2');
- assert.deepEqual(state.__participation.classes.ma.marks,{});
+ assert.equal(Object.keys(state.__participation.classes.ma.marks).length,0);
  assert.equal(rosters.ensure(state,cat,'2026/27',createId).changed,false);
 });
 

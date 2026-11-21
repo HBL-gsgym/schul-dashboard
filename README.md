@@ -1,3 +1,5 @@
+**v7.0.10 – Korrektur des Regressionstests:** Der Klassenlisten-Unit-Test vergleicht das leere Bewertungsobjekt über die Anzahl seiner Einträge, da das getestete Modul in einer separaten JavaScript-VM ausgeführt wird. Datenmodell und Fachfunktionen bleiben unverändert.
+
 **v7.0.9 – Gemeinsame Klassenbuchliste:** Klassen desselben Schuljahres (z. B. 9a) nutzen nun über ihre Fachkurse hinweg dieselben stabilen Schüler-IDs, Namens-/Aliasfelder und numerisch sortierten Klassenbuchnummern. Die Daten liegen weiterhin im privaten Benutzer-Snapshot unter `__classRostersV1`, die Fachkurse führen ihre eigenen Noten, Mitarbeit und Sitzpläne. Ein Import in der Mitarbeit aktualisiert bei eindeutigen Klassen die Namen nach Nummer und erhält vorhandene IDs und Bewertungen. Bei widersprüchlichen Altlisten mit unterschiedlichen Aliassen wird nichts stillschweigend zusammengelegt: In der Kursübersicht erscheint ein ausdrücklich zu bestätigender Nummernabgleich. Bei belegten Sitzplätzen/Noten in irgendeinem Fach ist Entfernen gesperrt. Andere Klassen und Schuljahre bleiben unabhängig; gemischte Oberstufenkurse sind vorerst nicht automatisch verknüpft. Keine Änderungen an Supabase-Schema, Konten, Rollen oder bestehenden Backend-Tabellen.**
 
 **v7.0.8 – Navigation:** Interne Kurslinks und Browser-Zurück verwenden dieselbe Dashboard-Seite. Der Browser-Regressionstest prüft DOM-Identität, Eingaben und Datenaktualisierung mit synthetischen Kursen.
@@ -28,7 +30,7 @@
 
 **v6.1.0 – Schwebende Schnellleiste für Desktop/Tablet:** Profil/Anmelden, Chat (inklusive Ungelesen-Zähler) und Einstellungen (bisher „Mein HBL“) sind über eine frei verschiebbare Leiste erreichbar. Über den Griff mit Maus/Touch ziehen, per Pfeiltasten verschieben, mit dem Minimalschalter einklappen, per Doppelklick die Position zurücksetzen. Position und Zustand werden lokal je Konto gespeichert und bei Größenwechsel in den Bildschirm begrenzt. Auf Kursseiten bleiben die Cloud-/Chat-Aktionen technisch vorhanden, aber die obere Leiste wird ausgeblendet; persönliche Einstellungen sowie Push/Chat bleiben erreichbar. Smartphone nutzt weiter die untere Navigation. Die Kursseiten verlinken für Kachel- und Designeinstellungen ins Dashboard.
 
-**Stand: v7.0.9 · Pilotprojekt · 21.11.2026**
+**Stand: v7.0.10 · Pilotprojekt · 21.11.2026**
 
 Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 

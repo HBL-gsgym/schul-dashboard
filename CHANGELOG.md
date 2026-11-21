@@ -1,3 +1,7 @@
+## v7.0.10 – 21.11.2026 · ChatGPT
+- Fehler in einem neuen Unit-Test behoben: ein leeres Bewertungsobjekt wird jetzt unabhängig von seiner VM-Laufzeitumgebung geprüft. Keine Änderungen an Schüler-IDs, Snapshot-Schema, Bewertungslogik oder Benutzerkonten.
+- Browser-/Automatiktests werden nach dieser Korrektur erneut ausgeführt.
+
 ## v7.0.9 – 21.11.2026 · ChatGPT
 - Neue private klassen-/schuljahresbezogene Schülerstammliste mit stabilen IDs und festen, individuell bearbeitbaren Klassenbuchnummern (numerische statt alphabetische Reihenfolge) für Übersicht, Mitarbeit und Noten; gleiche Klasse in mehreren Fächern teilt Schülerdaten, Fachleistungen/Sitzpläne bleiben getrennt.
 - Bestehende Kursdaten werden nur bei eindeutigem ID-/Namensabgleich verbunden; Noten, Mitarbeit und Sitzplätze werden konfliktgeprüft auf die kanonischen IDs übertragen. Bei voneinander abweichenden Aliaslisten muss der nummernbasierte Abgleich ausdrücklich bestätigt werden. Import aktualisiert Namen nach Nummer ohne Noten-/ID-Löschung; Entfernen benoteter/platzierter Personen wird klassenübergreifend verhindert.
