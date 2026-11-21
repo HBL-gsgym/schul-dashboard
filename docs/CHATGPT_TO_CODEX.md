@@ -1,6 +1,6 @@
 # Übergabe von ChatGPT an Codex – Entscheidungen und Projektkontext
 
-Für die Übergabe gilt die [gemeinsame Arbeitsregel](../AGENTS.md#zusammenarbeit-und-änderungsprotokoll). Kleine Änderungen aus dem GPT-Chat und Meilensteine aus Codex werden mit je einer Zeile im [Änderungsprotokoll](../CHANGELOG.md) festgehalten. Wenn ChatGPT Code zum manuellen Einspielen liefert, gibt es die passende Protokollzeile mit. Michael übernimmt sie beim Einspielen.
+Für die Übergabe gilt die [gemeinsame Arbeitsregel](../AGENTS.md#zusammenarbeit-und-änderungsprotokoll). Kleine Änderungen aus dem GPT-Chat und Meilensteine aus Codex werden mit je einer Zeile im [Änderungsprotokoll](../CHANGELOG.md) festgehalten. ChatGPT setzt ausdrücklich beauftragte kleine Änderungen selbst direkt im Repository auf `main` um und veröffentlicht sie auf GitHub. Die zugehörige Protokollzeile wird im selben Commit ergänzt.
 
 > **Aktuelle Produktentscheidung vom 20.11.2026:** [Persönlicher Arbeitsplatz und Schulportal](PRODUCT_ARCHITECTURE.md) beschreibt die weitere Richtung und die nächsten Schritte. Zunächst manuelle, vom Stundenplan unabhängige persönliche Kursverwaltung; Schulbetrieb ist eine spätere Etappe. Der Plan unterscheidet Zielbild und implementierten Stand und ersetzt keine Umsetzungsfreigabe.
 

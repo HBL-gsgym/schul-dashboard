@@ -4,4 +4,5 @@ Neue Einträge oben ergänzen. Die Spalte „Umgesetzt von“ nennt die Person o
 
 | Datum · Version | Umgesetzt von | Änderung | Geprüft durch |
 | --- | --- | --- | --- |
+| 21.11.2026 · v5.9.22 | ChatGPT | Veralteten Hinweis auf manuelles Einspielen in `docs/CHATGPT_TO_CODEX.md` korrigiert; direkter GitHub-Workflow dokumentiert. | Dokumentation gezielt geprüft; kein Anwendungstest erforderlich. |
 | 21.11.2026 · v5.9.22 | Codex | Druck- und PDF-Ansicht für Sitzpläne im A4-Querformat ergänzt. | Codex unter Windows mit Chrome, Michael auf Android. |
