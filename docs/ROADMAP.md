@@ -16,6 +16,11 @@
 | **v20.0** | **Schüler-Integration**: Konten, eigene Ansichten, bestätigte Klassen-/Kurszuordnung, sichere Klassenkommunikation | [#16](https://github.com/HBL-gsgym/schul-dashboard/issues/16) | Minderjährigen-/Datenschutzkonzept und schulische Freigaben zwingend |
 | **v25.0** | **Schulübergreifende Plattform**: mehrere Schulen, globale Administration, explizite interschulische Gruppen | [#14](https://github.com/HBL-gsgym/schul-dashboard/issues/14) | Erst nach den eigenständigen persönlichen und schulinternen Funktionen |
 
+## Für die spätere Schulverwaltung vorgemerkt (v10.0 und folgende)
+
+- Die in **v6.1.1** aus dem persönlichen Stundenplan-Editor entfernten Verwaltungsaktionen (Stundenplan-Import, JSON-/CSV-Export, Musterplan übernehmen und vollständiges Leeren) dürfen **nicht automatisch für alle Lehrkräfte** wieder sichtbar werden. Bei der schulischen Organisation ist gesondert zu entscheiden, welche Funktionen wirklich Schulleitung/Administratoren benötigen. Zugriff und Berechtigungen müssen vor Freigabe geprüft werden.
+- Die vorhandenen Funktionen bleiben als technischer Ausgangspunkt erhalten. **v6.1.1 entfernt nur UI-Einstiege**, keine gespeicherten Pläne und keine Daten.
+
 ## Verbindliche Leitplanken
 
 - **Ausbau in dieser Reihenfolge**, sofern der Projektverantwortliche ihn nicht später ausdrücklich anders beschließt.

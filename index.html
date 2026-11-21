@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v6.1.0</title>
+<title>Schul-Dashboard HBL · v6.1.1</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -2453,7 +2453,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.1.0 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.1.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -3464,7 +3464,7 @@ window.hblOpenPlanManager=function(force){
  if(!panel){
   panel=document.createElement('div');panel.id='hblPlanManager';panel.className='hbl-plan-manager';panel.hidden=true;
   panel.innerHTML=`<div><strong>Deinen Stundenplan gestalten</strong><p>Klicke auf einen der 20 Blöcke oder auf eine der drei Aufsichtszeiten. Wähle bei Unterricht einen eigenen Kurs und den Raum; bei Aufsichten den frei wählbaren Aufsichtsort. Wähle A, B oder beide Wochen. Unterschiedliche Wochen werden in zwei farbigen Hälften dargestellt. Die Mitarbeitstermine entstehen automatisch – je Unterrichtsblock ein Termin.</p><small>Schuljahr 2026/27 nach Brandenburg-Kalender. Ferien/Feiertage werden ausgelassen. Bereits bewertete Termine gehen beim Umplanen nicht verloren.</small></div>
-   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblOpenCourseManager()">Meine Kurse</button><button type="button" onclick="hblImportSamplePlan()">Bisherigen HBL-Plan übernehmen</button><button type="button" onclick="document.getElementById('hblScheduleFile').click()">📥 Stundenplan importieren</button><input id="hblScheduleFile" type="file" accept=".json,.csv,application/json,text/csv" hidden onchange="hblImportScheduleFile(this)"><button type="button" onclick="hblExportSchedule('json')">📤 Export JSON inkl. Aufsichten</button><button type="button" onclick="hblExportSchedule('csv')">📤 Export CSV</button><button type="button" onclick="hblClearTimetable()">Stundenplan leeren</button></div>`;
+   <div class="hbl-plan-manager-actions"><button type="button" onclick="hblOpenCourseManager()">Meine Kurse</button></div>`;
   host.appendChild(panel);
  }
  managerOpen=typeof force==='boolean'?force:!managerOpen;window.hblTimetableEditing=managerOpen;panel.hidden=!managerOpen;renderTimetable();

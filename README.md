@@ -1,8 +1,10 @@
 # Schul-Dashboard HBL
 
+**v6.1.1 – Stundenplan auf iPad/Desktop aufgeräumt:** In „Stundenplan bearbeiten“ wurden die zusätzlichen Aktionen Musterplan übernehmen, Dateiimport, JSON-/CSV-Export und „Stundenplan leeren“ aus der Oberfläche entfernt. **Meine Kurse** und das normale Bearbeiten von Unterricht und Aufsichten bleiben zugänglich; vorhandene Stundenplandaten werden nicht verändert. Die Import-/Export-Routinen bleiben vorerst ohne regulären UI-Einstieg erhalten und dürfen bei einem späteren schulischen Admin-Konzept gezielt mit Berechtigungsprüfung wieder aufgegriffen werden.
+
 **v6.1.0 – Schwebende Schnellleiste für Desktop/Tablet:** Profil/Anmelden, Chat (inklusive Ungelesen-Zähler) und Einstellungen (bisher „Mein HBL“) sind über eine frei verschiebbare Leiste erreichbar. Über den Griff mit Maus/Touch ziehen, per Pfeiltasten verschieben, mit dem Minimalschalter einklappen, per Doppelklick die Position zurücksetzen. Position und Zustand werden lokal je Konto gespeichert und bei Größenwechsel in den Bildschirm begrenzt. Auf Kursseiten bleiben die Cloud-/Chat-Aktionen technisch vorhanden, aber die obere Leiste wird ausgeblendet; persönliche Einstellungen sowie Push/Chat bleiben erreichbar. Smartphone nutzt weiter die untere Navigation. Die Kursseiten verlinken für Kachel- und Designeinstellungen ins Dashboard.
 
-**Stand: v6.1.0 · Pilotprojekt · 21.11.2026**
+**Stand: v6.1.1 · Pilotprojekt · 21.11.2026**
 
 Der zusätzliche Button **„Benutzer verwalten“** wurde aus dem Schulkalender entfernt. Berechtigte Owner öffnen die unveränderte Benutzer- und Chatverwaltung jetzt ausschließlich über **Mein HBL → Administration**. Sichtbarkeit und Aufruf erfolgen anhand der bestehenden Owner-Rolle; die serverseitigen Berechtigungen bleiben unverändert.
 
