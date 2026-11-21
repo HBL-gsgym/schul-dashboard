@@ -1,6 +1,6 @@
 # HBL: persönlicher Arbeitsplatz und Schulportal
 
-**Entscheidungsstand: 20.11.2026 · Ausgangscode v5.9.10.**
+**Entscheidungsstand des Architekturkonzepts: 20.11.2026 · Ausgangscode v5.9.10.** **Die aktuelle Umsetzungsreihenfolge wurde am 21.11.2026 geändert; maßgeblich ist die [Versions-Roadmap](ROADMAP.md).** Insbesondere sind schulübergreifende Erweiterungen erst v25.0, Schülerzugänge v20.0 und persönliche Funktionen v6.0–v9.0 vorgesehen.
 
 Dieser Plan hält die vom Projektverantwortlichen gewählte Richtung fest. Beauftragt sind Ausarbeitung und Dokumentation, noch keine Implementierung, Migration, Registrierung, Zahlungsabwicklung oder Einführung von Schülerkonten. Die Roadmap bleibt Orientierung; jede Etappe benötigt ihren eigenen Umsetzungsauftrag.
 
