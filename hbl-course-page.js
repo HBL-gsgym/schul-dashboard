@@ -18,6 +18,36 @@ function courseTabs(courseId,selected){
   '<a class="hbl-course-tab'+(view===selected?' current':'')+'" href="?'+view+'='+encodeURIComponent(courseId)+'"'+(view===selected?' aria-current="page"':'')+'>'+label+'</a>'
  ).join('')+'</nav>';
 }
+// Eine einzige Kursauswahl für Übersicht, Mitarbeit und Noten.
+// Die Links übernehmen die aktuell gewählte Ansicht, nicht die jeweilige Standardseite.
+function courseSwitcher(courseId,view){
+ return '<nav class="part-tabs hbl-course-picker" id="hblCourseTabs" aria-label="Kurs auswählen" data-course-id="'+esc(courseId)+'" data-course-view="'+esc(view)+'"></nav>';
+}
+function renderCourseSwitcher(courses){
+ const nav=document.getElementById('hblCourseTabs');if(!nav)return;
+ const current=nav.dataset.courseId,view=nav.dataset.courseView;
+ if(!['kurs','mitarbeit','noten'].includes(view))return;
+ const visible=(Array.isArray(courses)?courses:[]).filter(c=>c&&c.id&&(!c.archived||c.id===current)).map(c=>({id:String(c.id),short:String(c.short||[c.label,c.group].filter(Boolean).join(' '))}));
+ if(!visible.some(c=>c.id===current)&&typeof window.hblReadCourses==='function'){
+  // Alte Links auf archivierte Kurse bleiben nutzbar.
+  const c=window.hblReadCourses()?.catalog?.courses?.[current];
+  if(c)visible.push({id:current,short:[c.subject,c.group].filter(Boolean).join(' ')});
+ }
+ visible.sort((a,b)=>a.short.localeCompare(b.short,'de'));
+ const stamp=JSON.stringify({current,view,visible});
+ if(nav.dataset.stamp===stamp)return;
+ nav.dataset.stamp=stamp;
+ nav.innerHTML=visible.length?visible.map(c=>
+  '<a class="part-tab'+(c.id===current?' current':'')+'" href="?'+view+'='+encodeURIComponent(c.id)+'"'+
+  (c.id===current?' aria-current="page"':'')+'>'+esc(c.short)+'</a>'
+ ).join(''):'<span class="hbl-course-picker-empty">Kurse werden geladen …</span>';
+ // Aktiven Kurs horizontal in den sichtbaren Streifen holen, ohne vertikal zu scrollen.
+ const selected=nav.querySelector('[aria-current="page"]');
+ if(selected){
+  const left=selected.getBoundingClientRect().left-nav.getBoundingClientRect().left+nav.scrollLeft;
+  nav.scrollLeft=Math.max(0,left-(nav.clientWidth-selected.getBoundingClientRect().width)/2);
+ }
+}
 function status(message){
  const el=document.getElementById('gradeStatus');
  if(el)el.textContent=message;
@@ -25,6 +55,7 @@ function status(message){
 function mount(options){
  page=options;
  document.body.innerHTML='<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace hbl-course-layout"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
+  courseSwitcher(page.id,page.mode==='noten'?'noten':'kurs')+
   courseTabs(page.id,page.mode==='noten'?'noten':'kurs')+
   '<header class="hbl-course-heading"><p class="hbl-course-eyebrow">MEIN KURS</p><h1 id="coursePageTitle">Kurs wird geladen …</h1><p class="hbl-course-meta" id="coursePageMeta"></p></header>'+
   '<div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>';
@@ -36,6 +67,7 @@ function refresh(){
  if(!page)return;
  const {meta,data}=page.read(),host=document.getElementById('coursePageContent');
  if(!host)return;
+ if(typeof page.courses==='function')renderCourseSwitcher(page.courses());
  const title=document.getElementById('coursePageTitle');
  if(!meta){title.textContent='Kurs nicht gefunden';host.replaceChildren();return;}
  const name=meta.subject+' · '+meta.group;
@@ -267,5 +299,5 @@ function editor(kind,area,column){
  dialog.onclose=()=>dialog.remove();
  document.body.appendChild(dialog);dialog.showModal();fields.title.focus();
 }
-window.HblCoursePage={mount,refresh,courseTabs};
+window.HblCoursePage={mount,refresh,courseTabs,courseSwitcher,renderCourseSwitcher};
 })();
