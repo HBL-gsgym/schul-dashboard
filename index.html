@@ -199,6 +199,13 @@ body.dark .school-countdown{background:linear-gradient(115deg,var(--panel2),var(
 .schoolyear-note{font-size:10px;color:var(--muted);margin-top:11px;opacity:.86}
 @media(max-width:1150px){.schoolyear-content{grid-template-columns:minmax(0,1.5fr) minmax(215px,.9fr)}.hero-content{align-items:flex-start}}
 @media(max-width:800px){.schoolyear-content{grid-template-columns:1fr}.schoolyear-milestones{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}.schooldot{height:8px;width:8px}.background-controls{align-items:flex-start}}
+/* Smartphone quer: Kalender erhält die ganze Breite, Zusatzinfos folgen darunter. */
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px) and (hover:none){
+  .schoolyear-content{grid-template-columns:minmax(0,1fr)}
+  .schoolyear-milestones{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}
+  .schoolyear-gridpart{min-width:0}
+}
+
 @media(max-width:540px){.schoolyear-card{padding:14px}.schooldots{gap:1px}.schooldots-axis{gap:1px}.schooldot{width:5px;height:5px;border-width:1px}.schooldots-legend{gap:8px}.hero-content{flex-direction:column}.background-options{justify-content:flex-start}}
 
 
