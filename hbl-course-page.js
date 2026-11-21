@@ -24,9 +24,9 @@ function status(message){
 }
 function mount(options){
  page=options;
- document.body.innerHTML='<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
-  '<header class="hbl-course-heading"><p class="hbl-course-eyebrow">MEIN KURS</p><h1 id="coursePageTitle">Kurs wird geladen …</h1><p class="hbl-course-meta" id="coursePageMeta"></p></header>'+
+ document.body.innerHTML='<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace hbl-course-layout"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
   courseTabs(page.id,page.mode==='noten'?'noten':'kurs')+
+  '<header class="hbl-course-heading"><p class="hbl-course-eyebrow">MEIN KURS</p><h1 id="coursePageTitle">Kurs wird geladen …</h1><p class="hbl-course-meta" id="coursePageMeta"></p></header>'+
   '<div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>';
  const host=document.getElementById('coursePageContent');
  host.addEventListener('click',onClick);

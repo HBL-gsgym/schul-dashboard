@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.0.1">
-<title>Schul-Dashboard HBL · v7.0.1</title>
+<meta name="hbl-version" content="7.0.2">
+<title>Schul-Dashboard HBL · v7.0.2</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1367,8 +1367,8 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seating.js?v=5.9.21"></script>
 <script src="./hbl-seat-rating.js?v=5.9.21"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=7.0.0"></script>
-<link rel="stylesheet" href="./hbl-course-page.css?v=7.0.0">
+<script src="./hbl-course-page.js?v=7.0.2"></script>
+<link rel="stylesheet" href="./hbl-course-page.css?v=7.0.2">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=6.1.0">
 <script defer src="./mein-hbl.js?v=6.1.0"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
 <script defer src="./mobile.js?v=6.0.6"></script>
@@ -2455,7 +2455,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.0.2 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2762,8 +2762,8 @@ function renderParticipationPage(courseId){
  const header=`${course.icon} ${partEsc(course.label)} <span>· ${partEsc(course.group)}</span>`;
  document.body.innerHTML=`
  <div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div>
- <div class="part-shell">
-  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a><span class="part-top-meta">MEIN KURS · MITARBEIT</span></div>
+ <div class="part-shell hbl-course-layout">
+  <div class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></div>
   ${HblCoursePage.courseTabs(courseId,'mitarbeit')}
   <header class="part-hero"><div class="part-eyebrow">Mitarbeitserfassung · DEMO · Nur Beispieldaten</div>
    <div class="part-hero-row"><div><h1 id="hblCurrentCourseTitle">${header}</h1><p>Termine, Bewertungen und individuelle Kommentare pro Schüler/in</p></div>

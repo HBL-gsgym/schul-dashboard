@@ -108,3 +108,25 @@ button.seat-place{cursor:pointer}
 .hbl-course-tab:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .course-workspace .seat-section{margin-bottom:15px}
 @media(max-width:710px){.hbl-course-tabs{gap:6px;margin:12px 0 15px}.hbl-course-tab{padding:10px 5px;min-height:46px;font-size:.88rem}.hbl-course-heading h1{font-size:clamp(22px,5vw,30px)}}
+
+/* v7.0.2: Auf allen Kursseiten beginnen die drei Tabs exakt am selben vertikalen Anker.
+   Seitenabhängige Informationen folgen darunter; Tablet/Smartphone haben gleiche Oberabstände. */
+.part-shell.hbl-course-layout,.course-workspace.hbl-course-layout{
+ box-sizing:border-box;width:min(100%,78rem);max-width:78rem;margin:0 auto;
+ padding:clamp(14px,3vw,40px) clamp(14px,3vw,40px) 64px;
+}
+.hbl-course-layout > .part-nav{
+ display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;
+ min-height:43px;margin:0 0 10px;
+}
+.hbl-course-layout > .hbl-course-tabs{margin:0 0 18px}
+.hbl-course-layout > .hbl-course-heading{margin:0 0 18px}
+.hbl-course-layout > .hbl-course-heading h1{margin:5px 0 3px}
+@media(max-width:710px){
+ .part-shell.hbl-course-layout,.course-workspace.hbl-course-layout{
+  padding:12px 10px calc(99px + env(safe-area-inset-bottom,0px)) !important;
+ }
+ .hbl-course-layout > .part-nav{min-height:43px;margin-bottom:10px}
+ .hbl-course-layout > .hbl-course-tabs{margin:0 0 15px}
+ .hbl-course-layout > .hbl-course-heading{margin:0 0 15px}
+}
