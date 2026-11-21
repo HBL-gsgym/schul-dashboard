@@ -32,6 +32,10 @@ Der aktuelle [Architekturplan](docs/PRODUCT_ARCHITECTURE.md) unterscheidet pers�
 
 **Diese aktuelle Workflow-Vorgabe ersetzt ältere pauschale „erst testen/PR/Freigabe, dann veröffentlichen“-Regeln in der Dokumentation und in Konzept-Issues.** Fachliche Anforderungen, Konten-/Datenerhalt, Geheimnisschutz und der Umfang des Nutzerauftrags gelten weiterhin. Ein ausdrücklich nur lesender Prüfauftrag bleibt lesend.
 
+## Zusammenarbeit und Änderungsprotokoll
+
+Michael nutzt den GPT-Chat für kleine Änderungen und Codex für Meilensteine und gezielte Prüfungen. Für jede umgesetzte Änderung im selben Commit eine Zeile in [CHANGELOG.md](CHANGELOG.md) ergänzen. Datum, aktuelle Version, tatsächliche Umsetzung (Michael, ChatGPT oder Codex), Änderung und Prüfstand nennen. Bei offener Prüfung „offen“ eintragen. Spätere Prüfergebnisse in derselben Zeile nachtragen.
+
 ## Tokenbewusst und zügig arbeiten (20.11.2026)
 
 - **Gezielt lesen:** Nach dem Einstieg nur betroffene Dateien, relevante Codeabschnitte und geänderte Vorgaben prüfen. Dokumentation nicht bei jeder Kleinigkeit vollständig erneut lesen. Bekannte Zusammenhänge aus der laufenden Sitzung weiterverwenden; vor Änderungen den relevanten aktuellen Stand trotzdem kontrollieren.
