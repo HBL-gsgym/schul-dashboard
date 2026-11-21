@@ -1,6 +1,6 @@
 # Schul-Dashboard HBL
 
-**Stand: v5.9.17 · Pilotprojekt · 21.11.2026**
+**Stand: v5.9.18 · Pilotprojekt · 21.11.2026**
 
 Ein webbasiertes Dashboard für Lehrkräfte mit individualisierbarem Schulalltag, gemeinsamem Kalender und Kollegium-Chat.
 
@@ -26,6 +26,8 @@ Gemeinsamer Kern für **persönliche Lehrkräfte-Nutzung** und ein späteres **S
 Unter **Kurse → Meine Kurse** legst du Fach und Klasse/Kurs an, auch ohne Stundenplan. Anschließend unter **Wochenstundenplan → Bearbeiten** einen Block öffnen, den Kurs auswählen und Raum sowie A/B-Woche festlegen. Umbenennen und Archivieren erfolgen in „Meine Kurse“. Ein belegter Kurs muss vor dem Archivieren aus dem Stundenplan entfernt werden.
 
 ## Sitzplan und Raum verwenden (v5.9.16)
+
+Wähle über dem Sitzplan den **Unterrichtstermin**. Ein **✓** neben dem Namen zeigt, für wen in diesem Block schon eine Mitarbeitseinschätzung vorliegt. Auch die Bewertung **0** zählt. Ein Terminwechsel aktualisiert die Häkchen. Beim Leeren eines Eintrags verschwindet dessen Häkchen.
 
 Ab v5.9.17 öffnet ein Tipp auf einen belegten Sitzplatz die **Mitarbeit** für diese Person. Kurs, Unterrichtstermin und vorhandener Eintrag sind sichtbar. Den passenden Block prüfen oder wählen und direkt auf **++, +, 0, − oder −−** tippen. Damit ist der Eintrag auch in der Mitarbeitstabelle gespeichert. Erneut antippen zum Korrigieren oder Leeren. Beim Bearbeiten des Sitzplans dient derselbe Platz weiterhin der Sitzverteilung.
 
