@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.6 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.7 · Pilotprojekt · 21.11.2026**
+
+Der zusätzliche Button **„🔔 Ruhezeiten“** wurde aus dem Chatkopf entfernt. Sämtliche Chat-, Unterrichts- und sonstigen Push-Einstellungen bleiben zentral unter **Mein HBL → Benachrichtigungen** erreichbar, einschließlich Geräteaktivierung. Die Benachrichtigungsfunktionen selbst sind unverändert.
 
 Auf Smartphones enthält die feste untere Leiste jetzt **Chat** (mit Ungelesen-Zähler), **Anmelden/Benutzername** (öffnet das persönliche Konto bzw. Login) und **Mein HBL**, zusätzlich zu den vorhandenen sichtbaren Kachel-Schnellzugriffen. Bei vielen Elementen ist die Leiste horizontal scrollbar. Die separate Push-Gerätebox wurde aus dem Stundenplan in **Mein HBL → Benachrichtigungen** integriert; Registrierung, Deaktivierung und Installationsfunktion bleiben erhalten.
 

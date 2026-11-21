@@ -1,8 +1,8 @@
 /* HBL v5.5 – Offline-App-Shell & Push-Empfang. Keine Nutzerdaten im SW-Cache. */
-const CACHE="hbl-pwa-shell-v606-mobile-account-chat-push";
+const CACHE="hbl-pwa-shell-v607-central-push-menu";
 const ASSETS=["./hbl-music.js?v=6.0.1","./supabase/functions/hbl-push-dispatch/push-policy.mjs?v=6.0.0","./mein-hbl.js?v=6.0.5","./hbl-grades.js?v=5.9.20","./hbl-seating.js?v=5.9.21","./hbl-seat-rating.js?v=5.9.21","./hbl-seat-view.js?v=5.9.22","./hbl-course-page.js?v=5.9.20","./hbl-course-page.css?v=5.9.22","./hbl-courses.js?v=5.9.13","./hbl-course-ids.js?v=5.9.10","./","./index.html","./mobile.css?v=6.0.6","./cloud.css?v=6.0.5",
  "./hbl-v55.css?v=6.0.6","./hbl-v56.css?v=5.6","./hbl-v57.css?v=5.9.7-chat","./hbl-v58.css?v=5.8","./hbl-v59.css?v=5.9.11-courses","./mobile.js?v=6.0.6","./cloud.js?v=5.10.3",
- "./hbl-v55.js?v=6.0.6","./hbl-v56.js?v=5.9.5-invites","./hbl-v57.js?v=5.9.7-chat","./hbl-v58.js?v=5.9.5","./hbl-v59.js?v=6.0.6","./manifest.webmanifest","./hbl-icon.svg","./hbl-icon-192.png","./hbl-icon-512.png","./hbl-icon-180.png"];
+ "./hbl-v55.js?v=6.0.6","./hbl-v56.js?v=5.9.5-invites","./hbl-v57.js?v=5.9.7-chat","./hbl-v58.js?v=5.9.5","./hbl-v59.js?v=6.0.7","./manifest.webmanifest","./hbl-icon.svg","./hbl-icon-192.png","./hbl-icon-512.png","./hbl-icon-180.png"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

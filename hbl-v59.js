@@ -12,13 +12,7 @@ function message(value,bad=false){const status=el("hblChatPushStatus");if(status
 function mount(){
  const header=el("hblChatHeading")?.closest(".hbl-chat-head");
  if(!header)return false;
- if(!el("hblChatPushOpen")){
-  const button=document.createElement("button");
-  button.type="button";button.id="hblChatPushOpen";button.className="hbl-chat-push-launch";
-  button.textContent="🔔 Ruhezeiten";button.title="Chat-Benachrichtigungen und Arbeitszeiten einstellen";
-  button.addEventListener("click",()=>void showSettings(true));
-  header.insertBefore(button,el("hblChatClose"));
- }
+ // Kein zusätzlicher Ruhezeiten-Button im Chatkopf: zentral unter Mein HBL.
  if(el("hblChatPushOverlay"))return true;
  const overlay=document.createElement("div");
  overlay.className="hbl-chat-push-overlay";overlay.id="hblChatPushOverlay";overlay.hidden=true;
