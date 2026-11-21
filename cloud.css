@@ -1,0 +1,48 @@
+/* HBL v4.0 – optional private demo cloud sync */
+.hbl-cloud-bar{position:relative;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 auto 12px;max-width:1350px;padding:9px 15px;border:1px solid rgba(140,154,180,.35);background:#18253c;color:#f5f7fc;border-radius:12px;font:600 12px/1.5 Inter,Segoe UI,Arial,sans-serif;box-shadow:0 3px 12px #0002}
+.hbl-cloud-label{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.hbl-cloud-label span{font-size:11px;color:#cad5e9}
+.hbl-cloud-actions{display:flex;flex-wrap:wrap;gap:7px}
+.hbl-cloud-bar button,.hbl-cloud-dialog button{border:1px solid #506e9e;border-radius:9px;background:#315381;color:#fff;padding:8px 12px;min-height:37px;cursor:pointer;font:700 12px Inter,Segoe UI,Arial,sans-serif}
+.hbl-cloud-bar button:hover,.hbl-cloud-dialog button:hover{background:#426a9e}
+.hbl-cloud-overlay[hidden],.hbl-cloud-bar [hidden]{display:none!important}
+.hbl-cloud-overlay{position:fixed;inset:0;z-index:9999;background:rgba(7,11,23,.77);display:flex;justify-content:center;align-items:center;padding:17px;box-sizing:border-box}
+.hbl-cloud-dialog{position:relative;width:min(100%,470px);max-height:calc(100vh - 38px);overflow:auto;padding:25px;background:#fff;color:#162039;border-radius:16px;box-shadow:0 20px 60px #0006;font:14px/1.55 Inter,Segoe UI,Arial,sans-serif}
+.hbl-cloud-dialog h2{margin:0 25px 10px;font-size:21px}
+.hbl-cloud-dialog p{margin:8px 0 16px}
+.hbl-cloud-dialog label{display:block;font-size:13px;font-weight:700;margin:12px 0}
+.hbl-cloud-dialog input{display:block;box-sizing:border-box;width:100%;font-size:16px;padding:12px;border:1px solid #a2b3cc;border-radius:9px;margin-top:4px}
+.hbl-cloud-dialog small{display:block;margin-top:12px;color:#5c687d}
+.hbl-cloud-dialog #hblCloudMessage{min-height:22px;font-weight:650}
+.hbl-cloud-close{position:absolute;top:12px;right:12px;min-width:36px}
+.hbl-account-more{display:none}
+@media(max-width:710px){
+.hbl-cloud-bar{margin:9px 10px 6px;padding:9px 11px;border-radius:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px}
+.hbl-cloud-label{width:100%;gap:3px 6px;overflow-wrap:anywhere}
+.hbl-cloud-label strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 22px)}
+.hbl-cloud-label span{flex-basis:100%;line-height:1.35}
+.hbl-cloud-bar .hbl-account-more{display:block;grid-column:2;grid-row:1;min-height:44px;padding:8px 10px}
+.hbl-cloud-bar>.hbl-cloud-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.hbl-cloud-bar>.hbl-cloud-actions button{flex:1 1 110px;min-height:44px}
+.hbl-cloud-bar:not(.hbl-account-expanded) #hblLocalBackup,
+.hbl-cloud-bar:not(.hbl-account-expanded) #hblCloudRefresh,
+.hbl-cloud-bar:not(.hbl-account-expanded) #hblCloudRetry,
+.hbl-cloud-bar:not(.hbl-account-expanded) #hblCloudImport,
+.hbl-cloud-bar:not(.hbl-account-expanded) #hblCloudLogout{display:none}
+.hbl-cloud-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.hbl-cloud-actions button{min-height:42px}
+.hbl-cloud-overlay{align-items:flex-end}
+.hbl-cloud-dialog{border-radius:17px;padding:20px;margin-bottom:env(safe-area-inset-bottom,0px)}
+.hbl-cloud-dialog .hbl-cloud-actions{grid-template-columns:1fr 1fr}
+}
+
+/* Die Dashboard-Aktionen werden über Mein HBL bedient. Der Chat bleibt direkt erreichbar. */
+body:has(#dashboardBoard) #hblCloudControls :is(#hblAccountMore,#hblProfileButton,#hblCloudLogin,#hblCloudLogout,#hblLocalBackup,#hblCloudRefresh,#hblCloudRetry,#hblCloudImport){display:none}
+@media(max-width:710px){
+ body:has(#dashboardBoard) #hblCloudControls>.hbl-cloud-actions{grid-column:2;grid-row:1}
+}
+/* v6.0.5: Dashboard ohne Cloud-/Rücksetzleiste. Cloud bleibt im DOM für Auth,
+   Chat und Statusabfragen; Benutzeraktionen sind über Mein HBL erreichbar. */
+body:has(#dashboardBoard) #hblCloudControls,body:has(.part-shell) #hblCloudControls,body:has(.course-workspace) #hblCloudControls{display:none!important}
+body:has(#dashboardBoard) .board-toolbar,
+body:has(#dashboardBoard) .preptools{display:none!important}

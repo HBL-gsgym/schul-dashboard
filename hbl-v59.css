@@ -1,0 +1,153 @@
+/* HBL 5.9 – Gruppenchats und Ruhezeiten */
+.hbl-chat-group-create[hidden],.hbl-chat-push-overlay[hidden],.hbl-chat-members-panel[hidden]{display:none!important}
+.hbl-chat-section{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+.hbl-chat-section button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:6px 8px;border-radius:8px;font-size:11px;font-weight:750;cursor:pointer}
+.hbl-chat-group-tools{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 0}
+.hbl-chat-group-tools button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;font-size:11px;padding:6px 9px;cursor:pointer}
+.hbl-chat-group-create{position:absolute;z-index:14;inset:15% 8%;overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);box-shadow:0 10px 40px #0007;border-radius:18px;padding:20px}
+.hbl-chat-group-create h3{font-size:18px;margin:0 0 16px}
+.hbl-chat-group-create label{display:block;font-size:13px;font-weight:750;margin:9px 0}
+.hbl-chat-group-create input[type=text]{box-sizing:border-box;width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font:inherit}
+.hbl-chat-group-create p{color:var(--muted);font-size:12px}
+.hbl-group-member-option{display:flex!important;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;background:var(--panel2)}
+.hbl-group-member-option input{width:17px;height:17px}
+.hbl-chat-group-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.hbl-chat-group-buttons button{border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);padding:10px 14px;cursor:pointer;font:inherit;font-weight:700}
+#hblGroupCreateSave{background:var(--accent);color:#fff;border-color:transparent}
+.hbl-chat-panel{position:relative}
+.hbl-chat-push-launch{font-size:12px!important;white-space:nowrap;border:1px solid var(--line)!important;background:var(--panel2)!important;color:var(--text)!important;border-radius:9px!important;padding:7px 9px!important;cursor:pointer}
+.hbl-chat-push-overlay{position:fixed;inset:0;z-index:13000;background:rgba(5,12,25,.85);display:flex;align-items:center;justify-content:center;padding:15px;overflow:auto}
+.hbl-chat-push-dialog{width:min(100%,560px);max-height:calc(100dvh - 30px);overflow:auto;padding:22px;background:var(--panel);color:var(--text);border-radius:17px;border:1px solid var(--line);box-shadow:0 20px 80px #0008;font:13px/1.55 Inter,Arial,sans-serif}
+.hbl-chat-push-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hbl-chat-push-top h2{font-size:21px;line-height:1.25;margin:0}
+.hbl-chat-push-top button{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--panel2);color:var(--text);cursor:pointer}
+.hbl-chat-push-dialog p{margin:10px 0;color:var(--muted)}
+.hbl-chat-push-switch{display:flex;align-items:center;gap:9px;padding:11px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-weight:750;font-size:13px;margin:12px 0}
+.hbl-chat-push-switch.secondary{background:transparent;font-size:12px}
+.hbl-chat-push-switch input{width:18px;height:18px;accent-color:var(--accent)}
+.hbl-chat-push-label{font-size:12px;font-weight:750;color:var(--text)!important;margin:16px 0 8px!important}
+.hbl-chat-push-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.hbl-chat-push-days label{display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:7px 3px;background:var(--panel2);cursor:pointer;font-size:11px;font-weight:750}
+.hbl-chat-push-days input{height:18px;width:18px;accent-color:var(--accent)}
+.hbl-chat-push-times{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.hbl-chat-push-times label{display:flex;flex-direction:column;gap:5px;font-weight:700}
+.hbl-chat-push-times input{padding:10px;min-width:0;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);font:inherit;font-size:15px}
+.hbl-chat-push-tip{font-size:11px;line-height:1.45}
+.hbl-chat-push-primary,.hbl-chat-push-device button{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:750;background:var(--accent);color:#fff;cursor:pointer}
+.hbl-chat-push-primary{display:block;width:100%;margin:16px 0}
+.hbl-chat-push-primary:disabled{opacity:.55}
+.hbl-chat-push-device{border-top:1px solid var(--line);padding:13px 0}
+.hbl-chat-push-device strong{font-size:14px}
+.hbl-chat-push-device button{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+#hblChatPushStatus{font-size:12px;font-weight:700;min-height:16px;color:#218a50!important}
+#hblChatPushStatus.problem{color:#d15c36!important}
+.hbl-admin-delete{border-color:#cc765b!important;color:#c14d31!important}
+@media(max-width:680px){
+ .hbl-chat-group-create{inset:8px;padding:16px}
+ .hbl-chat-push-dialog{padding:16px}
+ .hbl-chat-push-top h2{font-size:18px}
+ .hbl-chat-push-days{gap:3px}
+ .hbl-chat-push-days label{font-size:10px}
+ .hbl-chat-push-launch{font-size:10px!important;padding:6px!important}
+}
+
+/* v5.9.1: Mitglieder im Gruppenkopf und geschützte Mitgliederverwaltung */
+.hbl-chat-room .hbl-chat-members-preview{display:flex;align-items:center;flex-wrap:wrap;gap:5px;max-width:100%;max-height:72px;overflow:auto;margin-top:7px;padding:1px 0}
+.hbl-chat-member-chip{display:inline-flex;gap:4px;align-items:center;max-width:100%;padding:4px 8px;background:var(--panel);border:1px solid var(--line);border-radius:30px;font-size:11px;line-height:1.2;overflow-wrap:anywhere}
+.hbl-group-owner-chip{color:var(--accent);font-weight:900}
+.hbl-chat-members-panel{position:absolute;z-index:15;inset:8% 8%;display:flex;flex-direction:column;overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 13px 55px #0008}
+.hbl-chat-members-title{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hbl-chat-members-title h3{font-size:19px;margin:0;overflow-wrap:anywhere}
+.hbl-chat-members-title button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;min-width:34px;height:34px;cursor:pointer;font-size:17px}
+.hbl-chat-members-intro{font-size:12px;line-height:1.45;color:var(--muted);margin:8px 0 13px}
+.hbl-chat-members-list{display:flex;flex-direction:column;gap:6px}
+.hbl-chat-member-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2)}
+.hbl-chat-member-avatar{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:var(--panel);font-size:17px}
+.hbl-chat-member-detail{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hbl-chat-member-detail strong{font-size:13px;overflow-wrap:anywhere}
+.hbl-chat-member-detail small{font-size:10px;color:var(--muted)}
+.hbl-chat-member-row button{flex-shrink:0;padding:7px 9px;border:1px solid #c6816b;border-radius:8px;color:#b65035;background:var(--panel);font-weight:700;font-size:11px;cursor:pointer}
+.hbl-chat-members-add{border-top:1px solid var(--line);margin-top:17px;padding-top:12px}
+.hbl-chat-members-add h4{font-size:14px;margin:0 0 11px}
+.hbl-chat-members-add .hbl-group-member-option{margin:4px 0;padding:9px}
+.hbl-chat-members-add>button{margin-top:12px;border:0;background:var(--accent);color:#fff;border-radius:9px;padding:10px 14px;font-size:12px;font-weight:800;cursor:pointer}
+.hbl-chat-members-add>button[disabled]{opacity:.5;cursor:progress}
+#hblGroupMembersStatus{color:var(--muted);font-size:12px;margin:9px 0;min-height:14px}
+@media(max-width:760px){
+ .hbl-chat-members-panel{inset:4px 3px;padding:15px;border-radius:13px}
+ .hbl-chat-room .hbl-chat-members-preview{max-height:56px;gap:4px}
+ .hbl-chat-member-chip{font-size:10px;padding:3px 6px}
+ .hbl-chat-member-row{padding:8px;gap:7px}
+ .hbl-chat-section{flex:0 0 auto;margin:0;padding:0 3px;letter-spacing:0;font-size:10px}
+ .hbl-chat-section button,.hbl-chat-group-tools button,.hbl-chat-members-title button,
+ .hbl-chat-member-row button,.hbl-chat-group-buttons button,.hbl-chat-members-add>button{min-height:44px}
+ .hbl-chat-section>span{display:none}
+ .hbl-chat-group-create,.hbl-chat-members-panel{inset:8px;padding:14px;box-sizing:border-box;overscroll-behavior:contain;scroll-padding-bottom:16px}
+ .hbl-chat-group-create input[type=text]{font-size:16px}
+ .hbl-group-member-option{min-height:44px}
+ .hbl-chat-push-launch{width:auto!important;height:auto!important;min-height:44px;flex-shrink:0;white-space:normal}
+}
+/* v5.9.8: Aufsichten bleiben eine dezente Zwischenzeile. */
+#weeklyTimetable .hbl-duty-container{padding:2px 4px;gap:1px;border:0;border-radius:4px;background:transparent;min-width:0;justify-content:center}
+#weeklyTimetable .hbl-duty-caption{font-size:9px;font-weight:500;flex-direction:row;flex-wrap:wrap;gap:2px 5px;line-height:1.2}
+#weeklyTimetable .hbl-duty-caption small{font-size:9px;font-weight:500}
+#weeklyTimetable .hbl-duty-cell{flex:0 0 auto;min-height:28px;flex-direction:row;align-items:center;justify-content:flex-start;padding:2px 0;gap:4px;background:transparent;border:0;border-radius:4px}
+#weeklyTimetable .hbl-duty-value{font-size:11px;padding:2px 4px;gap:3px;background:transparent;min-width:0;overflow-wrap:anywhere}
+#weeklyTimetable .hbl-duty-value b{min-width:0;font-size:9px}
+#weeklyTimetable .hbl-duty-spacer{min-height:0}
+#weeklyTimetable .hbl-duty-cell:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media(max-width:710px){
+ #weeklyTimetable.timetablegrid{grid-template-columns:repeat(5,minmax(0,1fr))!important;overflow-x:visible;gap:4px}
+ #weeklyTimetable .hbl-slot-cell{padding:4px!important;gap:3px;min-height:94px}
+ #weeklyTimetable .blocknum{font-size:9px;letter-spacing:0}
+ #weeklyTimetable .hbl-slot-parts{flex-direction:column;gap:3px}
+ #weeklyTimetable .hbl-slot-item{padding:4px 3px;justify-content:flex-start}
+ #weeklyTimetable .hbl-slot-item b{font-size:9px;margin-bottom:2px}
+ #weeklyTimetable .hbl-slot-item strong{font-size:10px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+ #weeklyTimetable .hbl-slot-item small{font-size:9px}
+ #weeklyTimetable .hbl-empty-label{font-size:9px}
+ #weeklyTimetable .hbl-duty-container{padding:2px 0}
+ #weeklyTimetable .hbl-duty-caption{display:none}
+ #weeklyTimetable .hbl-duty-cell{min-height:32px;flex-wrap:wrap;gap:2px}
+ #weeklyTimetable .hbl-duty-value{font-size:9px;padding:1px 0;gap:2px;white-space:nowrap;letter-spacing:-.2px}
+ .dashboard-board .dashboard-tile[data-tile="stundenplan"] .timetablelegend::after{content:" · Antippen für Details"}
+ .hbl-detail-weeks{grid-template-columns:1fr}
+ .hbl-timetable-details .hbl-plan-dialog{padding:20px 16px}
+}
+/* v5.9.9: Heute und nächster Unterricht im Fokus. */
+#todayLessons .hbl-today-lesson{grid-template-columns:108px minmax(0,1fr);padding:12px;gap:12px}
+.hbl-today-lesson .lessontime{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:500}
+.hbl-today-lesson .lessontime strong{font-size:13px}
+.hbl-today-lesson .lessontime small{font-size:10px;color:var(--muted)}
+.hbl-today-label{color:var(--accent);font-size:11px;font-weight:800;margin-bottom:2px}
+.hbl-today-lesson.current{border-left:4px solid var(--accent)}
+.hbl-today-lesson .lessonmain{display:flex;flex-direction:column;gap:4px;font-size:14px;overflow-wrap:anywhere}
+.hbl-today-room{font-size:12px;color:var(--muted);font-weight:500}
+.hbl-today-duties{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.hbl-today-duty-heading{font-size:11px;color:var(--muted);margin-right:2px}
+.hbl-today-duty{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font:inherit;font-size:11px;padding:7px 8px;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.hbl-today-duty span{color:var(--muted)}
+.hbl-today-duty.current{border-color:var(--accent)}
+.hbl-upcoming-more{margin-top:12px}
+.hbl-upcoming-more summary,.hbl-tasks-done summary{cursor:pointer;color:var(--muted);font-size:12px;padding:8px 0;font-weight:650}
+.hbl-tasks-done .taskcompletedhead{display:list-item}
+.hbl-tasks-done .taskcounter{float:right}
+.taskpanel .taskcompleted{margin-top:10px;padding-top:4px}
+@media(max-width:710px){
+ #todayLessons .hbl-today-lesson{grid-template-columns:96px minmax(0,1fr);gap:8px;padding:10px}
+ .hbl-today-duty{min-height:36px}
+ .hbl-upcoming-more summary,.hbl-tasks-done summary{min-height:36px;box-sizing:border-box}
+}
+/* v5.9.11: Privater Kursbestand */
+.hbl-course-dialog{width:min(100%,680px);background:var(--panel);color:var(--text)}
+.hbl-course-row{padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.hbl-course-row strong{display:block;overflow-wrap:anywhere;font-size:14px}
+.hbl-course-row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.hbl-course-actions{display:flex;flex-wrap:wrap;gap:7px}
+.hbl-course-actions button,.hbl-course-actions a{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;padding:7px 10px;font:600 12px Inter,Segoe UI,Arial,sans-serif;text-decoration:none;cursor:pointer}
+#hblCourseForm{margin-top:18px;padding-top:4px}
+#hblCourseStatus{font-size:12px;overflow-wrap:anywhere}
+.hbl-course-dialog input{background:var(--panel2);color:var(--text);border-color:var(--line)}
+#hblPlanSubjectWrap[hidden],#hblPlanGroupWrap[hidden],#hblCourseCancel[hidden]{display:none!important}
+@media(max-width:710px){.hbl-course-actions button,.hbl-course-actions a{min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}.hbl-course-dialog input{font-size:16px}}
+.hbl-course-dialog .hbl-plan-info{color:var(--muted)}

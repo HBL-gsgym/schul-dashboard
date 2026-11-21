@@ -1,0 +1,83 @@
+/* HBL v5.7 – Chat-Benutzeroberfläche */
+body.hbl-chat-open{overflow:hidden}
+#hblChatToggle{position:relative;display:flex;align-items:center;gap:5px;white-space:nowrap}
+#hblChatToggle[hidden],.hbl-chat-overlay[hidden],.hbl-chat-badge[hidden]{display:none!important}
+.hbl-chat-badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:20px;background:#ed5565;color:#fff;font-size:10px;font-weight:900}
+.hbl-admin-person-buttons{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.hbl-admin-person-buttons button{font-size:11px;min-height:34px;padding:7px 10px}
+.hbl-admin-owner-label{font-size:11px;color:var(--muted);padding:5px}
+.hbl-chat-overlay{position:fixed;inset:0;z-index:9000;display:flex;align-items:flex-start;justify-content:flex-end;padding:66px max(16px,calc((100vw - 1390px)/2));background:rgba(7,16,30,.43);backdrop-filter:blur(2px)}
+.hbl-chat-panel{display:flex;flex-direction:column;overflow:hidden;width:min(850px,100%);height:min(710px,calc(100dvh - 84px));border:1px solid var(--line);border-radius:18px;background:var(--panel);color:var(--text);box-shadow:0 22px 65px #0006;font:14px/1.5 Inter,Segoe UI,Arial,sans-serif}
+.hbl-chat-head{display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;flex:none;gap:12px;margin:0!important;padding:14px 19px;background:var(--panel2);border-bottom:1px solid var(--line)}
+.hbl-chat-head h2{font-size:18px;font-weight:850;margin:0;line-height:1.4}
+.hbl-chat-head small{font-size:11px;color:var(--muted)}
+.hbl-chat-head button{width:37px;height:37px;flex-shrink:0;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);font-size:17px;cursor:pointer}
+.hbl-chat-workspace{display:grid;grid-template-columns:minmax(210px,33%) minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.hbl-chat-threads{overflow-y:auto;min-height:0;overscroll-behavior:contain;border-right:1px solid var(--line);padding:10px 9px 18px}
+.hbl-chat-category{font-weight:850;color:var(--muted);font-size:10px;letter-spacing:.12em;padding:11px 9px 6px}
+.hbl-chat-thread{display:flex;align-items:center;width:100%;gap:9px;padding:11px 8px;margin:0 0 3px;border:1px solid transparent;border-radius:11px;text-align:left;background:transparent;color:var(--text);font:inherit;cursor:pointer}
+.hbl-chat-thread:hover{background:var(--panel2)}
+.hbl-chat-thread.active{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+.hbl-chat-avatar{flex:0 0 33px;width:33px;height:33px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--panel2);font-size:18px}
+.hbl-chat-threadname{display:flex;flex-direction:column;min-width:0;gap:1px;flex:1}
+.hbl-chat-threadname strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbl-chat-threadname small{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbl-chat-threadbadge{display:flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:2px 6px;border-radius:20px;background:#9b5bd2;color:white;font-size:10px;font-weight:800}
+.hbl-chat-discussion{display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0}
+.hbl-chat-room{display:flex;flex-direction:column;gap:2px;padding:12px 15px;background:var(--panel2);border-bottom:1px solid var(--line);flex:none}
+.hbl-chat-room strong{font-size:14px;font-weight:800}
+.hbl-chat-room small{font-size:11px;color:var(--muted)}
+.hbl-chat-history{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:15px 15px 22px}
+.hbl-chat-msg{display:flex;flex-direction:column;max-width:87%;align-self:flex-start;gap:3px}
+.hbl-chat-msg.mine{align-self:flex-end;align-items:flex-end}
+.hbl-chat-msg.theirs{align-items:flex-start}
+.hbl-chat-author{font-size:10px;color:var(--muted);padding-left:5px}
+.hbl-chat-bubble{padding:10px 13px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:13px 13px 13px 3px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45;font-size:13px}
+.hbl-chat-msg.mine .hbl-chat-bubble{background:color-mix(in srgb,var(--accent) 15%,var(--panel));border-color:color-mix(in srgb,var(--accent) 25%,var(--line));border-radius:13px 13px 3px 13px}
+.hbl-chat-msg time{font-size:10px;color:var(--muted);padding:0 5px}
+.hbl-chat-empty{color:var(--muted);font-size:12px;padding:15px 10px;line-height:1.5}
+.hbl-chat-form{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;flex:none;border-top:1px solid var(--line);padding:10px 12px;background:var(--panel)}
+.hbl-chat-form label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.hbl-chat-form textarea{width:100%;min-height:45px;max-height:135px;resize:vertical;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font:inherit;font-size:13px}
+.hbl-chat-form textarea:focus-visible,.hbl-chat-thread:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hbl-chat-form button{min-height:45px;border:0;border-radius:10px;background:var(--accent);color:#fff;padding:10px 15px;font:inherit;font-weight:800;cursor:pointer}
+.hbl-chat-form button:disabled{opacity:.5;cursor:progress}
+.hbl-chat-status{font-size:11px;color:#cb7744;min-height:0;margin:0 12px 5px}
+.hbl-chat-status:empty{display:none}
+.hbl-chat-footnote{flex:none;padding:8px 14px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);line-height:1.4}
+.hbl-chat-more{align-self:center;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text);cursor:pointer;padding:7px 12px;font:inherit;font-size:12px}
+@media(max-width:760px){
+ .hbl-admin-person-buttons{justify-content:flex-start}
+ .hbl-chat-overlay{padding:0;align-items:stretch;justify-content:stretch;z-index:9000;backdrop-filter:none;top:var(--hbl-chat-top,0px);bottom:auto;height:var(--hbl-chat-height,100dvh)}
+ .hbl-chat-panel{width:100%;height:100%;max-height:100%;border:0;border-radius:0}
+ .hbl-chat-head{padding:calc(8px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px));gap:8px}
+ .hbl-chat-head>div{min-width:0;flex:1}
+ .hbl-chat-head button{min-width:44px;min-height:44px}
+ .hbl-chat-head h2{font-size:16px}
+ .hbl-chat-workspace{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+ .hbl-chat-threads{padding:6px;display:flex;align-items:stretch;gap:5px;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--line)}
+ .hbl-chat-thread{padding:8px;gap:6px;flex:0 0 126px;width:126px;min-height:48px;flex-wrap:nowrap;justify-content:flex-start;margin:0}
+ .hbl-chat-avatar{width:27px;height:27px;flex-basis:27px;font-size:14px}
+ .hbl-chat-threadname{width:auto;flex:1;min-width:0;text-align:left}
+ .hbl-chat-threadname strong{font-size:11px}
+ .hbl-chat-threadname small{display:none}
+ .hbl-chat-category:not(.hbl-chat-section){display:none}
+ .hbl-chat-threadbadge{min-width:16px;height:16px;font-size:9px;padding:1px 4px}
+ .hbl-chat-room{padding:8px 10px;max-height:22vh;overflow:auto;overflow-wrap:anywhere}
+ .hbl-chat-room strong{font-size:12px}
+ .hbl-chat-room small{font-size:10px}
+ .hbl-chat-history{padding:9px 8px 16px;gap:10px}
+ .hbl-chat-msg{max-width:96%}
+ .hbl-chat-bubble{font-size:12px;padding:9px 10px}
+ .hbl-chat-form{padding:7px;gap:5px;grid-template-columns:minmax(0,1fr) auto}
+ .hbl-chat-form textarea{font-size:16px;min-width:0;min-height:44px;max-height:96px;box-sizing:border-box}
+ .hbl-chat-form button{font-size:13px;padding:9px;min-height:44px}
+ .hbl-chat-footnote{font-size:9px;padding:7px 10px;margin-bottom:env(safe-area-inset-bottom,0px)}
+ .hbl-chat-short .hbl-chat-footnote,.hbl-chat-short .hbl-chat-room small,
+ .hbl-chat-short .hbl-chat-room .hbl-chat-members-preview,.hbl-chat-short .hbl-chat-head small{display:none}
+ .hbl-chat-short .hbl-chat-room{max-height:72px}
+}
+@media(max-width:760px) and (max-height:500px){
+ .hbl-chat-footnote{display:none}
+ .hbl-chat-room small,.hbl-chat-room .hbl-chat-members-preview{display:none}
+}

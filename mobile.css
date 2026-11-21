@@ -1,0 +1,175 @@
+/* HBL v3.3 – Smartphone-Anpassung; Desktop bleibt unverändert */
+.hbl-mobile-nav{display:none}
+.part-swipe-tip{display:none}
+@media(max-width:710px){
+html{scroll-behavior:smooth;scroll-padding-top:14px}
+body{overflow-x:hidden;-webkit-text-size-adjust:100%}
+body .dashboard-scene{background-position:center;opacity:.20}
+body.dark .dashboard-scene{opacity:.15}
+.wrapper{width:100%;max-width:100%;padding:12px 12px calc(99px + env(safe-area-inset-bottom,0px))!important}
+header{gap:10px!important;margin-bottom:16px!important}
+header .hero,header>.clockbox,header>.music-shortcuts{border-radius:17px}
+header .hero-content{padding:15px!important;gap:13px!important}
+header .hero-intro{min-width:0;width:100%}
+header .hero h1{font-size:clamp(23px,7vw,29px);line-height:1.1}
+header .hero p{font-size:13px}
+.dashboard-creator{max-width:100%}
+.creator-logo{max-width:100%}
+header .background-controls{width:100%;align-items:flex-start;min-width:0}
+header .background-options{justify-content:flex-start;gap:7px}
+header .bg-option{min-height:40px;padding:9px 12px}
+header>.clockbox{padding:13px 15px!important}
+.clockbox .clocktop{margin-bottom:8px}
+.clockbox .time{font-size:30px}
+header .music-shortcuts{padding:11px 14px!important}
+header .music-shortcut-links{display:flex;flex-wrap:wrap;gap:7px}
+header .music-shortcut{min-height:40px}
+.searchbar{gap:8px;margin:0 0 16px!important}
+.searchbar input{min-width:0;padding:12px;min-height:48px;font-size:16px}
+.searchbar button{min-height:48px;padding:0 14px}
+.board-toolbar{margin-bottom:12px}
+.board-toolbar .board-help{display:none}
+.board-toolbar .board-reset{min-height:36px}
+.dashboard-board{gap:13px!important;margin-bottom:18px}
+.dashboard-board .dashboard-tile{min-width:0;scroll-margin-top:18px}
+.dashboard-board .dashboard-tile:not(.card):not(.todaybox){padding:13px!important;border-radius:16px}
+.dashboard-board .dashboard-tile .section-title{align-items:flex-start;gap:8px;flex-wrap:wrap}
+.dashboard-board .dashboard-tile .section-title .mini-note{max-width:100%}
+.dashboard-board .dashboard-tile .participation-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.dashboard-board .dashboard-tile .subject-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.dashboard-board .dashboard-tile .folder-row{grid-template-columns:1fr;gap:9px}
+.participation-course-link{padding:13px 11px;gap:9px;min-height:90px}
+.participation-course-link .pcourse-top strong{font-size:14px}
+.planningpanel .lessonrow{grid-template-columns:88px minmax(0,1fr)}
+.lessonroom{font-size:12px}
+.prepitem{min-height:38px}
+.taskentry{min-height:46px}
+.taskentry input[type=checkbox]{width:20px;height:20px}
+.taskedit,.taskadd{min-width:42px;min-height:42px}
+.dashboard-board .dashboard-tile[data-tile="stundenplan"] .timetablegrid{overflow-x:auto;grid-template-columns:repeat(5,minmax(108px,1fr));overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.dashboard-board .dashboard-tile[data-tile="stundenplan"] .timetablelegend::after{content:" · Tabelle seitlich wischen ↔"}
+.tile-controls{gap:4px;padding-bottom:5px}
+.tile-grip,.tile-tool{min-width:38px;min-height:40px;font-size:17px;touch-action:manipulation}
+.tile-size{display:none!important}
+.tile-grip span{display:none!important}
+.subject,.btn{min-height:47px}
+.schoolyear-heading{gap:8px}
+.schoolyear-progress strong{font-size:17px}
+.schooldots-layout{gap:5px}
+.schooldots-axis{margin-left:28px}
+.schooldots-weekdays{width:24px}
+.schooldots-legend{padding-left:0}
+.hbl-mobile-nav{position:fixed;left:9px;right:9px;bottom:calc(9px + env(safe-area-inset-bottom,0px));z-index:1000;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;border:1px solid var(--line);border-radius:18px;padding:6px;background:var(--panel);color:var(--text);box-shadow:0 8px 35px rgba(0,0,0,.25)}
+.hbl-mobile-nav button,.hbl-mobile-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:51px;padding:6px 3px;border:0;border-radius:12px;background:transparent;color:var(--text);font-family:inherit;font-size:11px;font-weight:750;cursor:pointer;text-decoration:none}
+.hbl-mobile-nav button:active,.hbl-mobile-nav a:active{background:var(--panel2)}
+.hbl-mobile-nav .hbl-mobile-icon{font-size:20px;line-height:1.2}
+.part-shell{width:100%;max-width:100%;padding:12px 10px calc(99px + env(safe-area-inset-bottom,0px))!important}
+.part-nav{gap:8px;margin-bottom:10px}
+.part-top-meta{font-size:10px}
+.part-back{min-height:43px;display:inline-flex;align-items:center}
+header.part-hero{border-radius:17px;padding:15px!important;margin-bottom:13px!important}
+.part-hero h1{font-size:23px}
+.part-hero p{font-size:12px}
+.part-legend{gap:5px;margin-top:12px}
+.part-key{padding:5px 8px;font-size:11px}
+.part-tabs{gap:6px;margin-bottom:8px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.part-tab{min-height:43px;padding:10px 12px}
+.part-pane{min-width:0;padding:12px!important;border-radius:16px}
+.part-pane-top{display:block}
+.part-pane-top h2{font-size:17px}
+.part-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px;align-items:stretch}
+.part-actions .part-button{width:100%;min-height:45px;padding:8px}
+.part-actions .part-date-group{grid-column:span 1}
+.part-actions .part-date-group input{min-width:0;width:100%;min-height:45px;font-size:15px}
+.part-monthbar{padding:10px;gap:7px}
+.part-monthbar label,.part-monthbar select{width:100%}
+.part-monthbar select{min-width:0;min-height:46px;font-size:16px}
+.part-roster{display:grid;grid-template-columns:1fr;padding:11px;gap:9px}
+.part-roster-actions{display:grid;grid-template-columns:1fr}
+.part-roster-actions .part-button{min-height:45px}
+.part-status{font-size:11px}
+.part-swipe-tip{display:block;padding:8px 3px 0;color:var(--muted);font-size:11px;font-weight:700}
+.part-table-scroll{margin-top:8px;width:100%;max-width:100%;max-height:62vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.part-table{font-size:12px}
+.part-table th,.part-table td{padding:6px 4px}
+.part-table th:first-child,.part-table td:first-child{left:0;min-width:29px;width:29px;padding:5px 3px}
+.part-table th:nth-child(2),.part-table td:nth-child(2){left:29px;min-width:130px;max-width:135px;width:130px}
+.part-student-name{width:123px;min-width:0!important;padding:8px 4px;font-size:14px}
+.part-table .part-date-head{min-width:103px}
+.part-table td.part-mark-cell{min-width:103px;padding:5px 3px}
+.part-date-head input{min-width:96px;width:96px}
+.part-grade-select{min-height:43px;width:54px;font-size:16px;padding:7px 3px}
+.part-comment-edit{min-height:42px;min-width:35px;padding:6px 5px}
+.part-final-select{min-height:43px;font-size:16px}
+.part-footer{font-size:11px}
+.part-modal-wrap{padding:10px;align-items:end}
+.part-modal{width:100%;margin-bottom:calc(4px + env(safe-area-inset-bottom,0px));padding:17px}
+.part-modal textarea{font-size:16px}
+.part-modal .part-modal-actions .part-button{min-height:45px}
+}
+@media(max-width:355px){.dashboard-board .dashboard-tile .participation-grid{grid-template-columns:1fr}.part-actions{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* v6.0.2: kompakte Smartphone-Kopfzeile; Desktop und Tablet unverändert. */
+@media(max-width:710px){
+  header .hero-content{padding:12px 14px!important;gap:7px!important;min-height:0!important}
+  header .hero-intro{min-width:0;width:100%;flex:1}
+  header .hero h1{font-size:clamp(23px,6.5vw,29px);margin:0 0 3px;line-height:1.06}
+  header .hero p{font-size:12px;line-height:1.3;margin:3px 0 0}
+  header .hero .demo-alert{font-size:10px;line-height:1.25;padding:6px 9px;margin-top:7px}
+  header .hero-headline{gap:5px}
+  header .dashboard-version{font-size:9px;padding:4px 7px;margin:0 0 2px}
+  header .hbl-hero-settings{display:none!important}
+  header .dashboard-creator{margin-top:4px;gap:5px;opacity:.6;display:flex;align-items:center;flex-wrap:nowrap}
+  header .creator-label{font-size:7px;padding:0;width:auto;letter-spacing:.08em;white-space:nowrap}
+  header .creator-signature{width:115px;max-width:115px;min-width:0}
+  header .creator-logo{max-height:17px;filter:none}
+  header>.clockbox{display:flex!important;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:6px;width:100%!important;min-width:0;padding:9px 11px!important}
+  header>.clockbox .clocktop{margin:0;min-width:0;flex:0 0 auto}
+  header>.clockbox .weekbadge{padding:5px 7px;font-size:10px;white-space:nowrap;max-width:none}
+  header>.clockbox .weekletter{font-size:17px;margin-right:5px;padding-right:5px}
+  header>.clockbox .weektext{font-size:10px}
+  header>.clockbox .time{font-size:clamp(16px,4.6vw,21px)!important;letter-spacing:0;white-space:nowrap;flex:0 0 auto}
+  header>.clockbox .date{font-size:11px;margin:0;white-space:nowrap;flex:0 0 auto}
+  header>.clockbox .kw{font-size:11px;margin:0;white-space:nowrap;flex:0 0 auto}
+  .dashboard-board .dashboard-tile[data-tile="suche"]{padding:10px 12px!important}
+  .dashboard-board .dashboard-tile[data-tile="suche"] .searchbar{margin:0!important}
+  .dashboard-board .dashboard-tile[data-tile="suche"] .searchbar input{min-width:0}
+  .dashboard-board .dashboard-tile[data-tile="suche"] .searchbar button[type="submit"]{padding:0 11px}
+}
+@media(max-width:365px){
+ header>.clockbox{gap:4px;padding:8px!important}
+ header>.clockbox .weekbadge{padding:4px 6px}
+ header>.clockbox .weekletter{font-size:15px}
+ header>.clockbox .weektext,header>.clockbox .date,header>.clockbox .kw{font-size:10px}
+ header>.clockbox .time{font-size:16px!important}
+}
+
+/* v6.0.3 – Wochenstatus in Hero integriert, kompakte einheitliche Typografie. */
+@media(max-width:710px){
+ header .hero .clockbox{box-sizing:border-box;display:flex!important;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:6px;width:100%!important;min-width:0;max-width:100%;margin:0!important;padding:10px 14px!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+ header .hero .clockbox .clocktop{margin:0;flex:0 0 auto;min-width:0}
+ header .hero .clockbox .weekbadge{padding:5px 7px}
+ header .hero .clockbox .weekletter{font-size:13px!important;margin-right:5px;padding-right:5px}
+ header .hero .clockbox .weektext,header .hero .clockbox .time,header .hero .clockbox .date,header .hero .clockbox .kw{font-size:13px!important;font-weight:700;line-height:1.2;letter-spacing:0;margin:0;white-space:nowrap}
+ .dashboard-board .search-tile.dashboard-tile{display:flex!important;flex-direction:column!important;align-items:stretch;gap:9px;padding:12px!important}
+ .dashboard-board .search-tile .tile-controls{width:100%;flex:0 0 auto;margin:0}
+ .dashboard-board .search-tile .searchbar{display:flex!important;flex-direction:row!important;width:100%;min-width:0;gap:8px;margin:0!important}
+ .dashboard-board .search-tile .searchbar input{min-width:0;flex:1 1 0;width:0;max-width:none;min-height:46px;font-size:16px}
+ .dashboard-board .search-tile .searchbar button{flex:0 0 auto;min-height:46px;padding:0 13px}
+}
+@media(max-width:365px){
+ header .hero .clockbox{gap:4px;padding:9px 8px!important}
+ header .hero .clockbox .weekbadge{padding:4px 5px}
+ header .hero .clockbox .weekletter{font-size:11px!important;margin-right:3px;padding-right:3px}
+ header .hero .clockbox .weektext,header .hero .clockbox .time,header .hero .clockbox .date,header .hero .clockbox .kw{font-size:11px!important}
+}
+
+/* v6.0.6: Chat, Kontoname und Mein HBL ständig in der Handy-Navigation. */
+@media(max-width:710px){
+ .hbl-mobile-nav{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+ .hbl-mobile-nav::-webkit-scrollbar{display:none}
+ .hbl-mobile-nav button{position:relative}
+ .hbl-mobile-nav button>span:nth-child(2){min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .hbl-mobile-chat-badge{position:absolute;top:2px;right:6px;min-width:17px;height:17px;padding:0 3px;box-sizing:border-box;border-radius:9px;background:#b32635;color:#fff;font-size:10px;font-weight:850;line-height:17px;text-align:center}
+ .hbl-mobile-chat-badge[hidden]{display:none!important}
+}

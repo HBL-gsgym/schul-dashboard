@@ -1,0 +1,346 @@
+.course-workspace{box-sizing:border-box;width:min(100%,78rem);margin:auto;padding:clamp(14px,3vw,40px);color:var(--text)}
+.course-workspace h1{font-size:clamp(24px,4vw,36px);margin:16px 0}
+.course-workspace .part-pane h2{margin:0}
+.seat-heading,.seat-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.seat-heading{justify-content:space-between;gap:12px}
+.seat-heading span,.seat-hint,.seat-status{font-size:.85rem;color:var(--muted)}
+.seat-fields{border:0;padding:0;margin:0;min-width:0}
+.seat-tools{margin:12px 0}
+.seat-tools label{font-size:.875rem}
+.seat-tools input,.seat-tools select{box-sizing:border-box;max-width:100%;border:1px solid var(--line);border-radius:7px;padding:7px;background:var(--panel);color:var(--text);font:inherit}
+.seat-tools input[type=number]{width:4.5rem}
+.seat-scroll{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.seat-room{min-width:800px;padding:12px}
+.seat-front{width:32%;margin:0 auto 16px;text-align:center;background:#305752;color:white;border-radius:4px;border-bottom:3px solid #b89873;font-size:.8rem;line-height:1.4rem;font-weight:700}
+.seat-board{position:relative;background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:calc(100% / var(--seat-columns)) 22px}
+.seat-empty{position:absolute;inset:0;display:grid;place-content:center;color:var(--muted)}
+.seat-desk{position:absolute;box-sizing:border-box;padding:3px}
+.seat-desk>div{display:flex;flex-direction:column;height:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-bottom:3px solid var(--accent);border-radius:8px;overflow:hidden;text-align:center}
+.seat-desk.selected>div{outline:2px solid var(--accent)}
+.seat-desk.blocked>div{outline:2px dashed #d76548}
+.seat-desk small,.seat-handle{display:block;width:100%;font:inherit;font-weight:700;font-size:.71rem;background:var(--panel2);color:var(--muted);border:0;line-height:20px;padding:0}
+.seat-handle{cursor:grab;touch-action:none;user-select:none}
+.seat-places{display:flex;flex:1;min-height:0}
+.seat-desk.vertical .seat-places{flex-direction:column}
+.seat-place{min-width:0;flex:1;align-content:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:inherit;font-size:.8rem;background:transparent;color:var(--text);border:0;padding:2px 4px}
+.seat-place+.seat-place{border-left:1px solid var(--line)}
+.seat-desk.vertical .seat-place+.seat-place{border-left:0;border-top:1px solid var(--line)}
+button.seat-place{cursor:pointer}
+.seat-place[data-fixed]{position:relative;padding-inline-end:1.15em}
+.seat-place[data-fixed]::after{content:"📌";position:absolute;inset-inline-end:1px;top:1px;font-size:.75em}
+.seat-place[aria-pressed=true]{box-shadow:inset 0 -2px var(--accent);font-weight:bold}
+.seat-inspector{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:8px}
+.seat-status:empty{display:none}
+.seat-tools button:disabled{opacity:.5}
+@media(max-width:600px){.seat-tools .part-button{min-height:40px}.seat-heading{align-items:flex-start}.seat-room{padding:8px}.seat-empty{display:block;padding:2rem 1rem}}
+.course-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.course-choices a{text-align:center;font-size:1rem;padding:14px}
+.grade-pilot{margin:0 0 12px;color:var(--muted);font-size:.83rem}
+.course-workspace summary{cursor:pointer;font-weight:700;margin:4px 0}
+.grade-settings{display:grid;gap:10px;padding:12px 0;justify-items:start}
+.grade-settings label,.grade-dialog label{font-weight:600}
+.grade-area,.grade-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.grade-area{width:100%;padding:8px 0;border-bottom:1px solid var(--line)}
+.grade-area b{overflow-wrap:anywhere}
+.grade-area span{color:var(--muted);margin-right:auto}
+.grade-scroll{max-height:65vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.grade-scroll table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+.grade-scroll th,.grade-scroll td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.grade-scroll th{background:var(--panel2)}
+.grade-scroll thead{position:sticky;top:0;z-index:2}
+.grade-scroll tr>th[scope=row],.grade-scroll th[rowspan]:first-child{position:sticky;left:0;text-align:left;min-width:7rem;max-width:13rem;overflow-wrap:anywhere}
+.grade-scroll button,.grade-scroll select,.grade-settings select,.grade-dialog input,.grade-dialog select{font:inherit;color:var(--text);background:var(--panel);border-radius:6px;border:1px solid var(--line);padding:6px}
+.grade-scroll th button{cursor:pointer;font-weight:600;max-width:12rem;overflow-wrap:anywhere}
+.grade-scroll th small{display:block}
+.grade-total,.grade-mean{font-weight:700}
+.grade-dialog{box-sizing:border-box;width:min(26rem,calc(100% - 2rem));max-height:85vh;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text)}
+.grade-dialog::backdrop{background:rgba(0,0,0,.45)}
+.grade-dialog form,.grade-dialog label:not(:has([type=checkbox])){display:grid;gap:7px}
+.grade-dialog form{gap:14px}
+.grade-dialog h2,.grade-dialog p{margin:0}
+.grade-dialog p:empty{display:none}
+@media(max-width:600px){.course-workspace{padding:12px}.grade-scroll td,.grade-scroll th{padding:5px}.grade-scroll select{min-height:40px}}
+.seat-rating{max-width:26rem}
+.seat-rating>p,.seat-rating>label{margin:8px 0 14px}
+.seat-rating>label{display:grid;gap:4px}
+.seat-rating-values{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.seat-rating-values button{min-height:44px;font-size:1.1rem;justify-content:center;padding:5px}
+.seat-rating-values [aria-pressed=true]{background:var(--accent);color:white;outline:2px solid var(--text)}
+.seat-rating-values button:disabled{opacity:.55}
+.seat-rate:hover,.seat-rate:focus-visible{background:var(--panel2);text-decoration:underline}
+.seat-rate[data-rated]::before{content:"✓";display:inline-block;margin-inline-end:.25em;color:var(--accent);font-weight:800}
+.seat-tools [data-rating-key]{color:var(--muted)}
+.course-roster summary{cursor:pointer;font-weight:700}
+.course-roster .part-button{margin:12px 0}
+.course-roster ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(12rem,100%),1fr));gap:4px;list-style:none;margin:0;padding:0;max-height:20rem;overflow:auto}
+.course-roster li button{width:100%;min-height:40px;text-align:left;padding:6px 10px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:inherit;overflow-wrap:anywhere;cursor:pointer}
+.grade-period{margin:10px 0}
+.grade-period select,.grade-total button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px}
+.grade-total button{cursor:pointer;min-height:36px}
+.grade-total small{display:block;font-weight:normal;white-space:nowrap}
+
+.seat-print-sheet{display:none}
+@media print{
+ @page seatplan{size:A4 landscape;margin:10mm}
+ body:has(>.seat-print-sheet){page:seatplan;display:block!important;margin:0!important;padding:0!important;background:white!important}
+ body:has(>.seat-print-sheet)>:not(.seat-print-sheet){display:none!important}
+ .seat-print-sheet{display:block;color:black;background:white;font-family:Arial,sans-serif;break-inside:avoid}
+ .seat-print-sheet h1{font-size:16pt;margin:0}
+ .seat-print-sheet p{font-size:11pt;margin:1mm 0}
+ .seat-print-sheet svg{display:block;width:100%;height:165mm}
+}
+
+.seat-pdf-dialog{color:var(--text,#18202a);background:var(--panel,#fff);border:1px solid var(--line,#ddd);border-radius:14px;padding:20px;max-width:min(90vw,490px);box-shadow:0 10px 40px #0004}
+.seat-pdf-dialog::backdrop{background:#0008}
+.seat-pdf-dialog h2{margin:0 0 10px}
+.seat-pdf-actions{display:flex;flex-wrap:wrap;gap:10px}
+.seat-pdf-actions a,.seat-pdf-actions button{border:1px solid var(--line,#ddd);border-radius:9px;padding:11px 13px;background:var(--panel2,#eef2f5);color:var(--text,#18202a);font:700 14px Arial,sans-serif;text-decoration:none;cursor:pointer}
+
+/* HBL v7.0: drei Bereiche für alle Kurse, der Sitzplan bleibt der Hauptinhalt. */
+.hbl-course-heading{margin:6px 0 0}
+.hbl-course-heading h1{margin:5px 0 3px}
+.hbl-course-eyebrow{margin:0;color:var(--muted);font-size:.72rem;letter-spacing:.12em;font-weight:800}
+.hbl-course-meta{margin:0 0 8px;color:var(--muted);font-size:.88rem}
+.hbl-course-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 20px}
+.hbl-course-tab{min-height:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;padding:11px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--text);font-size:1rem;font-weight:750;text-decoration:none;box-shadow:var(--shadow)}
+.hbl-course-tab:hover{border-color:var(--accent);text-decoration:none}
+.hbl-course-tab[aria-current="page"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.hbl-course-tab:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.course-workspace .seat-section{margin-bottom:15px}
+@media(max-width:710px){.hbl-course-tabs{gap:6px;margin:12px 0 15px}.hbl-course-tab{padding:10px 5px;min-height:46px;font-size:.88rem}.hbl-course-heading h1{font-size:clamp(22px,5vw,30px)}}
+
+/* v7.0.2: Auf allen Kursseiten beginnen die drei Tabs exakt am selben vertikalen Anker.
+   Seitenabhängige Informationen folgen darunter; Tablet/Smartphone haben gleiche Oberabstände. */
+.part-shell.hbl-course-layout,.course-workspace.hbl-course-layout{
+ box-sizing:border-box;width:min(100%,78rem);max-width:78rem;margin:0 auto;
+ padding:clamp(14px,3vw,40px) clamp(14px,3vw,40px) 64px;
+}
+.hbl-course-layout > .part-nav{
+ display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;
+ min-height:43px;margin:0 0 10px;
+}
+.hbl-course-layout > .hbl-course-tabs{margin:0 0 18px}
+.hbl-course-layout > .hbl-course-heading{margin:0 0 18px}
+.hbl-course-layout > .hbl-course-heading h1{margin:5px 0 3px}
+@media(max-width:710px){
+ .part-shell.hbl-course-layout,.course-workspace.hbl-course-layout{
+  padding:12px 10px calc(99px + env(safe-area-inset-bottom,0px)) !important;
+ }
+ .hbl-course-layout > .part-nav{min-height:43px;margin-bottom:10px}
+ .hbl-course-layout > .hbl-course-tabs{margin:0 0 15px}
+ .hbl-course-layout > .hbl-course-heading{margin:0 0 15px}
+}
+
+/* HBL v7.0.5: einheitliche schmale Kursauswahl oberhalb der drei Bereichsbuttons. */
+.hbl-course-layout > .hbl-course-picker{
+ box-sizing:border-box;display:flex;flex-wrap:nowrap;align-items:stretch;
+ gap:7px;overflow-x:auto;overflow-y:hidden;min-height:45px;
+ padding:2px 1px 5px;margin:0 0 9px;scrollbar-width:thin;overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch;
+}
+.hbl-course-picker .part-tab{min-height:39px;box-sizing:border-box;text-decoration:none}
+.hbl-course-picker .part-tab:hover{border-color:var(--accent);text-decoration:none}
+.hbl-course-picker .part-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hbl-course-picker-empty{font-size:12px;color:var(--muted);padding:9px 4px}
+@media(max-width:710px){
+ .hbl-course-layout > .hbl-course-picker{min-height:45px;margin-bottom:8px}
+ .hbl-course-picker .part-tab{min-height:40px}
+}
+
+/* Klassenbuchnummer + Name bleiben beim horizontalen Notenscrollen sichtbar. */
+.course-roster [hidden]{display:none!important}
+.class-roster-warning{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font-size:13px;line-height:1.4}
+.grade-scroll tr>th[scope=row],.grade-scroll thead th[rowspan]:first-child{left:0;min-width:3.5rem;max-width:3.5rem;text-align:center;z-index:3}
+.grade-scroll tbody td:nth-child(2){position:sticky;left:3.5rem;background:var(--panel);min-width:8rem;text-align:left;z-index:1}
+.grade-scroll thead th[rowspan]:nth-child(2){position:sticky;left:3.5rem;min-width:8rem;max-width:13rem;text-align:left;z-index:4}
+
+
+/* Halbjahres-Mitarbeitsnoten: mobil bedienbare Konfiguration + getrennte Bestätigung. */
+.ma-panel{margin:14px 0;padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+.ma-header h2{margin:0 0 5px;font-size:1.1rem}
+.ma-header p,.ma-footnote,.ma-period-range{margin:4px 0 10px;color:var(--muted);font-size:.84rem;line-height:1.45}
+.ma-period-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.ma-config{min-width:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.ma-count{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.ma-count span{display:flex;align-items:center;gap:7px;font-size:.84rem}
+.ma-panel select,.ma-panel input[type=date],.grade-ma-settings input{
+ border:1px solid var(--line);border-radius:7px;padding:7px;background:var(--panel);color:var(--text);font:inherit;
+}
+.ma-count select{min-width:3.5rem}
+.ma-boundaries{margin-top:10px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.ma-boundaries label{display:grid;gap:5px;font-size:.8rem;min-width:0}
+.ma-period-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-weight:700}
+.ma-period-pick select{max-width:100%}
+.ma-grid-scroll{overflow:auto;max-height:56vh;border:1px solid var(--line);border-radius:10px}
+.ma-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}
+.ma-table th,.ma-table td{padding:9px 8px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:middle;background:var(--panel)}
+.ma-table thead th{position:sticky;top:0;z-index:2;background:var(--panel2);text-align:left;white-space:nowrap}
+.ma-table tbody th{font-variant-numeric:tabular-nums}
+.ma-table td small{display:block;color:var(--muted);font-size:.72rem;white-space:nowrap}
+.ma-table .ma-status{display:inline-block;font-size:.8rem;line-height:1.3;min-width:8.5rem}
+.ma-status.ma-confirmed,.grade-ma-confirmed{color:#218457;font-weight:700}
+.ma-status.ma-changed,.grade-ma-changed{color:#ba7416;font-weight:700}
+.ma-status.ma-provisional,.grade-ma-provisional{color:var(--muted);font-weight:650}
+.ma-table .part-button{white-space:nowrap;min-height:38px}
+.ma-table select{min-width:6rem}
+.grade-ma-settings label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.grade-ma-settings input{width:5.6rem}
+.grade-ma-settings span{font-size:.8rem}
+.grade-ma-note{padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);font-size:.82rem;line-height:1.5}
+.grade-ma-cell .grade-ma-value{display:block;font-weight:800}
+.grade-ma-cell small{display:block;font-size:.75rem;white-space:nowrap}
+@media(max-width:700px){
+ .ma-period-settings{grid-template-columns:1fr}
+ .ma-panel{padding:10px;margin:10px 0}
+ .ma-grid-scroll{max-height:48vh}
+ .ma-table th,.ma-table td{padding:7px 6px}
+ .ma-table select,.ma-table button{min-height:42px}
+}
+
+
+/* v7.2.0: Kompakte Notenspalten – nur fortlaufende Nummer im Kopf. */
+.grade-scroll th.grade-compact-head{padding:3px 4px;text-align:center;min-width:44px}
+.grade-scroll th.grade-compact-head>button{
+ display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+ min-width:40px;min-height:40px;width:100%;max-width:56px;
+ padding:6px;font-weight:750;font-size:.95rem;line-height:1.1;
+}
+.grade-scroll th.grade-compact-head>button:hover{border-color:var(--accent)}
+.grade-scroll th.grade-compact-head>button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grade-column-detail{display:grid;gap:14px}
+.grade-column-detail h2,.grade-column-detail p{margin:0}
+.grade-column-detail p{font-size:.88rem;line-height:1.45;color:var(--muted)}
+.grade-column-detail dl{display:grid;gap:10px;margin:0}
+.grade-column-detail dl>div{display:grid;gap:3px}
+.grade-column-detail dt{font-size:.8rem;color:var(--muted);font-weight:650}
+.grade-column-detail dd{margin:0;font-weight:650}
+.grade-column-detail .grade-actions a{color:var(--text);text-decoration:none;display:inline-flex;align-items:center}
+.grade-editor-area{font-size:.83rem;color:var(--muted)}
+@media(max-width:600px){
+ .grade-scroll th.grade-compact-head{padding:2px 3px;min-width:42px}
+ .grade-scroll th.grade-compact-head>button{min-width:38px;min-height:42px;max-width:48px}
+}
+
+
+/* v7.3.2: Eine einzige Mitarbeitstabelle mit integrierter Halbjahresbestätigung. */
+.ma-setting-details{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.ma-setting-details>summary{cursor:pointer;font-size:.86rem;font-weight:700;color:var(--text)}
+.ma-setting-details .ma-period-settings{margin:12px 0 0}
+.part-table td.part-ma-proposal{min-width:92px;vertical-align:middle;text-align:center}
+.part-ma-proposal strong{font-size:1.05rem;line-height:1.1}
+.part-ma-adjust{margin-top:4px;font-weight:400;text-align:left}
+.part-ma-adjust>summary{cursor:pointer;display:inline-block;color:var(--muted);font-weight:600;font-size:.75rem}
+.part-ma-adjust label{display:grid;gap:5px;white-space:normal;font-size:.75rem;margin-top:5px;color:var(--muted)}
+.part-ma-adjust select{max-width:100%;border:1px solid var(--line);border-radius:7px;padding:6px;color:var(--text);background:var(--panel);font:inherit}
+.part-table td.part-ma-action{min-width:115px;text-align:center}
+.part-ma-action>.part-button{min-height:40px;white-space:nowrap;font-weight:700}
+.part-ma-action>small{display:block;margin-top:5px;font-size:.75rem;white-space:normal;line-height:1.25}
+.part-ma-action .part-ma-entered{border-color:#27864d;background:#dbf5e4;color:#176a3b}
+.part-ma-action .part-ma-entered:hover{background:#c0edcf}
+.dark .part-ma-action .part-ma-entered,
+[data-theme="dark"] .part-ma-action .part-ma-entered{background:#173c2b;color:#9feabb;border-color:#419a6a}
+.part-ma-action .part-ma-update{border-color:#b9822d;background:var(--panel);color:var(--text)}
+.part-ma-action .part-ma-pending{color:#bd781b}
+@media(max-width:600px){
+ .part-table td.part-ma-action{min-width:122px}
+ .part-ma-action>.part-button{min-height:44px}
+ .part-ma-adjust select{min-height:40px;font-size:16px}
+}
+
+
+/* v7.4: Mitarbeit erbt die Gewichtung einer vorhandenen Notenkategorie. */
+.grade-ma-settings{align-items:flex-start;gap:10px}
+.grade-ma-settings label{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1 1 17rem;min-width:0}
+.grade-ma-settings select{box-sizing:border-box;max-width:100%;min-width:min(18rem,100%);min-height:42px;padding:8px}
+.grade-ma-settings span{flex:1 1 100%;margin-right:0;line-height:1.45}
+.grade-ma-legacy{font-size:.82rem;line-height:1.5;color:var(--muted);margin:8px 0 12px}
+@media(max-width:600px){
+ .grade-ma-settings label{display:grid;grid-template-columns:1fr;align-items:start}
+ .grade-ma-settings select{width:100%;min-width:0;font-size:16px}
+}
+
+
+/* v7.4.1: Klassenlistenimport sitzt unter der Schülerliste in der Kursübersicht. */
+.course-roster-tools{margin:14px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.course-roster-import{flex:1 1 100%;box-sizing:border-box;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;min-width:0}
+.course-roster-import[hidden]{display:none!important}
+.course-roster-import label{display:block;font-size:.88rem;font-weight:700;margin-bottom:7px}
+.course-roster-import textarea{display:block;box-sizing:border-box;width:100%;min-height:135px;resize:vertical;border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--panel);color:var(--text);font:inherit}
+.course-roster-import-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+.course-roster-import-actions button{min-height:41px}
+.course-roster-import-note{font-size:.82rem;color:var(--muted);line-height:1.5;margin:10px 0 0}
+.course-roster-feedback{flex:1 1 100%;font-size:.83rem;line-height:1.5;color:var(--muted);margin:0}
+.course-roster-feedback:empty{display:none}
+@media(max-width:650px){
+ .course-roster-tools{display:grid;grid-template-columns:1fr;gap:8px}
+ .course-roster-tools>.part-button{width:100%;min-height:43px}
+ .course-roster-import-actions{display:grid;grid-template-columns:1fr}
+ .course-roster-import-actions button{width:100%;min-height:44px}
+ .course-roster-import textarea{font-size:16px}
+}
+
+
+/* v7.4.2: Auf Android im Querformat die freie Bildschirmhöhe für das
+   Notenbuch nutzen, ohne die Schrift oder die Touchflächen zu verkleinern. */
+@media (orientation:landscape) and (max-height:650px) and (max-width:1100px){
+ .grade-scroll{
+  max-height:calc(100dvh - 60px);
+  overscroll-behavior:contain;
+ }
+ .grade-scroll th,.grade-scroll td{
+  padding:3px 5px;
+  line-height:1.2;
+ }
+ .grade-scroll thead th[scope="colgroup"]{
+  padding:5px 7px;
+  font-size:.88rem;
+  line-height:1.15;
+ }
+ .grade-scroll th.grade-compact-head{padding:2px 3px}
+ .grade-scroll th.grade-compact-head>button{
+  min-height:40px;
+  padding:4px;
+ }
+ .grade-scroll select{
+  min-height:40px;
+  padding:4px 6px;
+ }
+ .grade-total button{
+  min-height:40px;
+  padding:4px 6px;
+ }
+ .grade-ma-cell small{
+  font-size:.69rem;
+  line-height:1.2;
+  margin-top:1px;
+ }
+}
+
+
+/* v7.4.4: Verbleibenden Leerraum unter der Notentabelle im Querformat nutzen.
+   v7.4.2 begrenzte den Scrollbereich auf 100dvh - 60px und ließ außerdem
+   64px Außenabstand stehen. Nur auf schmalen Landscape-Displays korrigieren. */
+@media (orientation:landscape) and (max-height:650px) and (max-width:1100px){
+ .course-workspace.hbl-course-layout:has(.grade-scroll){
+  padding-bottom:max(6px,env(safe-area-inset-bottom,0px));
+ }
+ .course-workspace.hbl-course-layout:has(.grade-scroll) #coursePageContent>.part-pane{
+  padding-bottom:8px!important;
+ }
+ .course-workspace.hbl-course-layout:has(.grade-scroll) #gradeStatus{
+  margin:4px 0 0;
+ }
+ .course-workspace.hbl-course-layout:has(.grade-scroll) #gradeStatus:empty{display:none}
+ .grade-scroll{
+  max-height:calc(100dvh - 8px - env(safe-area-inset-bottom,0px));
+ }
+}
+
+/* v7.5.0: Schülerprofil und mobile Schülerverwaltung */
+.course-roster li{display:flex;gap:5px;align-items:stretch}
+.course-roster li [data-profile]{flex:1;min-width:0}
+.course-roster li .course-person-edit{flex:0 0 auto;width:auto;padding-inline:10px;font-size:.78rem}
+.course-profile{width:min(92vw,600px);max-height:85dvh;overflow:auto}
+.course-profile ul{padding-left:1.4rem;line-height:1.8;max-height:45dvh;overflow:auto}
+.course-student-highlight{outline:2px solid var(--accent);outline-offset:-2px}
+@media(max-width:600px){.course-roster li .course-person-edit{min-height:44px}.course-profile .grade-actions a{min-height:44px}}

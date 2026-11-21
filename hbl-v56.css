@@ -1,0 +1,81 @@
+/* HBL v5.6 – kompakte Kalendertermine, Link-Zentrale und Fortschrittsanzeige */
+.hbl-duty-placeholder{background:transparent;border:0;box-shadow:none}
+.hbl-duty-placeholder .hbl-duty-caption,.hbl-duty-placeholder .hbl-duty-spacer{visibility:hidden}
+.hbl-duty-spacer{min-height:48px}
+.schooldot.event,.schooldot.eventoff{background:#9863cb!important;border-color:#7240a6!important;box-shadow:0 0 0 1px rgba(152,99,203,.15)}
+.schooldot.event.is-today,.schooldot.eventoff.is-today{outline:2px solid #9863cb;outline-offset:2px}
+.legenddot.event{background:#9863cb!important;border-color:#7240a6!important}
+.hbl-school-events{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.hbl-school-events-head{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.hbl-school-events-head strong{font-size:13px}
+.hbl-school-events-head button,.hbl-admin-launch{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:7px;padding:5px 8px;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.hbl-event-status{color:#b45309;font-size:11px;margin:5px 0}
+.hbl-school-event-list{max-height:225px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.hbl-school-event{border-left:3px solid #9863cb;background:var(--panel2);border-radius:4px}
+.hbl-school-event.hbl-event-past{opacity:.44;filter:grayscale(.7);border-left-color:var(--muted)}
+.hbl-school-event-text,.hbl-school-event-button{display:flex;flex-direction:column;gap:3px;padding:6px 9px;text-align:left;max-width:100%;overflow-wrap:anywhere}
+.hbl-school-event strong{font-size:12px;line-height:1.2;color:var(--text)}
+.hbl-school-event small{font-size:10px;color:var(--muted);line-height:1.3}
+.hbl-school-event-button{border:0;background:transparent;color:inherit;cursor:pointer;width:100%;font:inherit}
+.hbl-school-event-button:hover{background:rgba(152,99,203,.09)}
+.hbl-school-events-empty{font-size:11px;color:var(--muted);line-height:1.4}
+.hbl-admin-launch{margin-top:12px;padding:8px 10px}
+.hbl-v56-overlay{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;background:rgba(5,10,20,.65);padding:15px;overscroll-behavior:contain}
+.hbl-v56-overlay[hidden],.hbl-v56-dialog [hidden]{display:none!important}
+.hbl-v56-dialog{position:relative;background:var(--panel);color:var(--text);border:1px solid var(--line);box-shadow:0 22px 60px rgba(0,0,0,.32);border-radius:17px;padding:22px;width:min(490px,100%);max-height:min(90dvh,780px);overflow-y:auto}
+.hbl-v56-dialog h2{font-size:21px;margin:0 0 15px}
+.hbl-v56-close{position:absolute;right:13px;top:12px;border:none;background:transparent;color:var(--muted);padding:7px;cursor:pointer;font-size:17px}
+.hbl-v56-dialog form,.hbl-v56-dialog label{display:flex;flex-direction:column;gap:8px}
+.hbl-v56-dialog form{gap:13px}
+.hbl-v56-dialog label{font-weight:700;font-size:12px}
+.hbl-v56-dialog input:not([type=checkbox]),.hbl-v56-dialog select,.hbl-v56-dialog textarea{padding:10px 12px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;color:var(--text);font:inherit;font-size:14px;min-width:0;width:100%;box-sizing:border-box}
+.hbl-v56-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.hbl-v56-dialog fieldset{padding:10px;border:1px solid var(--line);border-radius:8px}
+.hbl-v56-dialog legend{font-weight:800;font-size:12px}
+.hbl-v56-dialog fieldset .hbl-v56-block{display:inline-flex;flex-direction:row;align-items:center;margin:4px 9px 4px 0;gap:5px;cursor:pointer}
+.hbl-v56-note{font-size:12px;line-height:1.45;color:var(--muted)}
+.hbl-v56-form-actions{display:flex;gap:8px;flex-wrap:wrap}
+.hbl-v56-form-actions button,.hbl-admin-person button{border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text);padding:10px 12px;cursor:pointer;font:inherit;font-size:12px;font-weight:800}
+.hbl-v56-form-actions .primary{background:var(--accent);border-color:var(--accent);color:white}
+.hbl-v56-form-actions .danger{color:#b84040}
+.hbl-v56-form-actions button[hidden]{display:none}
+.hbl-admin-person{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.hbl-admin-person div{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere}
+.hbl-admin-person strong{font-size:12px}
+.hbl-admin-person small{font-size:11px;color:var(--muted)}
+.hbl-admin-person button{flex-shrink:0}
+.hbl-admin-person button:disabled{opacity:.5}
+.hbl-links-card{min-width:0}
+.hbl-links-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 13px}
+.hbl-links-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:var(--panel2);font:inherit;font-size:11px;font-weight:700;line-height:1.15;padding:11px 3px;cursor:pointer}
+.hbl-links-tab>span:first-child{font-size:18px}
+.hbl-links-tab.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--panel));box-shadow:inset 0 0 0 1px var(--accent)}
+.hbl-links-list{display:flex;flex-direction:column;gap:5px}
+.hbl-links-row{display:flex;gap:4px;align-items:stretch}
+.hbl-links-row a{display:flex;flex:1;align-items:center;gap:9px;min-width:0;color:var(--text);text-decoration:none;background:var(--panel2);border-radius:9px;padding:10px 12px;font-size:13px;font-weight:650}
+.hbl-links-row a:hover{outline:1px solid var(--accent)}
+.hbl-links-emoji{font-size:16px}
+.hbl-links-arrow{margin-left:auto;color:var(--muted)}
+.hbl-link-delete{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;cursor:pointer;padding:0 10px}
+.hbl-links-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.hbl-links-actions button,.hbl-links-form button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 10px;border-radius:8px;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.hbl-links-actions button:first-child{border-color:var(--accent);color:var(--accent)}
+.hbl-links-form{background:var(--panel2);padding:12px;border:1px solid var(--line);border-radius:9px;display:flex;flex-direction:column;gap:9px;margin-top:11px}
+.hbl-links-form[hidden]{display:none}
+.hbl-links-form label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:750;color:var(--text)}
+.hbl-links-form input{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--text);font:inherit;font-size:13px}
+.hbl-links-form>div{display:flex;gap:6px}
+.hbl-links-status{font-size:11px;color:#b45309;margin:6px 0 0}
+.pcourse-remaining{display:flex;flex-direction:column;gap:3px;margin-top:9px;padding:9px 10px;background:var(--panel2);border-radius:9px}
+.pcourse-remaining strong{font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
+.pcourse-remaining small{font-size:10px;color:var(--muted)}
+.pcourse-progress{display:block;overflow:hidden;height:5px;margin-top:5px;background:var(--line);border-radius:4px}
+.pcourse-progress i{display:block;height:100%;background:var(--greenweek);border-radius:4px}
+@media(max-width:710px){
+ .hbl-links-tab{padding:10px 2px;font-size:10px;min-height:61px}
+ .hbl-v56-dialog{padding:18px}
+ .hbl-v56-two{grid-template-columns:1fr}
+ .hbl-admin-person{flex-direction:column;align-items:stretch}
+ .hbl-school-event-list{max-height:190px}
+ .pcourse-remaining{padding:8px}
+}
