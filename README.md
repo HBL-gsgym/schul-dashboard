@@ -1,6 +1,8 @@
 # Schul-Dashboard HBL
 
-**Stand: v6.0.3 · Pilotprojekt · 21.11.2026**
+**Stand: v6.0.4 · Pilotprojekt · 21.11.2026**
+
+Der bisherige Status- und Rücksetzstreifen oberhalb der Dashboard-Kacheln entfällt: **Cloud-/Speicherstatus** und Sync-Aktionen sind in **Mein HBL → Daten & Synchronisierung** verfügbar, **Anordnung zurücksetzen** unter **Mein HBL → Dashboard anpassen** (mit Bestätigungsabfrage). Bestehende Speicherung, Konten und Kacheleinstellungen bleiben erhalten.
 
 Die Android-Hero-Kachel enthält jetzt auch A/B-Woche, Uhrzeit mit Sekunden, Datum und KW in einer Reihe mit einheitlicher Schriftgröße. Auf Desktop bleibt die Uhrzeit separat. Die Ecosia-Suche wird innerhalb ihrer Kachel unterhalb der Steuerleiste in voller Breite dargestellt; die Suchfunktion und persönliche Kachel-Einstellungen bleiben erhalten.
 

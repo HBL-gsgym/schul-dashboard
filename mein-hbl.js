@@ -40,7 +40,7 @@ window.openMeinHbl=function(){
     extra.append(row);
    }
   }
-  action('Standardansicht wiederherstellen',()=>{hblResetTileLayout();renderRows();});
+  action('Anordnung zurücksetzen',()=>{hblResetTileLayout();renderRows();});
   renderRows();
  };
  const accountId=()=>window.hblCloudUser?.()?.id;
@@ -94,7 +94,7 @@ window.openMeinHbl=function(){
  };
  function syncStatus(){
   const output=extra.querySelector('[data-sync-status]');
-  if(output)output.textContent=(navigator.onLine?'':'Offline · ')+(byId('hblCloudState')?.textContent||'Speicherstatus noch nicht verfügbar');
+  if(output)output.textContent=(navigator.onLine?'':'Offline · ')+(byId('hblCloudState')?.textContent||byId('prepStorageStatus')?.textContent||'Speicherstatus noch nicht verfügbar');
  }
  get('[data-sync]').onclick=()=>{
   openSection(get('[data-sync]'));
@@ -106,6 +106,7 @@ window.openMeinHbl=function(){
  };
  const observer=new MutationObserver(syncStatus);
  if(byId('hblCloudState'))observer.observe(byId('hblCloudState'),{childList:true,subtree:true,characterData:true});
+ if(byId('prepStorageStatus'))observer.observe(byId('prepStorageStatus'),{childList:true,subtree:true,characterData:true});
  function accountChanged(){if(accountId()!==initialId&&dialog.open)dialog.close();}
  window.addEventListener('hbl-cloud-status',accountChanged);
  window.addEventListener('online',syncStatus);window.addEventListener('offline',syncStatus);

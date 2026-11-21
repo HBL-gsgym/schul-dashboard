@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schul-Dashboard HBL · v6.0.3</title>
+<title>Schul-Dashboard HBL · v6.0.4</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1368,7 +1368,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seat-view.js?v=5.9.22"></script>
 <script src="./hbl-course-page.js?v=5.9.20"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=5.9.22">
-<script defer src="./mein-hbl.js?v=6.0.0"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
+<script defer src="./mein-hbl.js?v=6.0.4"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
 <script defer src="./mobile.js?v=5.10.5"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
@@ -2402,18 +2402,11 @@ function initializeDashboardTiles(){
  }
  layout.remove();oldGrid.remove();
  // Alle verwaisten Zwischencontainer wurden geleert. Der Kalender usw. sind bereits im Board.
+ // Der Speicherstatus bleibt für bestehende Cloud-/Lokalspeicher-Aufrufe erhalten,
+ // wird jedoch nur noch unter „Mein HBL → Daten & Synchronisierung“ gezeigt.
  const tools=document.querySelector(".preptools");
- if(tools){
-  const bar=document.createElement("div");bar.className="board-toolbar";
-  tools.classList.remove("preptools");tools.classList.add("board-status-note");
-  bar.appendChild(tools);
-  const help=document.createElement("span");help.className="board-help";
-  help.textContent="⠿ Ziehen · ▾ Ein-/ausklappen · ↔ Breite ändern";
-  const reset=document.createElement("button");reset.type="button";reset.className="board-reset";
-  reset.textContent="Anordnung zurücksetzen";reset.addEventListener("click",hblResetTileLayout);
-  bar.append(help,reset);
-  wrapper.insertBefore(bar,board);
- }
+ if(tools){tools.hidden=true;tools.style.display="none";}
+
  board.addEventListener("dragover",e=>{
   if(!hblDraggedTile)return;
   e.preventDefault();e.dataTransfer.dropEffect="move";
@@ -2456,7 +2449,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.3 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v6.0.4 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
