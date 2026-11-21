@@ -30,6 +30,7 @@ jobs:
           node-version: '22'
       - name: Navigation in Android-Emulation und Desktop-Chrome prÃ¼fen
         if: runner.os == 'Windows'
+        shell: bash
         env:
           CHROME_PATH: 'C:\Program Files\Google\Chrome\Application\chrome.exe'
         run: |
