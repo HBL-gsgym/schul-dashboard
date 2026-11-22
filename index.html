@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.6.1">
-<title>Schul-Dashboard HBL · v7.6.1</title>
+<meta name="hbl-version" content="7.6.2">
+<title>Schul-Dashboard HBL · v7.6.2</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1187,6 +1187,25 @@ header.part-hero{display:block !important;grid-template-columns:none !important;
 .dashboard-board .dashboard-tile.tile-collapsed{padding-bottom:10px !important;}
 .dashboard-board .dashboard-tile.tile-collapsed > :not(.tile-controls){display:none !important;}
 .dashboard-board{position:relative;overflow-anchor:none}
+.dashboard-board .dashboard-tile:not(.tile-dragging){position:relative}
+.dashboard-board .dashboard-tile:not(.tile-collapsed):not(.tile-dragging){overflow:auto}
+.dashboard-board .dashboard-tile[data-tile-height]:not(.tile-collapsed){
+ height:var(--tile-height);min-height:108px;overflow:auto;align-content:flex-start;
+}
+.dashboard-board .dashboard-tile[data-tile-height] > *{flex-shrink:0}
+.tile-resize{
+ position:absolute;right:1px;bottom:1px;width:30px;height:30px;z-index:1;
+ padding:0;border:0;background:transparent;color:var(--muted);cursor:nwse-resize;
+ touch-action:none;user-select:none;
+}
+.tile-resize::after{
+ content:"";position:absolute;right:6px;bottom:6px;width:11px;height:11px;
+ background:repeating-linear-gradient(135deg,transparent 0 2px,currentColor 2px 3px);
+ clip-path:polygon(100% 0,100% 100%,0 100%);
+}
+.tile-resize:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+@media(pointer:coarse){.tile-resize{width:36px;height:36px}}
+
 .dashboard-board .dashboard-tile.tile-dragging{
  position:fixed;inset:auto;top:0;left:0;z-index:1000;grid-area:auto!important;
  width:var(--drag-width);pointer-events:none;will-change:transform;
@@ -2289,8 +2308,84 @@ const HBL_TILE_SPECS=[
 ];
 const HBL_TILE_WIDTHS=[2,3,4,6,12];
 let hblPointerDrag=null;
+let hblResize=null;
+function hblSetTileHeight(tile,height){
+ if(Number.isFinite(height)&&height>0){
+  tile.dataset.tileHeight=String(Math.round(height));
+  tile.style.setProperty("--tile-height",tile.dataset.tileHeight+"px");
+ }else{
+  delete tile.dataset.tileHeight;tile.style.removeProperty("--tile-height");
+ }
+}
+function hblResizeStart(e,tile,handle){
+ if(hblPointerDrag||hblResize||e.button!==0||!e.isPrimary)return;
+ const board=tile.parentElement,grid=getComputedStyle(board);
+ const columns=grid.gridTemplateColumns.split(" ").length;
+ const gap=parseFloat(grid.columnGap);
+ const rect=tile.getBoundingClientRect();
+ e.preventDefault();
+ hblResize={tile,board,handle,id:e.pointerId,columns,step:(board.clientWidth+gap)/columns,
+  width:Number(tile.dataset.tileWidth),height:Number(tile.dataset.tileHeight)||null,
+  startHeight:rect.height,minHeight:Math.ceil(tile.querySelector(".tile-controls").offsetHeight)+76,
+  x:e.clientX,y:e.clientY,frame:0};
+ handle.setPointerCapture(e.pointerId);
+}
+function hblResizePreview(d,x,y){
+ const dx=x-d.x,dy=y-d.y;
+ const initial=Math.min(d.columns,d.width);
+ const span=Math.min(d.columns,Math.max(2,initial+Math.round(dx/d.step)));
+ // Keep the wider profile value if this screen already shows its maximum width.
+ const width=d.columns===1||span===initial?d.width:span;
+ if(width!==Number(d.tile.dataset.tileWidth)){
+  hblReflowTiles(d.board,()=>hblSetTileWidth(d.tile,width));
+ }
+ if(Math.abs(dy)>=2)hblSetTileHeight(d.tile,Math.max(d.minHeight,d.startHeight+dy));
+ else hblSetTileHeight(d.tile,d.height);
+}
+function hblResizeMove(e){
+ const d=hblResize;if(!d||e.pointerId!==d.id)return;
+ d.nextX=e.clientX;d.nextY=e.clientY;
+ if(!d.frame)d.frame=requestAnimationFrame(()=>{
+  d.frame=0;hblResizePreview(d,d.nextX,d.nextY);
+ });
+}
+function hblResizeEnd(e,cancel=false){
+ const d=hblResize;if(!d||e.pointerId!==d.id)return;
+ cancelAnimationFrame(d.frame);
+ if(cancel){hblSetTileWidth(d.tile,d.width);hblSetTileHeight(d.tile,d.height);}
+ else hblResizePreview(d,e.clientX,e.clientY);
+ hblResize=null;
+ if(d.handle.hasPointerCapture(d.id))d.handle.releasePointerCapture(d.id);
+ if(!cancel&&(Number(d.tile.dataset.tileWidth)!==d.width||(Number(d.tile.dataset.tileHeight)||null)!==d.height))hblPersistTileLayout();
+}
+function hblInstallResize(tile,title){
+ const handle=document.createElement("button");handle.type="button";handle.className="tile-resize";
+ handle.title=title+" – Größe ändern. Pfeiltasten für Breite und Höhe, Pos1 für automatische Höhe.";
+ handle.setAttribute("aria-label",handle.title);tile.append(handle);
+ handle.addEventListener("pointerdown",e=>hblResizeStart(e,tile,handle));
+ handle.addEventListener("pointermove",hblResizeMove);
+ handle.addEventListener("pointerup",e=>hblResizeEnd(e));
+ for(const event of ["pointercancel","lostpointercapture"])handle.addEventListener(event,e=>hblResizeEnd(e,true));
+ handle.addEventListener("keydown",e=>{
+  if(hblResize||hblPointerDrag)return;
+  const columns=getComputedStyle(tile.parentElement).gridTemplateColumns.split(" ").length;
+  if(e.key==="Home")hblSetTileHeight(tile,null);
+  else if(e.key==="ArrowUp"||e.key==="ArrowDown"){
+   const min=tile.querySelector(".tile-controls").offsetHeight+76;
+   hblSetTileHeight(tile,Math.max(min,tile.offsetHeight+(e.key==="ArrowUp"?-16:16)));
+  }else if(columns>1&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){
+   const current=Math.min(Number(tile.dataset.tileWidth),columns);
+   hblSetTileWidth(tile,Math.max(2,Math.min(columns,current+(e.key==="ArrowLeft"?-1:1))));
+  }else return;
+  e.preventDefault();hblPersistTileLayout();
+ });
+ // Anchor the grip to the visible corner when this tile scrolls internally.
+ tile.addEventListener("scroll",()=>{
+  handle.style.transform=`translate(${tile.scrollLeft}px,${tile.scrollTop}px)`;
+ },{passive:true});
+}
 function hblReflowTiles(board,change){
- const tiles=[...board.children].filter(n=>n.dataset.tile&&!n.hidden&&n!==hblPointerDrag?.tile);
+ const tiles=[...board.children].filter(n=>n.dataset.tile&&!n.hidden&&n!==hblPointerDrag?.tile&&n!==hblResize?.tile);
  const before=tiles.map(n=>n.getBoundingClientRect());
  for(const n of tiles)for(const anim of n.getAnimations())if(anim.id==="hbl-reflow")anim.cancel();
  change();
@@ -2303,7 +2398,7 @@ function hblReflowTiles(board,change){
  });
 }
 function hblPointerDown(e,tile,grip,board){
- if(e.button!==0||!e.isPrimary||hblPointerDrag)return;
+ if(e.button!==0||!e.isPrimary||hblPointerDrag||hblResize)return;
  e.preventDefault();
  const rect=tile.getBoundingClientRect();
  hblPointerDrag={id:e.pointerId,tile,board,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,
@@ -2382,12 +2477,13 @@ function hblTileStore(){
  const board=document.getElementById("dashboardBoard");
  if(!board)return null;
  const nodes=[...board.children].filter(el=>el.dataset.tile);
- const collapsed={},widths={};
+ const collapsed={},widths={},heights={};
  for(const n of nodes){
   if(n.classList.contains("tile-collapsed"))collapsed[n.dataset.tile]=true;
+  if(n.dataset.tileHeight)heights[n.dataset.tile]=Number(n.dataset.tileHeight);
   widths[n.dataset.tile]=Number(n.dataset.tileWidth)||3;
  }
- return {order:nodes.map(n=>n.dataset.tile),collapsed,widths,hidden:nodes.filter(n=>n.hidden).map(n=>n.dataset.tile)};
+ return {order:nodes.map(n=>n.dataset.tile),collapsed,widths,heights,hidden:nodes.filter(n=>n.hidden).map(n=>n.dataset.tile)};
 }
 function hblPersistTileLayout(){
  const layout=hblTileStore();if(!layout)return;
@@ -2409,21 +2505,20 @@ function hblSetTileFold(el,collapsed,persist=false){
  if(persist)hblPersistTileLayout();
 }
 function hblSetTileWidth(el,span,persist=false){
- const value=HBL_TILE_WIDTHS.includes(Number(span))?Number(span):3;
+ const value=Number.isInteger(Number(span))&&Number(span)>=2&&Number(span)<=12?Number(span):3;
  el.dataset.tileWidth=String(value);
  el.style.setProperty("--tile-span",String(value));
  el.style.setProperty("--tile-span-compact",String(Math.min(value,6)));
  const button=el.querySelector(".tile-size");
  if(button){
-  button.querySelector(".tile-size-label").textContent=({2:"⅙",3:"¼",4:"⅓",6:"½",12:"1"})[value];
+  button.querySelector(".tile-size-label").textContent=({2:"⅙",3:"¼",4:"⅓",6:"½",12:"1"})[value]||value+"/12";
   button.title="Breite ändern (Desktop: "+value+"/12 Spalten; schmaler Desktop: "+Math.min(value,6)+"/6 Spalten)";
  }
  if(persist)hblPersistTileLayout();
 }
 function hblCycleTileWidth(id){
  const el=hblTileById(id);if(!el)return;
- const at=HBL_TILE_WIDTHS.indexOf(Number(el.dataset.tileWidth));
- const next=HBL_TILE_WIDTHS[(at+1)%HBL_TILE_WIDTHS.length];
+ const next=HBL_TILE_WIDTHS.find(width=>width>Number(el.dataset.tileWidth))??2;
  hblSetTileWidth(el,next,true);
 }
 function hblMoveTile(id,direction){
@@ -2444,11 +2539,12 @@ function hblResetTileLayout(){
   board.appendChild(tile);
   tile.hidden=false;
   hblSetTileFold(tile,false);
-  hblSetTileWidth(tile,spec.span);
+  hblSetTileWidth(tile,spec.span);hblSetTileHeight(tile,null);
  }
  hblPersistTileLayout();
 }
 function restoreDashboardTileLayout(data){
+ if(hblResize)hblResizeEnd({pointerId:hblResize.id},true);
  if(hblPointerDrag)hblPointerEnd({pointerId:hblPointerDrag.id},true);
  const board=document.getElementById("dashboardBoard");if(!board)return;
  const saved=data?.__dashboardLayoutsV2?.[hblLayoutProfile()]??data?.__dashboardLayoutV1??{};
@@ -2470,6 +2566,7 @@ function restoreDashboardTileLayout(data){
   tile.hidden=(hblLayoutProfile()==="app"||!spec.core)&&Array.isArray(saved.hidden)&&saved.hidden.includes(spec.id);
   hblSetTileFold(tile,Boolean(saved.collapsed?.[spec.id]));
   hblSetTileWidth(tile,saved.widths?.[spec.id]??spec.span);
+  hblSetTileHeight(tile,saved.heights?.[spec.id]);
  }
 }
 function initializeDashboardTiles(){
@@ -2504,13 +2601,13 @@ function initializeDashboardTiles(){
   fold.addEventListener("click",()=>hblSetTileFold(tile,!tile.classList.contains("tile-collapsed"),true));
   bar.append(grip,title,size,fold);tile.prepend(bar);
   hblSetTileWidth(tile,s.span);hblSetTileFold(tile,false);
-  board.appendChild(tile);
+  board.appendChild(tile);hblInstallResize(tile,s.title);
   grip.addEventListener("pointerdown",e=>hblPointerDown(e,tile,grip,board));
  }
  board.addEventListener("pointermove",hblPointerMove);
  board.addEventListener("pointerup",e=>hblPointerEnd(e));
  for(const type of ["pointercancel","lostpointercapture"])board.addEventListener(type,e=>hblPointerEnd(e,true));
- function cancelDrag(){if(hblPointerDrag)hblPointerEnd({pointerId:hblPointerDrag.id},true);}
+ function cancelDrag(){if(hblResize)hblResizeEnd({pointerId:hblResize.id},true);if(hblPointerDrag)hblPointerEnd({pointerId:hblPointerDrag.id},true);}
  window.addEventListener("blur",cancelDrag);
  window.addEventListener("resize",cancelDrag);
  window.addEventListener("keydown",e=>{if(e.key==="Escape")cancelDrag();});
@@ -2591,7 +2688,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 22. November 2026">v7.6.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 22. November 2026">v7.6.2 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>

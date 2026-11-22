@@ -1,5 +1,9 @@
 # Öffentliche Versionshinweise
 
+## v7.6.2
+
+Kacheln lassen sich unten rechts in der Größe anpassen. Die Größe wird im persönlichen Layout gespeichert.
+
 ## v7.6.1
 
 Dashboard-Kacheln am Griff ziehen oder mit den Pfeiltasten umordnen. Beim Ziehen zeigt ein Platzhalter die Zielposition.
