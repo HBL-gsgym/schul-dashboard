@@ -222,3 +222,19 @@ html[data-world=glass] .workspace-atmosphere span{
 }
 html[data-world=glass] .workspace-atmosphere span:nth-child(2){right:3vw;top:12vh}
 html[data-world=glass] .workspace-atmosphere span:nth-child(4){left:8vw;bottom:9vh;width:18vw;height:18vw}
+
+/* Explicit foreground decoration below the workspace, including WebKit. */
+html[data-world] body .workspace-atmosphere{z-index:0;contain:layout size;opacity:1}
+html[data-world] body.dark .workspace-atmosphere{opacity:.85}
+html[data-world=professional] .workspace-atmosphere{
+ background:repeating-linear-gradient(90deg,transparent 0 95px,rgba(75,108,160,.16) 95px 96px),
+ repeating-linear-gradient(0deg,transparent 0 95px,rgba(75,108,160,.10) 95px 96px);
+}
+html[data-world=professional] .workspace-atmosphere span:nth-child(1){right:-12vw;top:6vh;background:rgba(49,90,196,.15)}
+html[data-world=professional] .workspace-atmosphere span:nth-child(3){left:-15vw;bottom:8vh;background:rgba(23,57,88,.12)}
+html[data-world=glass] .workspace-atmosphere span{
+ background:radial-gradient(circle at 28% 23%,rgba(255,255,255,.95),transparent 20%),
+ radial-gradient(circle at 65% 75%,rgba(140,151,222,.32),rgba(180,214,235,.12) 65%);
+}
+html[data-world=glass] .workspace-atmosphere span:nth-child(1){left:-4vw;top:18vh}
+html[data-world=glass] .workspace-atmosphere span:nth-child(3){right:-7vw;bottom:3vh}
