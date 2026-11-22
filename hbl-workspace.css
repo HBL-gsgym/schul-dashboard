@@ -1,0 +1,108 @@
+/* Workspace tokens also feed the established panel, text and border variables. */
+html[data-world] body{
+ --ws-bg:#edf1f6;--ws-panel:#fff;--ws-soft:#f1f4f9;--ws-ink:#172a47;--ws-muted:#506179;
+ --ws-line:#ccd5e0;--ws-action:#234fc0;--ws-nav:#142943;--ws-nav-ink:#f4f7ff;
+ --ws-radius:10px;--ws-pad:12px;--ws-shadow:0 3px 12px #14294510;--ws-font:Inter,"Segoe UI",sans-serif;
+}
+html[data-world=organic] body{
+ --ws-bg:#f2eee4;--ws-panel:#fffcf4;--ws-soft:#eeeade;--ws-ink:#29352d;--ws-muted:#586453;
+ --ws-line:#d9d4c4;--ws-action:#42694f;--ws-nav:#354b3d;--ws-nav-ink:#fffaf1;
+ --ws-radius:21px;--ws-pad:15px;--ws-shadow:0 6px 24px #58462913;--ws-detail:#a66245;
+ --ws-font:"Segoe UI",system-ui,sans-serif;
+}
+html[data-world=glass] body{
+ --ws-bg:#e6eafa;--ws-panel:rgba(252,253,255,.91);--ws-soft:#edf0fe;--ws-ink:#273353;--ws-muted:#505f7d;
+ --ws-line:#c6cee7;--ws-action:#494db3;--ws-nav:#343c60ed;--ws-nav-ink:#fafaff;
+ --ws-radius:16px;--ws-pad:14px;--ws-shadow:0 10px 30px #3e467e1c;
+}
+html[data-world] body.dark{
+ --ws-bg:#101925;--ws-panel:#192638;--ws-soft:#233247;--ws-ink:#eef3fa;--ws-muted:#bbc8da;
+ --ws-line:#40516a;--ws-action:#a2baff;--ws-nav:#0e1a2a;
+}
+html[data-world=organic] body.dark{
+ --ws-bg:#19211c;--ws-panel:#253028;--ws-soft:#303d33;--ws-ink:#f4f1e6;--ws-muted:#c3cbb9;
+ --ws-line:#465647;--ws-action:#aecfae;--ws-nav:#1c3024;--ws-detail:#de9b79;
+}
+html[data-world=glass] body.dark{
+ --ws-bg:#171c30;--ws-panel:rgba(35,42,65,.94);--ws-soft:#303953;--ws-ink:#f2f3ff;--ws-muted:#c3cbe1;
+ --ws-line:#4d5877;--ws-action:#bebdff;--ws-nav:#22283fed;
+}
+html[data-world] body:is([data-backdrop],:not([data-backdrop])){
+ --bg:var(--ws-bg);--text:var(--ws-ink);--panel:var(--ws-panel);--panel2:var(--ws-soft);
+ --surface-solid:var(--ws-panel);--surface-elevated:var(--ws-soft);--surface-edge:var(--ws-line);
+ --muted:var(--ws-muted);--line:var(--ws-line);--shadow:var(--ws-shadow);
+ font-family:var(--ws-font);color:var(--text);
+}
+html[data-world] body:is([data-backdrop=none],:not([data-backdrop])){
+ --accent:var(--ws-action);--hbl-highlight:var(--ws-detail,var(--ws-action));--design-title:var(--ws-ink);background:var(--ws-bg)!important;
+}
+html[data-world=glass] body:is([data-backdrop=none],:not([data-backdrop])){
+ background:radial-gradient(ellipse at 86% 0%,color-mix(in srgb,var(--ws-action) 15%,transparent),transparent 58%),var(--ws-bg)!important;
+}
+html[data-world] body .dashboard-board .dashboard-tile,
+html[data-world] body :is(.part-pane,.mein-hbl,dialog,.hbl-chat-panel,.hbl-course-picker){
+ background-color:var(--ws-panel);color:var(--ws-ink);border-color:var(--ws-line);border-radius:var(--ws-radius);box-shadow:var(--ws-shadow);
+}
+html[data-world] body .dashboard-board .dashboard-tile{background-image:none}
+html[data-world] body .tile-controls{padding-bottom:calc(var(--ws-pad) / 2);border-color:var(--ws-line)}
+html[data-world] body .tile-grip{color:var(--ws-detail,var(--ws-muted))}
+html[data-world] body :is(.tile-grip,.tile-tool):hover{background:var(--ws-soft);color:var(--ws-ink)}
+html[data-world] :focus-visible{outline:2px solid var(--ws-action);outline-offset:2px}
+html[data-world=glass] :is(#workspaceNav,dialog.mein-hbl){backdrop-filter:blur(12px)}
+html[data-world] body :is(.tile-grip,.tile-tool,.mein-hbl button,.mein-hbl select){
+ font-family:var(--ws-font);border-radius:min(10px,var(--ws-radius));
+}
+html[data-world] body .dashboard-board .tile-controls{
+ gap:6px;border-bottom:1px solid var(--ws-line);
+}
+html[data-world] body .tile-resize{color:var(--ws-muted)}
+html[data-world] .course-workspace :is(.grade-scroll,.seat-section,.ma-table){
+ border-color:var(--ws-line);
+}
+html[data-world] body .mein-hbl header{display:flex!important;align-items:center;gap:var(--ws-pad)!important}
+html[data-world] .mein-hbl::backdrop{background:rgba(14,23,38,.48)}
+html[data-world] body.dark[data-backdrop=none] .searchbar button{color:var(--ws-bg)!important}
+#workspaceNav{display:none}
+@media screen and (min-width:900px) and (hover:hover) and (pointer:fine){
+ html[data-world] {--dock-space:56px;scroll-padding-top:var(--dock-space)}
+ html[data-world][data-dock=left]{--dock-space:158px;scroll-padding-top:0}
+ html[data-world][data-dock=left][data-compact=true]{--dock-space:55px}
+ html[data-world][data-dock=top][data-compact=true]{--dock-space:48px}
+ html[data-world] body{padding-top:var(--dock-space);transition:padding .16s ease}
+ html[data-world][data-dock=left] body{padding-top:0;padding-left:var(--dock-space)}
+ #workspaceNav{
+  position:fixed;inset:0 0 auto;z-index:950;display:flex;align-items:center;gap:2px;
+  height:var(--dock-space);padding:4px 6px;background:var(--ws-nav);color:var(--ws-nav-ink);
+  box-shadow:var(--ws-shadow);transition:height .16s,width .16s;overflow:auto;
+ }
+ [data-dock=left] #workspaceNav{inset:0 auto 0 0;width:var(--dock-space);height:100dvh;flex-direction:column;align-items:stretch}
+ #workspaceNav button{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:38px;
+  padding:5px clamp(4px,.5vw,10px);cursor:pointer;border:1px solid transparent;border-radius:8px;
+  background:transparent;color:inherit;font:600 13px/1.2 var(--ws-font);
+ }
+ #workspaceNav button>span:first-child{width:22px;text-align:center;font-size:19px;line-height:1}
+ [data-dock=left] #workspaceNav button{justify-content:flex-start}
+ #workspaceNav button:is(:hover,[aria-current]){background:#ffffff24}
+ #workspaceNav button[aria-current]{border-color:#ffffff75}
+ #workspaceNav button:focus-visible{outline-color:white;outline-offset:-2px}
+ [data-compact=true] #workspaceNav .workspace-label{display:none}
+ #workspaceNav [data-action=fold]{margin-inline-start:auto}
+ [data-dock=left] #workspaceNav [data-action=fold]{margin:auto 0 0}
+ html[data-world] #hblQuickbar,html[data-world] #hblMobileNav{display:none!important}
+}
+/* Reuse the existing mobile controls on portrait tablets as well. */
+@media screen and (min-width:711px) and (orientation:portrait) and (pointer:coarse){
+ #hblQuickbar{display:none!important}
+ #hblMobileNav:not([hidden]){
+  position:fixed;inset:auto 10px calc(8px + env(safe-area-inset-bottom));z-index:1000;
+  display:grid;gap:4px;padding:6px;overflow-x:auto;border:1px solid var(--line);
+  border-radius:16px;background:var(--panel);box-shadow:var(--shadow);
+ }
+ #hblMobileNav :is(button,a){display:grid;place-items:center;min-height:44px;padding:4px;
+  border:0;border-radius:8px;background:transparent;color:var(--text);font:600 12px var(--ws-font);text-decoration:none}
+ body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-world] body,#workspaceNav,html[data-world] .tile-tool{transition:none!important;scroll-behavior:auto}
+}

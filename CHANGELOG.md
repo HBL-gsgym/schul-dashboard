@@ -1,5 +1,9 @@
 # Öffentliche Versionshinweise
 
+## v8.0.0
+
+Unter Einstellungen → Design lassen sich Farbwelt und Desktop-Menüposition wählen. Über Menü lässt sich die Navigation auf Symbole reduzieren.
+
 ## v7.6.2
 
 Kacheln lassen sich unten rechts in der Größe anpassen. Die Größe wird im persönlichen Layout gespeichert.

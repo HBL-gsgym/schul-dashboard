@@ -4,7 +4,7 @@ window.openMeinHbl=function(){
  dialog.className='mein-hbl';
  dialog.setAttribute('aria-labelledby','meinHblTitle');
  const opener=document.activeElement;
- dialog.innerHTML='<header><h2 id="meinHblTitle">Einstellungen</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button data-notifications>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p></p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
+ dialog.innerHTML='<header><h2 id="meinHblTitle">Einstellungen</h2><button type="button" data-close>Schließen</button></header><section data-home><button data-account>Mein Konto</button><button data-notifications>Benachrichtigungen</button><button data-design>Design</button><button data-tiles>Dashboard anpassen</button><button data-sync>Daten &amp; Synchronisierung</button><p></p><footer><strong>Über HBL</strong><p>Persönlicher Arbeitsplatz für Lehrkräfte · <span data-version></span></p><a href="https://github.com/HBL-gsgym/schul-dashboard/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Änderungsprotokoll</a></footer></section><section data-detail hidden><button data-back>← Zurück</button><label>Designwelt<select data-world-choice><option value="organic">Organic</option><option value="professional">Professional</option><option value="glass">Glass</option></select></label><label>Desktop-Navigation<select data-position><option value="top">Oben</option><option value="left">Links</option></select></label><label>Darstellung<select data-mode><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label>Fachdesign<select data-scene-choice><option value="none">Neutral</option><option value="astro">Astronomie</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label></section>';
  const get=selector=>dialog.querySelector(selector);
  const byId=id=>document.getElementById(id);
  const notifications=get('[data-notifications]');
@@ -138,14 +138,17 @@ window.openMeinHbl=function(){
  function showDesign(detail){
   get('[data-home]').hidden=detail;get('[data-detail]').hidden=!detail;
   get('h2').textContent=detail?'Design':'Einstellungen';
+  get('[data-world-choice]').value=document.documentElement.dataset.world;
+  get('[data-position]').value=document.documentElement.dataset.dock;
   get('[data-mode]').value=document.body.classList.contains('dark')?'dark':'light';
   get('[data-scene-choice]').value=document.body.dataset.backdrop||'none';
   get(detail?'[data-back]':'[data-design]').focus();
  }
  get('[data-design]').onclick=()=>{
-  if(!byId('dashboardBoard')){openSection(get('[data-design]'));const p=document.createElement('p');p.textContent='Design und Fachhintergründe kannst du auf dem Dashboard ändern.';extra.append(p);action('Zum Dashboard',()=>{if(!window.hblNavigate?.('./'))location.href='./';});return;}
   showDesign(true);
  };
+ get('[data-world-choice]').onchange=e=>window.hblWorkspace.change({theme:e.target.value});
+ get('[data-position]').onchange=e=>window.hblWorkspace.change({position:e.target.value});
  get('[data-back]').onclick=()=>showDesign(false);
  get('[data-mode]').onchange=event=>{
   if((event.target.value==='dark')!==document.body.classList.contains('dark'))toggleTheme();
