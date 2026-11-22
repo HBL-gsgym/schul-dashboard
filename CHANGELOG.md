@@ -1,3 +1,7 @@
+## v8.0.5 – 22.11.2026 · Codex
+
+Updateprüfung alle 30 Sekunden bei sichtbarer App, unmittelbar beim Wiederöffnen und bei Service-Worker-Wechsel. Versionsabfrage unabhängig von der Service-Worker-Registrierung. Echte iPad-Abnahme offen.
+
 ## v8.0.4 – 22.11.2026 · Codex
 
 Hintergrunddekoration auf eigener nichtnegativer Ebene; stärkere Geometrie und Blasen innerhalb des sichtbaren Bereichs. iPad-Sichtprüfung weiterhin offen.

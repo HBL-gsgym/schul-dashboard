@@ -33,15 +33,14 @@ function promptUpdate(version){
  later.onclick=()=>{dismissed=version;host.remove();};
  host.append(text,update,later);document.body.append(host);
 }
-async function check(){
- if(!navigator.onLine||document.hidden||checking||Date.now()-last<CHECK_INTERVAL)return;
+async function check(force=false){
+ if(!navigator.onLine||document.hidden||checking||(!force&&Date.now()-last<CHECK_INTERVAL))return;
  checking=true;last=Date.now();
  try{
-  const reg=await navigator.serviceWorker?.getRegistration('./');
-  if(reg)void reg.update().catch(()=>{});
+  void navigator.serviceWorker?.getRegistration('./').then(reg=>reg?.update()).catch(()=>{});
   const url=new URL('./index.html',location.href);
   url.searchParams.set('hbl_version_check',String(Date.now()));
-  const response=await fetch(url.href,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+  const response=await fetch(url.href,{cache:'no-store',signal:AbortSignal.timeout(12000),headers:{'Cache-Control':'no-cache'}});
   if(!response.ok)return;
   const html=await response.text();
   const current=html.match(/name="hbl-version" content="([^"]+)"/)?.[1]||html.match(/<title>[^<]*v([0-9.]+)</)?.[1];
@@ -50,13 +49,16 @@ async function check(){
  }catch(_){/* Offline und Netzfehler: still erneut prüfen. */}
  finally{checking=false;}
 }
+window.hblCheckUpdate=()=>check(true);
 function init(){
  if(!('serviceWorker' in navigator))return;
  void check();
- window.addEventListener('pageshow',()=>void check());
- window.addEventListener('focus',()=>void check());
+ setInterval(()=>void check(),CHECK_INTERVAL);
+ navigator.serviceWorker.addEventListener('controllerchange',()=>void check(true));
+ window.addEventListener('pageshow',()=>void check(true));
+ window.addEventListener('focus',()=>void check(true));
  window.addEventListener('online',()=>{last=0;void check();});
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check(true);});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
