@@ -8,6 +8,10 @@
   root.dataset.platform=mobile||touchMode.matches||appMode.matches||navigator.standalone===true?'app':'desktop';
  }
  platform();appMode.addEventListener('change',platform);touchMode.addEventListener('change',platform);
+ const atmosphere=document.createElement('div');
+ atmosphere.className='workspace-atmosphere';atmosphere.setAttribute('aria-hidden','true');
+ for(let i=0;i<4;i++)atmosphere.append(document.createElement('span'));
+ document.body.prepend(atmosphere);
  const defaults={theme:"professional",position:"top",collapsed:false};
  function apply(value={}){
   value=value||{};

@@ -159,3 +159,55 @@ html[data-world=organic] #workspaceNav button[aria-current]{border-radius:22px;b
 html[data-world=professional] #workspaceNav button[aria-current]{border-radius:3px;border:0;box-shadow:inset 3px 0 #8eafff;background:#ffffff18}
 html[data-world=glass] #workspaceNav button[aria-current]{background:linear-gradient(130deg,#ffffff35,#ffffff12);box-shadow:inset 0 1px #ffffff80,0 3px 10px #0002}
 html[data-world] .mein-hbl label[hidden]{display:none!important}
+
+/* Decorative silhouettes stay outside the interactive grid. */
+.workspace-atmosphere{
+ position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;contain:strict;
+}
+.workspace-atmosphere span{position:absolute;display:block}
+html[data-world=organic] .workspace-atmosphere span{
+ background:linear-gradient(140deg,#274b38,#6f8a61);width:40vw;height:32vh;
+ border-radius:32% 68% 75% 25% / 38% 24% 76% 62%;
+}
+html[data-world=organic] .workspace-atmosphere span:nth-child(1){left:-17vw;top:-12vh;transform:rotate(-18deg)}
+html[data-world=organic] .workspace-atmosphere span:nth-child(2){
+ right:-19vw;top:-15vh;background:linear-gradient(125deg,#ce956e,#b57052);transform:rotate(32deg);
+}
+html[data-world=organic] .workspace-atmosphere span:nth-child(3){
+ left:-14vw;bottom:-20vh;background:#aab69a;width:47vw;height:47vh;transform:rotate(24deg);
+}
+html[data-world=organic] .workspace-atmosphere span:nth-child(4){
+ right:-22vw;bottom:-25vh;background:#e3c5a7;width:54vw;height:52vh;transform:rotate(-28deg);
+}
+html[data-world=professional] .workspace-atmosphere{
+ background:repeating-linear-gradient(90deg,transparent 0 119px,#4c6c9b0b 119px 120px);
+}
+html[data-world=professional] .workspace-atmosphere span{
+ width:38vw;height:38vw;border:1px solid #5475a530;transform:rotate(35deg);
+}
+html[data-world=professional] .workspace-atmosphere span:nth-child(1){right:-24vw;top:-16vw;background:#315ac414}
+html[data-world=professional] .workspace-atmosphere span:nth-child(2){right:-20vw;top:-13vw}
+html[data-world=professional] .workspace-atmosphere span:nth-child(3){left:-30vw;bottom:-18vw;background:#17395812}
+html[data-world=professional] .workspace-atmosphere span:nth-child(4){left:-26vw;bottom:-23vw}
+html[data-world=glass] .workspace-atmosphere{
+ background:radial-gradient(ellipse at 15% 20%,#a1cde066,transparent 52%),radial-gradient(ellipse at 90% 75%,#b29ad966,transparent 60%);
+}
+html[data-world=glass] .workspace-atmosphere span{
+ border-radius:50%;border:1px solid #ffffffaa;
+ background:radial-gradient(circle at 28% 23%,#ffffffb0,transparent 18%),radial-gradient(circle at 65% 75%,#a7a8e833,transparent 65%);
+ box-shadow:inset 5px 8px 24px #ffffff55,inset -8px -15px 28px #7e91c933,0 18px 48px #46639918;
+}
+html[data-world=glass] .workspace-atmosphere span:nth-child(1){width:34vw;height:34vw;left:-14vw;top:4vh}
+html[data-world=glass] .workspace-atmosphere span:nth-child(2){width:24vw;height:24vw;right:-8vw;top:7vh}
+html[data-world=glass] .workspace-atmosphere span:nth-child(3){width:41vw;height:41vw;right:-16vw;bottom:-18vw}
+html[data-world=glass] .workspace-atmosphere span:nth-child(4){width:12vw;height:12vw;left:28vw;bottom:3vh}
+html[data-world] body.dark .workspace-atmosphere{opacity:.52}
+html[data-world] body:not([data-backdrop=none]) .workspace-atmosphere{opacity:.35}
+html[data-world=organic] #workspaceNav{background:var(--ws-panel);color:var(--ws-ink);border-right:1px solid var(--ws-line)}
+html[data-world=organic] #workspaceNav button[aria-current]{background:#42694f;color:#fff}
+html[data-world=organic] #workspaceNav button:hover:not([aria-current]){background:var(--ws-soft)}
+@media(max-width:710px){
+ html[data-world=organic] .workspace-atmosphere span{width:65vw}
+ html[data-world=glass] .workspace-atmosphere span{min-width:130px;min-height:130px}
+}
+@media print{.workspace-atmosphere{display:none}}
