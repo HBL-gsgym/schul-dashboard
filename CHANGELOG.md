@@ -1,3 +1,7 @@
+## v8.0.1 – 22.11.2026 · Codex
+
+Plattformerkennung für Desktop und App; eigenständige Formen, Typografie, Oberflächen und Bedienelemente für Organic, Professional und Glass. Browserregression und Release-Prüfung; echte Geräte offen.
+
 # Öffentliche Versionshinweise
 
 ## v8.0.0

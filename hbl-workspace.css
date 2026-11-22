@@ -63,46 +63,99 @@ html[data-world] body .mein-hbl header{display:flex!important;align-items:center
 html[data-world] .mein-hbl::backdrop{background:rgba(14,23,38,.48)}
 html[data-world] body.dark[data-backdrop=none] .searchbar button{color:var(--ws-bg)!important}
 #workspaceNav{display:none}
-@media screen and (min-width:900px) and (hover:hover) and (pointer:fine){
- html[data-world] {--dock-space:56px;scroll-padding-top:var(--dock-space)}
- html[data-world][data-dock=left]{--dock-space:158px;scroll-padding-top:0}
- html[data-world][data-dock=left][data-compact=true]{--dock-space:55px}
- html[data-world][data-dock=top][data-compact=true]{--dock-space:48px}
- html[data-world] body{padding-top:var(--dock-space);transition:padding .16s ease}
- html[data-world][data-dock=left] body{padding-top:0;padding-left:var(--dock-space)}
- #workspaceNav{
+@media screen{
+ html[data-world][data-platform=desktop] {--dock-space:56px;scroll-padding-top:var(--dock-space)}
+ html[data-world][data-platform=desktop][data-dock=left]{--dock-space:158px;scroll-padding-top:0}
+ html[data-world][data-platform=desktop][data-dock=left][data-compact=true]{--dock-space:55px}
+ html[data-world][data-platform=desktop][data-dock=top][data-compact=true]{--dock-space:48px}
+ html[data-world][data-platform=desktop] body{padding-top:var(--dock-space);transition:padding .16s ease}
+ html[data-world][data-platform=desktop][data-dock=left] body{padding-top:0;padding-left:var(--dock-space)}
+ html[data-platform=desktop] #workspaceNav{
   position:fixed;inset:0 0 auto;z-index:950;display:flex;align-items:center;gap:2px;
   height:var(--dock-space);padding:4px 6px;background:var(--ws-nav);color:var(--ws-nav-ink);
   box-shadow:var(--ws-shadow);transition:height .16s,width .16s;overflow:auto;
  }
- [data-dock=left] #workspaceNav{inset:0 auto 0 0;width:var(--dock-space);height:100dvh;flex-direction:column;align-items:stretch}
- #workspaceNav button{
+ html[data-platform=desktop][data-dock=left] #workspaceNav{inset:0 auto 0 0;width:var(--dock-space);height:100dvh;flex-direction:column;align-items:stretch}
+ html[data-platform=desktop] #workspaceNav button{
   flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:38px;
   padding:5px clamp(4px,.5vw,10px);cursor:pointer;border:1px solid transparent;border-radius:8px;
   background:transparent;color:inherit;font:600 13px/1.2 var(--ws-font);
  }
- #workspaceNav button>span:first-child{width:22px;text-align:center;font-size:19px;line-height:1}
- [data-dock=left] #workspaceNav button{justify-content:flex-start}
- #workspaceNav button:is(:hover,[aria-current]){background:#ffffff24}
- #workspaceNav button[aria-current]{border-color:#ffffff75}
- #workspaceNav button:focus-visible{outline-color:white;outline-offset:-2px}
- [data-compact=true] #workspaceNav .workspace-label{display:none}
- #workspaceNav [data-action=fold]{margin-inline-start:auto}
- [data-dock=left] #workspaceNav [data-action=fold]{margin:auto 0 0}
- html[data-world] #hblQuickbar,html[data-world] #hblMobileNav{display:none!important}
+ html[data-platform=desktop] #workspaceNav button>span:first-child{width:22px;text-align:center;font-size:19px;line-height:1}
+ html[data-platform=desktop][data-dock=left] #workspaceNav button{justify-content:flex-start}
+ html[data-platform=desktop] #workspaceNav button:is(:hover,[aria-current]){background:#ffffff24}
+ html[data-platform=desktop] #workspaceNav button[aria-current]{border-color:#ffffff75}
+ html[data-platform=desktop] #workspaceNav button:focus-visible{outline-color:white;outline-offset:-2px}
+ html[data-platform=desktop][data-compact=true] #workspaceNav .workspace-label{display:none}
+ html[data-platform=desktop] #workspaceNav [data-action=fold]{margin-inline-start:auto}
+ html[data-platform=desktop][data-dock=left] #workspaceNav [data-action=fold]{margin:auto 0 0}
+ html[data-world][data-platform=desktop] #hblQuickbar,html[data-world][data-platform=desktop] #hblMobileNav{display:none!important}
 }
 /* Reuse the existing mobile controls on portrait tablets as well. */
-@media screen and (min-width:711px) and (orientation:portrait) and (pointer:coarse){
- #hblQuickbar{display:none!important}
- #hblMobileNav:not([hidden]){
+@media screen and (orientation:portrait){
+ html[data-platform=app] #hblQuickbar{display:none!important}
+ html[data-platform=app] #hblMobileNav:not([hidden]){
   position:fixed;inset:auto 10px calc(8px + env(safe-area-inset-bottom));z-index:1000;
   display:grid;gap:4px;padding:6px;overflow-x:auto;border:1px solid var(--line);
   border-radius:16px;background:var(--panel);box-shadow:var(--shadow);
  }
- #hblMobileNav :is(button,a){display:grid;place-items:center;min-height:44px;padding:4px;
+ html[data-platform=app] #hblMobileNav :is(button,a){display:grid;place-items:center;min-height:44px;padding:4px;
   border:0;border-radius:8px;background:transparent;color:var(--text);font:600 12px var(--ws-font);text-decoration:none}
- body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+ html[data-platform=app] body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 }
 @media(prefers-reduced-motion:reduce){
  html[data-world] body,#workspaceNav,html[data-world] .tile-tool{transition:none!important;scroll-behavior:auto}
 }
+
+@media screen and (orientation:landscape){
+ html[data-platform=app] #hblMobileNav{display:none!important}
+ html[data-platform=app] #hblQuickbar:not([hidden]){display:block!important}
+}
+html[data-world] body{
+ --ws-control-radius:8px;--ws-heading-weight:750;--ws-heading-space:-.025em;
+}
+html[data-world=organic] body{
+ --ws-control-radius:16px;--ws-heading-weight:650;--ws-heading-space:.005em;
+ --ws-radius:26px;--ws-shadow:0 8px 28px #57452d16;
+}
+html[data-world=professional] body{
+ --ws-radius:5px;--ws-control-radius:4px;--ws-shadow:0 1px 3px #14294518;
+}
+html[data-world=glass] body{
+ --ws-radius:20px;--ws-control-radius:12px;--ws-shadow:0 14px 32px #30375c24,inset 0 1px 0 #ffffff90;
+ --ws-panel:rgba(248,250,255,.78);
+}
+html[data-world=glass] body.dark{--ws-panel:rgba(29,36,58,.86)}
+html[data-world] body :is(.dashboard-tile,.part-pane,.mein-hbl,.hbl-chat-panel,.hbl-cloud-dialog){
+ border-radius:var(--ws-radius)!important;box-shadow:var(--ws-shadow);
+}
+html[data-world] body :is(h1,h2,h3,.section-title,.card-title){
+ font-weight:var(--ws-heading-weight);letter-spacing:var(--ws-heading-space);
+}
+html[data-world=organic] body :is(h1,h2,.card-title){font-family:Georgia,"Times New Roman",serif}
+html[data-world=organic] .dashboard-board{gap:26px}
+html[data-world=organic] body .dashboard-board .dashboard-tile:not(.tile-collapsed){padding:20px!important}
+html[data-world=organic] body .tile-controls{padding:8px 0 14px;border-bottom:0}
+html[data-world=professional] .dashboard-board{gap:14px}
+html[data-world=professional] body .dashboard-board .dashboard-tile:not(.tile-collapsed){padding:12px!important}
+html[data-world=professional] body .tile-controls{
+ background:var(--ws-soft);border-bottom:2px solid var(--ws-line);padding:5px 7px;margin-bottom:10px;
+}
+html[data-world=professional] body :is(.section-title h2,.card-title){font-size:17px}
+html[data-world=glass] body :is(.dashboard-tile,.part-pane,.mein-hbl,.hbl-cloud-dialog){
+ backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+ border:1px solid color-mix(in srgb,var(--ws-line) 65%,white)!important;
+ background:linear-gradient(140deg,#ffffff18,transparent 65%),var(--ws-panel)!important;
+}
+html[data-world=glass] .dashboard-board{gap:23px}
+html[data-world=glass] body .tile-controls{border-bottom:1px solid var(--ws-line);padding:9px 4px}
+html[data-world] body :is(button,input,select,textarea):not(.blockcell):not(.tile-resize){
+ border-radius:var(--ws-control-radius);
+}
+html[data-world] body :is(.mein-hbl,.hbl-cloud-dialog) :is(input,select,button){
+ background-color:var(--ws-soft);color:var(--ws-ink);border-color:var(--ws-line);
+}
+html[data-world=organic] #workspaceNav button[aria-current]{border-radius:22px;background:#ffffff30;border-color:transparent}
+html[data-world=professional] #workspaceNav button[aria-current]{border-radius:3px;border:0;box-shadow:inset 3px 0 #8eafff;background:#ffffff18}
+html[data-world=glass] #workspaceNav button[aria-current]{background:linear-gradient(130deg,#ffffff35,#ffffff12);box-shadow:inset 0 1px #ffffff80,0 3px 10px #0002}
+html[data-world] .mein-hbl label[hidden]{display:none!important}

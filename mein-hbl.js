@@ -139,6 +139,7 @@ window.openMeinHbl=function(){
   get('[data-home]').hidden=detail;get('[data-detail]').hidden=!detail;
   get('h2').textContent=detail?'Design':'Einstellungen';
   get('[data-world-choice]').value=document.documentElement.dataset.world;
+  get('[data-position]').parentElement.hidden=document.documentElement.dataset.platform!=='desktop';
   get('[data-position]').value=document.documentElement.dataset.dock;
   get('[data-mode]').value=document.body.classList.contains('dark')?'dark':'light';
   get('[data-scene-choice]').value=document.body.dataset.backdrop||'none';

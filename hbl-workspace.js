@@ -1,6 +1,13 @@
 /* Shared appearance and desktop navigation for the existing workspace. */
 (()=>{
  const root=document.documentElement;
+ const appMode=matchMedia('(display-mode:standalone)');
+ const touchMode=matchMedia('(pointer:coarse)');
+ function platform(){
+  const mobile=/Android|iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  root.dataset.platform=mobile||touchMode.matches||appMode.matches||navigator.standalone===true?'app':'desktop';
+ }
+ platform();appMode.addEventListener('change',platform);touchMode.addEventListener('change',platform);
  const defaults={theme:"professional",position:"top",collapsed:false};
  function apply(value={}){
   value=value||{};
