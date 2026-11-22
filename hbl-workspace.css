@@ -239,8 +239,25 @@ html[data-world=glass] .workspace-atmosphere span{
 html[data-world=glass] .workspace-atmosphere span:nth-child(1){left:-4vw;top:18vh}
 html[data-world=glass] .workspace-atmosphere span:nth-child(3){right:-7vw;bottom:3vh}
 
-/* Arbeitsansichten mit großen Datenflächen: Dekoration darf weder Sitzplan noch Noten überdecken. */
-html[data-world] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere,
-html[data-world] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere{
- display:none!important;
+/* Kursübersicht und Noten: Organic-Formen bleiben als zurückhaltende Randdekoration sichtbar.
+   Die interaktive Kursoberfläche liegt in einer eigenen Ebene darüber. */
+html[data-world] body:has(.hbl-course-tab.current[href^="?kurs="]) #hblAppRoot,
+html[data-world] body:has(.hbl-course-tab.current[href^="?noten="]) #hblAppRoot{
+ position:relative;z-index:1;
 }
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere,
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere{
+ opacity:.32!important;
+}
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere span,
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere span{
+ scale:.62;
+}
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere span:nth-child(1),
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere span:nth-child(1){transform-origin:top left}
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere span:nth-child(2),
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere span:nth-child(2){transform-origin:top right}
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere span:nth-child(3),
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere span:nth-child(3){transform-origin:bottom left}
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?kurs="]) .workspace-atmosphere span:nth-child(4),
+html[data-world=organic] body:has(.hbl-course-tab.current[href^="?noten="]) .workspace-atmosphere span:nth-child(4){transform-origin:bottom right}
