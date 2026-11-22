@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.5.3">
-<title>Schul-Dashboard HBL · v7.5.3</title>
+<meta name="hbl-version" content="7.6.0">
+<title>Schul-Dashboard HBL · v7.6.0</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1186,7 +1186,8 @@ header.part-hero{display:block !important;grid-template-columns:none !important;
 .dashboard-board .dashboard-tile .timetablegrid{min-width:0;}
 .dashboard-board .dashboard-tile.tile-collapsed{padding-bottom:10px !important;}
 .dashboard-board .dashboard-tile.tile-collapsed > :not(.tile-controls){display:none !important;}
-.dashboard-board .dashboard-tile.tile-dragging{opacity:.42; transform:scale(.995);}
+.dashboard-board .dashboard-tile.tile-dragging{opacity:.65;outline:2px solid var(--accent);outline-offset:2px;position:relative;z-index:2;}
+.dashboard-board .tile-grip{touch-action:none;}
 .dashboard-board .dashboard-tile.tile-drop-before{outline:2px solid var(--accent);outline-offset:4px;}
 .dashboard-board .dashboard-tile.tile-drop-after{outline:2px dashed var(--accent);outline-offset:4px;}
 .tile-controls{
@@ -1367,9 +1368,9 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-participation-grades.js?v=7.4.0"></script>
 <script src="./hbl-class-rosters.js?v=7.0.13"></script>
 <script src="./hbl-seating.js?v=5.9.21"></script>
-<script src="./hbl-seat-rating.js?v=7.5.3"></script>
+<script src="./hbl-seat-rating.js?v=7.6.0"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=7.5.3"></script>
+<script src="./hbl-course-page.js?v=7.6.0"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=7.5.2">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=7.1.0">
 <script defer src="./mein-hbl.js?v=7.0.6"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
@@ -2281,6 +2282,46 @@ const HBL_TILE_SPECS=[
 ];
 const HBL_TILE_WIDTHS=[2,3,4,6,12];
 let hblDraggedTile=null;
+let hblPointerDrag=null;
+function hblReflowTiles(board,change){
+ const tiles=[...board.children].filter(n=>n.dataset.tile&&!n.hidden);
+ const before=new Map(tiles.map(n=>[n,n.getBoundingClientRect()]));
+ change();
+ if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ for(const n of tiles){
+  if(n===hblDraggedTile)continue;
+  const a=before.get(n),b=n.getBoundingClientRect(),x=a.left-b.left,y=a.top-b.top;
+  if(Math.abs(x)<1&&Math.abs(y)<1)continue;
+  n.getAnimations().filter(a=>a.id==="hbl-reflow").forEach(a=>a.cancel());
+  const anim=n.animate([{transform:`translate(${x}px,${y}px)`},{transform:"translate(0,0)"}],{duration:190,easing:"ease-out"});
+  anim.id="hbl-reflow";
+ }
+}
+function hblPointerDown(e,tile,grip,board){
+ if(e.button!==0||hblPointerDrag)return;
+ e.preventDefault();grip.setPointerCapture(e.pointerId);
+ hblDraggedTile=tile;tile.classList.add("tile-dragging");
+ hblPointerDrag={id:e.pointerId,tile,grip,board,x:e.clientX,y:e.clientY,moved:false,changed:false,order:[...board.children]};
+}
+function hblPointerMove(e){
+ const d=hblPointerDrag;if(!d||d.id!==e.pointerId)return;
+ if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<8)return;
+ d.moved=true;
+ const target=document.elementFromPoint(e.clientX,e.clientY)?.closest(".dashboard-tile");
+ if(!target||target===d.tile||target.parentNode!==d.board)return;
+ const before=hblDragPosition(e,target)==="before";
+ if(before?d.tile.nextElementSibling===target:target.nextElementSibling===d.tile)return;
+ hblReflowTiles(d.board,()=>d.board.insertBefore(d.tile,before?target:target.nextSibling));
+ d.changed=true;
+}
+function hblPointerEnd(e,cancel=false){
+ const d=hblPointerDrag;if(!d||d.id!==e.pointerId)return;
+ hblPointerDrag=null;hblDraggedTile=null;d.tile.classList.remove("tile-dragging");
+ if(cancel&&d.changed)for(const node of d.order)d.board.appendChild(node);
+ if(d.grip.hasPointerCapture(e.pointerId))d.grip.releasePointerCapture(e.pointerId);
+ if(d.changed&&!cancel)hblPersistTileLayout();
+}
+
 const hblAppDisplay=matchMedia("(display-mode: standalone)");
 function hblLayoutProfile(){return hblAppDisplay.matches||navigator.standalone===true?"app":"desktop";}
 hblAppDisplay.addEventListener("change",()=>restoreDashboardTileLayout(prepDone));
@@ -2408,7 +2449,7 @@ function initializeDashboardTiles(){
   tile.dataset.tile=s.id;tile.classList.add("dashboard-tile");
   const bar=document.createElement("div");bar.className="tile-controls";
   const grip=document.createElement("button");grip.type="button";grip.className="tile-grip";
-  grip.draggable=true;grip.title="Kachel mit gedrückter Maustaste verschieben";
+  grip.draggable=false;grip.title="Kachel ziehen und live umordnen";
   grip.setAttribute("aria-label",s.title+" verschieben");
   grip.innerHTML='⠿ <span>Ziehen</span>';
   const title=document.createElement("span");title.className="tile-collapse-title";title.textContent=s.title;
@@ -2428,13 +2469,11 @@ function initializeDashboardTiles(){
   bar.append(grip,title,moveUp,moveDown,size,fold);tile.prepend(bar);
   hblSetTileWidth(tile,s.span);hblSetTileFold(tile,false);
   board.appendChild(tile);
-  grip.addEventListener("dragstart",e=>{
-   hblDraggedTile=tile;
-   e.dataTransfer.effectAllowed="move";
-   e.dataTransfer.setData("text/plain",s.id);
-   tile.classList.add("tile-dragging");
-  });
-  grip.addEventListener("dragend",()=>{hblDraggedTile=null;hblClearDropMarkers();});
+  grip.addEventListener("pointerdown",e=>hblPointerDown(e,tile,grip,board));
+  grip.addEventListener("pointermove",hblPointerMove);
+  grip.addEventListener("pointerup",e=>hblPointerEnd(e));
+  grip.addEventListener("pointercancel",e=>hblPointerEnd(e,true));
+  grip.addEventListener("lostpointercapture",e=>hblPointerEnd(e,true));
  }
  layout.remove();oldGrid.remove();
  // Alle verwaisten Zwischencontainer wurden geleert. Der Kalender usw. sind bereits im Board.
@@ -2445,27 +2484,6 @@ function initializeDashboardTiles(){
  // Rückstände aus älteren PWA-Ständen sicher aus dem Dashboard entfernen.
  document.querySelectorAll(".board-toolbar").forEach(toolbar=>toolbar.remove());
 
- board.addEventListener("dragover",e=>{
-  if(!hblDraggedTile)return;
-  e.preventDefault();e.dataTransfer.dropEffect="move";
-  const target=e.target.closest(".dashboard-tile");
-  hblClearDropMarkers();hblDraggedTile.classList.add("tile-dragging");
-  if(target&&target!==hblDraggedTile){
-   target.classList.add(hblDragPosition(e,target)==="before"?"tile-drop-before":"tile-drop-after");
-  }
- });
- board.addEventListener("drop",e=>{
-  if(!hblDraggedTile)return;
-  e.preventDefault();
-  const target=e.target.closest(".dashboard-tile");
-  const moving=hblDraggedTile;
-  if(target&&target!==moving){
-   const before=target.classList.contains("tile-drop-before")||hblDragPosition(e,target)==="before";
-   board.insertBefore(moving,before?target:target.nextSibling);
-  }else if(!target){board.appendChild(moving);}
-  hblDraggedTile=null;hblClearDropMarkers();hblPersistTileLayout();
- });
- board.addEventListener("dragleave",e=>{if(!board.contains(e.relatedTarget))hblClearDropMarkers();});
  // Ohne gespeicherte Daten startet das bekannte, ursprüngliche Layout.
 }
 
@@ -2534,7 +2552,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.5.3 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.6.0 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
