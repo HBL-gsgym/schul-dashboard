@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="7.6.0">
-<title>Schul-Dashboard HBL · v7.6.0</title>
+<meta name="hbl-version" content="7.6.1">
+<title>Schul-Dashboard HBL · v7.6.1</title>
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1186,10 +1186,17 @@ header.part-hero{display:block !important;grid-template-columns:none !important;
 .dashboard-board .dashboard-tile .timetablegrid{min-width:0;}
 .dashboard-board .dashboard-tile.tile-collapsed{padding-bottom:10px !important;}
 .dashboard-board .dashboard-tile.tile-collapsed > :not(.tile-controls){display:none !important;}
-.dashboard-board .dashboard-tile.tile-dragging{opacity:.65;outline:2px solid var(--accent);outline-offset:2px;position:relative;z-index:2;}
-.dashboard-board .tile-grip{touch-action:none;}
-.dashboard-board .dashboard-tile.tile-drop-before{outline:2px solid var(--accent);outline-offset:4px;}
-.dashboard-board .dashboard-tile.tile-drop-after{outline:2px dashed var(--accent);outline-offset:4px;}
+.dashboard-board{position:relative;overflow-anchor:none}
+.dashboard-board .dashboard-tile.tile-dragging{
+ position:fixed;inset:auto;top:0;left:0;z-index:1000;grid-area:auto!important;
+ width:var(--drag-width);pointer-events:none;will-change:transform;
+ transform:translate3d(var(--drag-x),var(--drag-y),0);box-shadow:var(--shadow);
+}
+.dashboard-board .tile-placeholder{
+ grid-column:var(--drag-columns);height:var(--drag-height);
+ border:2px dashed var(--accent);border-radius:16px;pointer-events:none;
+}
+.dashboard-board .tile-grip{touch-action:none;user-select:none;-webkit-user-select:none;}
 .tile-controls{
   position:relative;
   display:flex;
@@ -2281,45 +2288,87 @@ const HBL_TILE_SPECS=[
  {id:"mitarbeit",core:true,selector:"section.participation-overview",title:"Kursverwaltung",span:12}
 ];
 const HBL_TILE_WIDTHS=[2,3,4,6,12];
-let hblDraggedTile=null;
 let hblPointerDrag=null;
 function hblReflowTiles(board,change){
- const tiles=[...board.children].filter(n=>n.dataset.tile&&!n.hidden);
- const before=new Map(tiles.map(n=>[n,n.getBoundingClientRect()]));
+ const tiles=[...board.children].filter(n=>n.dataset.tile&&!n.hidden&&n!==hblPointerDrag?.tile);
+ const before=tiles.map(n=>n.getBoundingClientRect());
+ for(const n of tiles)for(const anim of n.getAnimations())if(anim.id==="hbl-reflow")anim.cancel();
  change();
  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
- for(const n of tiles){
-  if(n===hblDraggedTile)continue;
-  const a=before.get(n),b=n.getBoundingClientRect(),x=a.left-b.left,y=a.top-b.top;
-  if(Math.abs(x)<1&&Math.abs(y)<1)continue;
-  n.getAnimations().filter(a=>a.id==="hbl-reflow").forEach(a=>a.cancel());
-  const anim=n.animate([{transform:`translate(${x}px,${y}px)`},{transform:"translate(0,0)"}],{duration:190,easing:"ease-out"});
-  anim.id="hbl-reflow";
- }
+ tiles.forEach((n,i)=>{
+  const rect=n.getBoundingClientRect(),x=before[i].left-rect.left,y=before[i].top-rect.top;
+  if(Math.abs(x)<1&&Math.abs(y)<1)return;
+  n.animate([{transform:`translate(${x}px,${y}px)`},{transform:"none"}],
+   {id:"hbl-reflow",duration:190,easing:"ease-out"});
+ });
 }
 function hblPointerDown(e,tile,grip,board){
- if(e.button!==0||hblPointerDrag)return;
- e.preventDefault();grip.setPointerCapture(e.pointerId);
- hblDraggedTile=tile;tile.classList.add("tile-dragging");
- hblPointerDrag={id:e.pointerId,tile,grip,board,x:e.clientX,y:e.clientY,moved:false,changed:false,order:[...board.children]};
+ if(e.button!==0||!e.isPrimary||hblPointerDrag)return;
+ e.preventDefault();
+ const rect=tile.getBoundingClientRect();
+ hblPointerDrag={id:e.pointerId,tile,board,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,
+  offsetX:e.clientX-rect.left,offsetY:e.clientY-rect.top,frame:0};
+ board.setPointerCapture(e.pointerId);
+}
+function hblDragFrame(){
+ const d=hblPointerDrag;
+ if(!d?.slot)return;
+ const {tile,board,slot,x,y}=d;
+ tile.style.setProperty("--drag-x",(x-d.offsetX)+"px");
+ tile.style.setProperty("--drag-y",(y-d.offsetY)+"px");
+ const edge=64,dist=y<edge?y-edge:Math.max(0,y-innerHeight+edge);
+ if(dist)window.scrollBy({top:Math.sign(dist)*Math.min(18,Math.ceil(Math.abs(dist)/4)),behavior:"instant"});
+ if(x!==d.lastX||y!==d.lastY||scrollY!==d.lastScroll){
+  d.lastX=x;d.lastY=y;d.lastScroll=scrollY;
+  // Use final grid boxes even while neighbours are animating.
+  const bounds=board.getBoundingClientRect(),px=x-bounds.left,py=y-bounds.top;
+  const nodes=[...board.children].filter(n=>n!==tile&&!n.hidden&&n.offsetWidth);
+  let target=null,min=Infinity;
+  for(const n of nodes){
+   const dx=Math.max(n.offsetLeft-px,0,px-n.offsetLeft-n.offsetWidth);
+   const dy=Math.max(n.offsetTop-py,0,py-n.offsetTop-n.offsetHeight);
+   const distance=dx*dx+dy*dy;
+   if(distance<min){min=distance;target=n;}
+  }
+  if(target&&target!==slot&&x>=bounds.left&&x<=bounds.right){
+   const forward=nodes.indexOf(target)>nodes.indexOf(slot);
+   hblReflowTiles(board,()=>board.insertBefore(slot,forward?target.nextSibling:target));
+  }
+ }
+ d.frame=requestAnimationFrame(hblDragFrame);
 }
 function hblPointerMove(e){
- const d=hblPointerDrag;if(!d||d.id!==e.pointerId)return;
- if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<8)return;
- d.moved=true;
- const target=document.elementFromPoint(e.clientX,e.clientY)?.closest(".dashboard-tile");
- if(!target||target===d.tile||target.parentNode!==d.board)return;
- const before=hblDragPosition(e,target)==="before";
- if(before?d.tile.nextElementSibling===target:target.nextElementSibling===d.tile)return;
- hblReflowTiles(d.board,()=>d.board.insertBefore(d.tile,before?target:target.nextSibling));
- d.changed=true;
+ const d=hblPointerDrag;if(!d||e.pointerId!==d.id)return;
+ d.x=e.clientX;d.y=e.clientY;
+ if(d.slot||Math.hypot(d.x-d.startX,d.y-d.startY)<6)return;
+ const rect=d.tile.getBoundingClientRect();
+ d.slot=document.createElement("div");d.slot.className="tile-placeholder";
+ d.slot.setAttribute("aria-hidden","true");
+ d.slot.style.setProperty("--drag-columns",getComputedStyle(d.tile).gridColumn);
+ d.slot.style.setProperty("--drag-height",rect.height+"px");
+ d.tile.before(d.slot);
+ d.tile.style.setProperty("--drag-width",rect.width+"px");
+ d.tile.classList.add("tile-dragging");
+ hblDragFrame();
 }
 function hblPointerEnd(e,cancel=false){
- const d=hblPointerDrag;if(!d||d.id!==e.pointerId)return;
- hblPointerDrag=null;hblDraggedTile=null;d.tile.classList.remove("tile-dragging");
- if(cancel&&d.changed)for(const node of d.order)d.board.appendChild(node);
- if(d.grip.hasPointerCapture(e.pointerId))d.grip.releasePointerCapture(e.pointerId);
- if(d.changed&&!cancel)hblPersistTileLayout();
+ const d=hblPointerDrag;if(!d||e.pointerId!==d.id)return;
+ if(!cancel&&d.slot&&(d.lastX!==e.clientX||d.lastY!==e.clientY)){
+  cancelAnimationFrame(d.frame);d.x=e.clientX;d.y=e.clientY;hblDragFrame();
+ }
+ hblPointerDrag=null;cancelAnimationFrame(d.frame);
+ if(d.board.hasPointerCapture(d.id))d.board.releasePointerCapture(d.id);
+ if(!d.slot)return;
+ const {tile,slot}=d,rect=tile.getBoundingClientRect();
+ const changed=slot.nextElementSibling!==tile&&tile.nextElementSibling!==slot;
+ if(!cancel&&changed)slot.before(tile);
+ slot.remove();tile.classList.remove("tile-dragging");
+ for(const name of ["--drag-width","--drag-x","--drag-y"])tile.style.removeProperty(name);
+ const dest=tile.getBoundingClientRect();
+ if(!matchMedia("(prefers-reduced-motion: reduce)").matches){
+  tile.animate([{transform:`translate(${rect.left-dest.left}px,${rect.top-dest.top}px)`},{transform:"none"}],{id:"hbl-reflow",duration:160,easing:"ease-out"});
+ }
+ if(changed&&!cancel)hblPersistTileLayout();
 }
 
 const hblAppDisplay=matchMedia("(display-mode: standalone)");
@@ -2380,13 +2429,10 @@ function hblCycleTileWidth(id){
 function hblMoveTile(id,direction){
  const tile=hblTileById(id);if(!tile)return;
  const board=tile.parentNode;
- if(direction<0){
-  const prev=tile.previousElementSibling;
-  if(prev)board.insertBefore(tile,prev);
- }else{
-  const next=tile.nextElementSibling;
-  if(next)board.insertBefore(next,tile);
- }
+ const visible=[...board.children].filter(n=>n.dataset.tile&&!n.hidden);
+ const neighbour=visible[visible.indexOf(tile)+direction];
+ if(!neighbour)return;
+ hblReflowTiles(board,()=>board.insertBefore(tile,direction<0?neighbour:neighbour.nextSibling));
  hblPersistTileLayout();
  tile.querySelector(".tile-grip")?.focus({preventScroll:true});
 }
@@ -2403,6 +2449,7 @@ function hblResetTileLayout(){
  hblPersistTileLayout();
 }
 function restoreDashboardTileLayout(data){
+ if(hblPointerDrag)hblPointerEnd({pointerId:hblPointerDrag.id},true);
  const board=document.getElementById("dashboardBoard");if(!board)return;
  const saved=data?.__dashboardLayoutsV2?.[hblLayoutProfile()]??data?.__dashboardLayoutV1??{};
  const names=new Set(HBL_TILE_SPECS.map(x=>x.id));
@@ -2425,16 +2472,6 @@ function restoreDashboardTileLayout(data){
   hblSetTileWidth(tile,saved.widths?.[spec.id]??spec.span);
  }
 }
-function hblClearDropMarkers(){
- document.querySelectorAll(".tile-drop-before,.tile-drop-after,.tile-dragging")
-  .forEach(n=>n.classList.remove("tile-drop-before","tile-drop-after","tile-dragging"));
-}
-function hblDragPosition(e,target){
- const rect=target.getBoundingClientRect();
- const nearTop=e.clientY<rect.top+Math.min(rect.height*.18,38);
- const nearBottom=e.clientY>rect.bottom-Math.min(rect.height*.18,38);
- return nearTop||(!nearBottom&&e.clientX<rect.left+rect.width*.5)?"before":"after";
-}
 function initializeDashboardTiles(){
  const layout=document.querySelector(".planninggrid"),oldGrid=document.querySelector("main.grid");
  if(!layout||!oldGrid)return;
@@ -2449,16 +2486,15 @@ function initializeDashboardTiles(){
   tile.dataset.tile=s.id;tile.classList.add("dashboard-tile");
   const bar=document.createElement("div");bar.className="tile-controls";
   const grip=document.createElement("button");grip.type="button";grip.className="tile-grip";
-  grip.draggable=false;grip.title="Kachel ziehen und live umordnen";
-  grip.setAttribute("aria-label",s.title+" verschieben");
+  grip.draggable=false;
   grip.innerHTML='⠿ <span>Ziehen</span>';
   const title=document.createElement("span");title.className="tile-collapse-title";title.textContent=s.title;
-  const moveUp=document.createElement("button");moveUp.type="button";moveUp.className="tile-tool";
-  moveUp.textContent="↑";moveUp.title="Kachel nach vorne verschieben";moveUp.setAttribute("aria-label",s.title+" nach vorne verschieben");
-  moveUp.addEventListener("click",()=>hblMoveTile(s.id,-1));
-  const moveDown=document.createElement("button");moveDown.type="button";moveDown.className="tile-tool";
-  moveDown.textContent="↓";moveDown.title="Kachel nach hinten verschieben";moveDown.setAttribute("aria-label",s.title+" nach hinten verschieben");
-  moveDown.addEventListener("click",()=>hblMoveTile(s.id,1));
+  grip.title="Kachel ziehen oder mit den Pfeiltasten verschieben";
+  grip.setAttribute("aria-label",s.title+" verschieben, mit den Pfeiltasten oder durch Ziehen");
+  grip.addEventListener("keydown",e=>{
+   const direction={ArrowUp:-1,ArrowLeft:-1,ArrowDown:1,ArrowRight:1}[e.key];
+   if(direction&&!hblPointerDrag){e.preventDefault();hblMoveTile(s.id,direction);}
+  });
   const size=document.createElement("button");size.type="button";size.className="tile-tool tile-size";
   size.innerHTML='↔ <span class="tile-size-label"></span>';
   size.setAttribute("aria-label",s.title+" Breite ändern");
@@ -2466,15 +2502,18 @@ function initializeDashboardTiles(){
   const fold=document.createElement("button");fold.type="button";fold.className="tile-tool tile-fold";
   fold.setAttribute("aria-label",s.title+" einklappen");
   fold.addEventListener("click",()=>hblSetTileFold(tile,!tile.classList.contains("tile-collapsed"),true));
-  bar.append(grip,title,moveUp,moveDown,size,fold);tile.prepend(bar);
+  bar.append(grip,title,size,fold);tile.prepend(bar);
   hblSetTileWidth(tile,s.span);hblSetTileFold(tile,false);
   board.appendChild(tile);
   grip.addEventListener("pointerdown",e=>hblPointerDown(e,tile,grip,board));
-  grip.addEventListener("pointermove",hblPointerMove);
-  grip.addEventListener("pointerup",e=>hblPointerEnd(e));
-  grip.addEventListener("pointercancel",e=>hblPointerEnd(e,true));
-  grip.addEventListener("lostpointercapture",e=>hblPointerEnd(e,true));
  }
+ board.addEventListener("pointermove",hblPointerMove);
+ board.addEventListener("pointerup",e=>hblPointerEnd(e));
+ for(const type of ["pointercancel","lostpointercapture"])board.addEventListener(type,e=>hblPointerEnd(e,true));
+ function cancelDrag(){if(hblPointerDrag)hblPointerEnd({pointerId:hblPointerDrag.id},true);}
+ window.addEventListener("blur",cancelDrag);
+ window.addEventListener("resize",cancelDrag);
+ window.addEventListener("keydown",e=>{if(e.key==="Escape")cancelDrag();});
  layout.remove();oldGrid.remove();
  // Alle verwaisten Zwischencontainer wurden geleert. Der Kalender usw. sind bereits im Board.
  // Der Speicherstatus bleibt für bestehende Cloud-/Lokalspeicher-Aufrufe erhalten,
@@ -2552,7 +2591,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 21. November 2026">v7.6.0 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 22. November 2026">v7.6.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Mit Login Cloud-Synchronisierung, sonst lokal im Browser</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
