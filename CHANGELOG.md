@@ -1,3 +1,7 @@
+## v8.0.8 – 22.11.2026 · Codex
+
+Einheitliche Inhaltsebene über der Hintergrunddekoration. Ansichtsabhängige Skalierung und Deckkraft entfernt. Echte iPad-Abnahme offen.
+
 ## v8.0.5 – 22.11.2026 · Codex
 
 Updateprüfung alle 30 Sekunden bei sichtbarer App, unmittelbar beim Wiederöffnen und bei Service-Worker-Wechsel. Versionsabfrage unabhängig von der Service-Worker-Registrierung. Echte iPad-Abnahme offen.
