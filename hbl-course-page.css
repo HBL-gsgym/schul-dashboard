@@ -344,3 +344,13 @@ button.seat-place{cursor:pointer}
 .course-profile ul{padding-left:1.4rem;line-height:1.8;max-height:45dvh;overflow:auto}
 .course-student-highlight{outline:2px solid var(--accent);outline-offset:-2px}
 @media(max-width:600px){.course-roster li .course-person-edit{min-height:44px}.course-profile .grade-actions a{min-height:44px}}
+
+.hbl-course-layout .course-content-title{font-size:clamp(22px,2.4vw,30px);line-height:1.2;margin:0 0 12px;font-weight:750}
+.hbl-course-layout > .hbl-course-tabs{margin-bottom:10px}
+.hbl-course-layout .part-pane{padding:14px}
+.hbl-course-layout .grade-pilot{display:none}
+.hbl-course-layout .grade-ma-note{font-size:11px;margin:6px 0}
+@media(orientation:landscape) and (max-height:650px){
+ .hbl-course-layout .course-content-title{font-size:20px;margin-bottom:6px}
+ .hbl-course-layout .part-pane{padding:8px}
+}

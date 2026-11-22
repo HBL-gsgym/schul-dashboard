@@ -106,7 +106,7 @@ function mount(options){
  window.hblSetView('course','<div class="dashboard-scene" id="dashboardScene" aria-hidden="true"></div><main class="course-workspace hbl-course-layout"><nav class="part-nav"><a class="part-back" href="./">← Schul-Dashboard</a></nav>'+
   courseSwitcher(page.id,page.mode==='noten'?'noten':'kurs')+
   courseTabs(page.id,page.mode==='noten'?'noten':'kurs')+
-  '<header class="hbl-course-heading"><p class="hbl-course-eyebrow">MEIN KURS</p><h1 id="coursePageTitle">Kurs wird geladen …</h1><p class="hbl-course-meta" id="coursePageMeta"></p></header>'+
+
   '<div id="coursePageContent"></div><p id="gradeStatus" role="status"></p></main>');
  const host=document.getElementById('coursePageContent');
  host.addEventListener('click',onClick);
@@ -119,16 +119,21 @@ function refresh(){
  const key=page.mode+':'+page.id;
  switchCourseContent(host,key);
  if(typeof page.courses==='function')renderCourseSwitcher(page.courses());
- const title=document.getElementById('coursePageTitle');
- if(!meta){title.textContent='Kurs nicht gefunden';host.replaceChildren();renderStamps.delete(key);return;}
+ function updateTitle(){
+  const pane=host.querySelector('.part-pane');if(!pane)return;
+  let title=pane.querySelector('.course-content-title');
+  if(!title){title=document.createElement('h1');title.className='course-content-title';pane.prepend(title);}
+  title.textContent=meta?meta.subject+' · '+meta.group:'Kurs nicht gefunden';
+ }
+ if(!meta){host.replaceChildren();renderStamps.delete(key);return;}
  const name=meta.subject+' · '+meta.group;
- title.textContent=name;
- document.getElementById('coursePageMeta').textContent=(data?.students?.length??0)+' Lernende · '+(page.mode==='noten'?'Notenbuch':'Sitzplan und Schülerliste');
+
+
  document.title=(page.mode==='noten'?'Noten · ':'Kurs · ')+name+' · Schul-Dashboard';
  const stamp=JSON.stringify(page.mode==='kurs'?
   [data?.students,data?.seating,data?.dates,data?.marks,page.rooms?.(),page.rosterWarning?.()]:
   [data?.students,data?.gradebook,data?.participationGrades,data?.dates,data?.marks,gradeView,page.year?.()?.label]);
- if(renderStamps.get(key)===stamp&&host.childNodes.length)return;
+ if(renderStamps.get(key)===stamp&&host.childNodes.length){updateTitle();return;}
  renderStamps.set(key,stamp);
  if(page.mode==='kurs'){
   if(!host.querySelector('.seat-section')){
@@ -149,7 +154,7 @@ function refresh(){
    '<p class="course-roster-feedback" data-roster-feedback role="status" aria-live="polite"></p></div></details>';
    seatViews.set(key,window.hblCreateSeatView(host.querySelector('.seat-section'),{...page,openStudentProfile:studentProfile}));
   }
-  seatViews.get(key)?.render();
+  seatViews.get(key)?.render();updateTitle();
   const roster=host.querySelector('.course-roster'),students=ordered(data?.students);
   const warning=!!page.rosterWarning?.();
   const warningText=roster.querySelector('.class-roster-warning'),linkButton=roster.querySelector('[data-link-class]');
@@ -186,6 +191,7 @@ function refresh(){
   (gradeView!=='year'&&active.length&&!active.some(a=>a.columns.some(c=>c.term===gradeView))?'<p>Für dieses Halbjahr gibt es noch keine Nachweise. Ordne einen Spaltenkopf im gesamten Schuljahr zu oder ergänze einen Nachweis im Bewertungsbereich.</p>':'')+
   '<p class="grade-ma-note">'+maStatus+' '+(linkedTarget?'„Vorläufig“ zählt nur in der Prognose, „Bestätigt“ in der Berechnung.':'')+' Die Bestätigung erfolgt in der Mitarbeit.</p>'+
   legacyNotice+tableHtml(linkedBook,active,ordered(data?.students),forecastBook)+'</section>';
+ updateTitle();
  host.querySelector('[data-scale]').value=book.scale;
  host.querySelector('[data-view]').value=gradeView;
  host.querySelector('[data-mode]').value=book.mode==='sek2'?'sek2':'sek1';

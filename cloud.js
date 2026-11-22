@@ -6,7 +6,11 @@ const KEY="sb_publishable_3CWYEt1PpG7t8ur4IA4uiw_nTPtA7e5";
 const PAGE="https://hbl-gsgym.github.io/schul-dashboard/";
 const el=(id)=>document.getElementById(id);
 let client=null,user=null,revision=0,active=false,paused=false,dirty=false,queue=Promise.resolve(),lastError="";
-const originalSave=window.savePrepFile;
+function access(allowed){
+ document.documentElement.dataset.access=allowed?"ready":"locked";
+ const root=document.getElementById("hblAppRoot");if(root)root.inert=!allowed;
+}
+access(false);
 let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
 let loggingOut=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
@@ -19,7 +23,7 @@ function status(message,issue=false){
 }
 function showModal(open=true){
  const modal=el("hblCloudModal");if(!modal)return;
- modal.hidden=!open;
+ modal.hidden=active&&!open;
  if(open){setTimeout(()=>el("hblCloudEmail")?.focus(),20);}
 }
 function message(value,error=false){
@@ -28,13 +32,13 @@ function message(value,error=false){
 function controls(){
  const panel=el("hblCloudControls");if(!panel)return;
  const signed=!!user;
- el("hblCloudAccount").textContent=signed ? ("Angemeldet: "+(window.hblCurrentUsername||user.email)) : "Nur lokal · Testmodus";
+ el("hblCloudAccount").textContent=signed ? ("Angemeldet: "+(window.hblCurrentUsername||user.email)) : "Bitte anmelden";
  el("hblCloudLogin").hidden=signed;
  el("hblCloudLogout").hidden=!signed;
  el("hblCloudRefresh").hidden=!signed;
  el("hblCloudRetry").hidden=!signed;
  el("hblCloudImport").hidden=!signed;
- if(!signed)status("Lokale Testdaten · nicht synchronisiert");
+ if(!signed)status("Anmeldung erforderlich");
 }
 function rememberPending(snapshot){
  try{localStorage.setItem(userKey(),JSON.stringify({content:snapshot,expectedRevision:revision,at:Date.now()}));}catch(e){}
@@ -102,7 +106,7 @@ async function cloudWrite(snapshot){
 window.savePrepFile=function(){
  if(loggingOut)return Promise.reject(Error("Abmeldung läuft. Bitte kurz warten."));
  if(restoring)return Promise.resolve();
- if(!active)return originalSave();
+ if(!active)return Promise.reject(Error("Bitte zuerst anmelden."));
  const snapshot=JSON.parse(JSON.stringify(prepDone));
  const session=sessionVersion;
  changeVersion++;
@@ -116,9 +120,10 @@ window.savePrepFile=function(){
 };
 async function startSession(session){
  const version=++sessionVersion;
+ access(false);
  user=session?.user||null;
  active=false;paused=false;dirty=false;revision=0;
- if(!user){active=false;paused=false;dirty=false;revision=0;controls();return;}
+ if(!user){active=false;paused=false;dirty=false;revision=0;controls();showModal(true);return;}
  controls();
  try{
   const membership=await client.from("hbl_dashboard_members").select("enabled").eq("user_id",user.id).maybeSingle();
@@ -127,10 +132,11 @@ async function startSession(session){
   if(!membership.data?.enabled){
    active=false;
    status("Konto nicht freigeschaltet – bitte Administrator kontaktieren",true);
-   showModal(false);
+   message("Konto nicht freigeschaltet – bitte Administrator kontaktieren",true);showModal(true);
    window.dispatchEvent(new Event("hbl-cloud-status"));
    return;
   }
+  serverReady=true;
   const pending=getPending();
   if(pending){
    if(!validDemoData(pending.content)||!Number.isFinite(pending.expectedRevision))throw Error("Lokale Sicherung ist ungültig. Bitte nicht überschreiben.");
@@ -141,7 +147,7 @@ async function startSession(session){
    status("Lokale Änderungen wiederhergestellt – bitte exportieren oder erneut speichern",true);
   }else await loadRemote();
   if(version!==sessionVersion)return;
-  showModal(false);
+  access(true);showModal(false);
   window.dispatchEvent(new Event("hbl-cloud-status"));
  }catch(e){status("Cloud-Laden fehlgeschlagen: "+e.message,true);message(e.message,true);}
 }
@@ -157,6 +163,7 @@ window.hblLogout=async function(){
   }
   const {error}=await client.auth.signOut();
   if(error)throw error;
+  access(false);
   sessionVersion++;user=null;active=false;paused=false;revision=0;dirty=false;
   if(pushWarning)alert("Du bist abgemeldet. Die Push-Abmeldung konnte nicht vollständig bestätigt werden. Auf diesem Gerät können noch Mitteilungen erscheinen; deaktiviere sie bei Bedarf in den Browsereinstellungen.");
   location.reload();
@@ -173,7 +180,7 @@ async function initializeAuth(){
  modal.innerHTML='<section class="hbl-cloud-dialog" role="dialog" aria-modal="true" aria-label="Cloud-Anmeldung"><button type="button" id="hblCloudClose" class="hbl-cloud-close" aria-label="Schließen">✕</button><h2>☁️ Dashboard-Anmeldung</h2><p>Der Zugang ist nur mit persönlicher Einladung möglich. Melde dich mit E-Mail-Adresse und Passwort an.</p><form id="hblCloudForm"><label>E-Mail<input id="hblCloudEmail" type="email" autocomplete="email" required></label><label>Passwort<input id="hblCloudPassword" type="password" autocomplete="current-password" minlength="8" required></label><div class="hbl-cloud-actions"><button type="submit">Anmelden</button></div></form><p id="hblCloudMessage" role="status"></p><small>Du hast noch keinen Zugang? Bitte den Hauptadministrator um eine persönliche Einladung. Keine echten Schülerdaten in dieser Pilotversion speichern.</small></section>';
  const bar=document.createElement("section");
  bar.className="hbl-cloud-bar";bar.id="hblCloudControls";
- bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Nur lokal · Testmodus</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblLocalBackup">Lokale Sicherung herunterladen</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
+ bar.innerHTML='<div class="hbl-cloud-label">☁ <strong id="hblCloudAccount">Bitte anmelden</strong><span id="hblCloudState">Laden …</span></div><div class="hbl-cloud-actions"><button id="hblCloudLogin">Anmelden</button><button id="hblLocalBackup">Lokale Sicherung herunterladen</button><button id="hblCloudRefresh" hidden>↻ Abgleichen</button><button id="hblCloudRetry" hidden>↥ Erneut speichern</button><button id="hblCloudImport" hidden>Testdaten übertragen</button><button id="hblCloudLogout" hidden>Abmelden</button></div>';
  const more=document.createElement("button");
  more.type="button";more.id="hblAccountMore";more.className="hbl-account-more";
  more.textContent="Konto ▾";
@@ -236,7 +243,8 @@ async function initializeAuth(){
   try{await cloudWrite(saved);applyPrepData(saved);}
   catch(e){status("Übernahme fehlgeschlagen: "+e.message,true);}
  };
- if(!window.supabase?.createClient){status("Cloud-Bibliothek nicht geladen – bitte Seite neu öffnen",true);return;}
+ showModal(true);
+ if(!window.supabase?.createClient){message("Anmeldung nicht erreichbar. Bitte Internetverbindung prüfen und Seite neu laden.",true);status("Cloud-Bibliothek nicht geladen – bitte Seite neu öffnen",true);return;}
  client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  window.hblCloudClient=client;
  window.hblCloudUser=()=>user;
@@ -255,7 +263,7 @@ async function initializeAuth(){
   }
  };
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT"){sessionVersion++;user=null;active=false;controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
+  if(event==="SIGNED_OUT"){sessionVersion++;user=null;active=false;access(false);controls();showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
   if((event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")&&session?.user&&session.user.id!==user?.id){
    setTimeout(()=>{if(session?.user&&session.user.id!==user?.id)void startSession(session);},0);
   }
@@ -264,7 +272,7 @@ async function initializeAuth(){
  const {data,error}=await client.auth.getSession();
  if(error)status("Anmeldung konnte nicht gelesen werden: "+error.message,true);
  else if(data.session)await startSession(data.session);
- else {controls();window.dispatchEvent(new Event("hbl-cloud-status"));}
+ else {controls();showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
  window.addEventListener("hbl-profile-changed",controls);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();});
  setInterval(()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();},45000);

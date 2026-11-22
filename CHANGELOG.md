@@ -1,3 +1,7 @@
+## v8.0.9 – 22.11.2026 · Codex
+
+Zugang nur mit angemeldetem, freigeschaltetem Konto. Kompakte gemeinsame Kursköpfe in der obersten Inhaltskachel. Neue Konten starten ohne Beispielkurse; vorhandene Kursnamen bleiben erhalten. Manuelle Kursanlage bleibt verfügbar.
+
 ## v8.0.8 – 22.11.2026 · Codex
 
 Einheitliche Inhaltsebene über der Hintergrunddekoration. Ansichtsabhängige Skalierung und Deckkraft entfernt. Echte iPad-Abnahme offen.

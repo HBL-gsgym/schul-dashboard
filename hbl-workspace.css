@@ -241,3 +241,7 @@ html[data-world=glass] .workspace-atmosphere span:nth-child(3){right:-7vw;bottom
 
 /* display:contents has no box: elevate the actual view containers instead. */
 html[data-world] #hblAppRoot > :not(.dashboard-scene){position:relative;z-index:1}
+
+.workspace-atmosphere{width:100vw}
+
+html[data-platform=app] body{transition:background-color .16s,color .16s}
