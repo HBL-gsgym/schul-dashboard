@@ -211,3 +211,14 @@ html[data-world=organic] #workspaceNav button:hover:not([aria-current]){backgrou
  html[data-world=glass] .workspace-atmosphere span{min-width:130px;min-height:130px}
 }
 @media print{.workspace-atmosphere{display:none}}
+
+/* Decoration above the subject image, below the workspace. */
+html[data-world] body .dashboard-scene{z-index:-2!important}
+html[data-world=glass] body .workspace-atmosphere{opacity:1}
+html[data-world=glass] body.dark .workspace-atmosphere{opacity:.8}
+html[data-world=glass] .workspace-atmosphere span{
+ border-color:rgba(255,255,255,.9);
+ box-shadow:inset 5px 8px 24px #ffffff80,inset -8px -15px 28px #657dbe55,0 10px 32px #46639930;
+}
+html[data-world=glass] .workspace-atmosphere span:nth-child(2){right:3vw;top:12vh}
+html[data-world=glass] .workspace-atmosphere span:nth-child(4){left:8vw;bottom:9vh;width:18vw;height:18vw}

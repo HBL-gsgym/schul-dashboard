@@ -1,3 +1,7 @@
+## v8.0.3 – 22.11.2026 · Codex
+
+Glass-Blasen über dem Fachhintergrund sichtbar machen: getrennte Ebenen, stärkere Lichtkanten und weiter innen platzierte Blasen. Echte iPad-Abnahme offen.
+
 ## v8.0.2 – 22.11.2026 · Codex
 
 Organische Landschaftsformen, geometrische Linien und gläserne Blasen geben jeder Designwelt eine eigene Hintergrundgestaltung. Bestehende Fachmotive werden weiter berücksichtigt.
