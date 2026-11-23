@@ -246,11 +246,27 @@ html[data-world] #hblAppRoot > :not(.dashboard-scene){position:relative;z-index:
 
 html[data-platform=app] body{transition:background-color .16s,color .16s}
 
+
+/* Sync traffic light: status and symbol remain legible in every design/mode. */
 #hblSyncNotice{
- position:fixed;right:10px;bottom:10px;z-index:10010;max-width:min(460px,calc(100vw - 20px));
- padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);
- box-shadow:var(--shadow);font:600 12px/1.4 system-ui;cursor:pointer;
+ --sync-bg:#fff1c2;--sync-ink:#684800;
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;
+ position:fixed;right:10px;bottom:10px;z-index:10010;
+ max-width:calc(100vw - 20px);padding:6px 10px;min-height:32px;
+ border:1px solid currentColor;border-radius:8px;font:600 12px/1.3 system-ui;cursor:pointer;
 }
-#hblSyncNotice[hidden]{display:none}
-#hblSyncNotice[data-issue=true]{background:#fff0da;color:#743c00;border-color:#bc751b}
-@media(orientation:portrait) and (pointer:coarse){#hblSyncNotice{bottom:calc(78px + env(safe-area-inset-bottom,0px))}}
+#hblSyncNotice[data-sync=synced]{--sync-bg:#d8f5e2;--sync-ink:#145c32}
+#hblSyncNotice[data-sync=error]{--sync-bg:#ffe0e0;--sync-ink:#9d2020}
+html[data-world] body #hblSyncNotice{background:var(--sync-bg);color:var(--sync-ink)}
+#hblSyncNotice[hidden]{display:none!important}
+#hblSyncNotice[data-docked=true]{position:relative;inset:auto;z-index:auto;flex-shrink:0}
+#hblSyncNotice .sync-symbol{font-weight:900;font-size:17px}
+#hblSyncNotice:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+html[data-compact=true] #workspaceNav #hblSyncNotice .sync-label{display:none}
+#hblQuickbar #hblSyncNotice{width:100%;margin-bottom:4px}
+html[data-world] #hblMobileNav #hblSyncNotice{grid-column:1/-1;display:flex;min-height:28px;padding:3px 8px}
+@media screen and (orientation:portrait){
+ html[data-platform=app] body{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+ #hblSyncNotice[data-docked=false]{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+}
+@media print{#hblSyncNotice{display:none!important}}

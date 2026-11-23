@@ -1,3 +1,7 @@
+## v8.0.11 – 23.11.2026 · Codex
+
+Sync-Ampel in der Desktop-Navigation und den App-Schnellzugriffen: Grün bestätigt, Gelb ausstehend/offline, Rot bei Fehlern oder Konflikten. Symbol, Text und direkter Zugang zum Speicherstatus; Ersatzanzeige in Ansichten ohne sichtbare Navigation. Geprüft: 116 Tests und Browserinteraktionen für Statuswechsel, Konflikt, Wiederaufnahme und Navigation auf Desktop, Smartphone und Tablet-Emulation. Echte Gerätetests offen.
+
 ## v8.0.10 – 23.11.2026 · Codex
 
 Sichtbarer Speicherstand mit direktem Zugang zur Synchronisierung. Sichere Wiederholungsversuche nach Verbindungsfehlern; neuere Cloud-Stände werden nicht überschrieben. Kein falscher Erfolgsstatus bei ausstehenden Änderungen, lokale Sicherungsfehler werden angezeigt. Geprüft: 115 Tests sowie Desktop- und mobile Browserinteraktionen mit synthetischen Daten. Wiederherstellung gemeldeter WAT-9a-Eingaben und echte Gerätetests offen.

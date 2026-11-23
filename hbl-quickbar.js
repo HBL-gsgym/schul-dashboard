@@ -65,6 +65,7 @@ function mount(){
  window.addEventListener("hbl-chat-access-changed",chat);
  const controls=document.querySelector("#hblCloudControls .hbl-cloud-actions");
  if(controls)new MutationObserver(chat).observe(controls,{subtree:true,attributes:true,attributeFilter:["hidden"],characterData:true,childList:true});
+ window.addEventListener("hbl-sync-mounted",place);
  window.addEventListener("resize",place);mq.addEventListener("change",place);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();

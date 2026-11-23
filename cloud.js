@@ -15,11 +15,14 @@ let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
 let loggingOut=false,retrying=false,pendingBackupFailed=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
 function validDemoData(data){return data&&typeof data==="object"&&!Array.isArray(data);}
-function status(message,issue=false){
+function status(message,issue=false,state){
+ state=state||(issue||paused?"error":(!active||dirty?"pending":window.hblSyncState?.state||"pending"));
+ window.hblSyncState={message,state};
  const badge=el("hblCloudState");
  if(badge){badge.textContent=message;badge.style.color=issue?"#ffc387":"";}
  const notice=el("hblSyncNotice");
  if(notice){notice.textContent=message;notice.dataset.issue=String(issue);notice.hidden=!user;}
+ window.dispatchEvent(new Event("hbl-sync-state"));
  if(active && typeof prepStatus==="function")prepStatus(message,issue);
  if(active && typeof setParticipationStatus==="function")setParticipationStatus(message,issue);
 }
@@ -83,7 +86,7 @@ async function loadRemote({force=false}={}){
  active=true;paused=false;dirty=false;clearPending();
  applyPrepData(content);
  if(typeof initializeParticipationRoster==="function" && currentParticipationCourse)initializeParticipationRoster();
- status("Cloud synchronisiert · Stand "+revision+" ✓");
+ status("Cloud synchronisiert · Stand "+revision+" ✓",false,"synced");
  controls();
 }
 async function cloudWrite(snapshot){
@@ -106,7 +109,7 @@ async function cloudWrite(snapshot){
  if(pending && JSON.stringify(pending.content)===JSON.stringify(snapshot)){clearPending();dirty=false;}
  else if(pending){pending.expectedRevision=revision;try{localStorage.setItem(userKey(),JSON.stringify(pending));}catch(e){}}
  lastError="";
- status(dirty?"Weitere Änderungen werden gespeichert …":"Cloud synchronisiert · Stand "+revision+" ✓");
+ status(dirty?"Weitere Änderungen werden gespeichert …":"Cloud synchronisiert · Stand "+revision+" ✓",false,dirty?"pending":"synced");
 }
 window.savePrepFile=function(){
  if(loggingOut)return Promise.reject(Error("Abmeldung läuft. Bitte kurz warten."));
@@ -266,6 +269,7 @@ async function initializeAuth(){
  else if(data.session)await startSession(data.session);
  else {controls();showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
  window.addEventListener("hbl-profile-changed",controls);
+ window.addEventListener("offline",()=>status(paused?"Sync-Problem · offline. Lokale Änderungen prüfen":"Offline · Änderungen bleiben lokal, Verbindung wird benötigt",false,paused?"error":"pending"));
  window.addEventListener("online",()=>void resumeSync());
  window.addEventListener("focus",()=>void resumeSync());
  document.addEventListener("visibilitychange",()=>{if(!document.hidden)void resumeSync();});
@@ -307,14 +311,16 @@ async function resumeSync(){
 }
 async function checkRemote(){
  if(!user||!active||dirty||paused)return;
+ const session=sessionVersion,changes=changeVersion;
  const {data,error}=await client.from("hbl_dashboard_snapshots").select("revision").eq("user_id",user.id).maybeSingle();
  if(error){status("Abgleich fehlgeschlagen: "+error.message,true);return;}
+ if(session!==sessionVersion||changes!==changeVersion||dirty||paused)return;
  const newest=Number(data?.revision||0);
  if(newest>revision){
   const typing=/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||"");
-  if(typing)status("Neue Cloud-Daten verfügbar · ↻ Abgleichen",true);
+  if(typing)status("Neue Cloud-Daten verfügbar · ↻ Abgleichen",true,"pending");
   else try{await loadRemote();}catch(e){status("Abgleich fehlgeschlagen",true);}
- }
+ }else if(!dirty&&!paused)status("Cloud synchronisiert · Stand "+revision+" ✓",false,"synced");
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initializeAuth,{once:true});
 else initializeAuth();
