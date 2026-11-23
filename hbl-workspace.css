@@ -245,3 +245,12 @@ html[data-world] #hblAppRoot > :not(.dashboard-scene){position:relative;z-index:
 .workspace-atmosphere{width:100vw}
 
 html[data-platform=app] body{transition:background-color .16s,color .16s}
+
+#hblSyncNotice{
+ position:fixed;right:10px;bottom:10px;z-index:10010;max-width:min(460px,calc(100vw - 20px));
+ padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);
+ box-shadow:var(--shadow);font:600 12px/1.4 system-ui;cursor:pointer;
+}
+#hblSyncNotice[hidden]{display:none}
+#hblSyncNotice[data-issue=true]{background:#fff0da;color:#743c00;border-color:#bc751b}
+@media(orientation:portrait) and (pointer:coarse){#hblSyncNotice{bottom:calc(78px + env(safe-area-inset-bottom,0px))}}

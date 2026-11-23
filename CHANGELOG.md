@@ -1,3 +1,7 @@
+## v8.0.10 – 23.11.2026 · Codex
+
+Sichtbarer Speicherstand mit direktem Zugang zur Synchronisierung. Sichere Wiederholungsversuche nach Verbindungsfehlern; neuere Cloud-Stände werden nicht überschrieben. Kein falscher Erfolgsstatus bei ausstehenden Änderungen, lokale Sicherungsfehler werden angezeigt. Geprüft: 115 Tests sowie Desktop- und mobile Browserinteraktionen mit synthetischen Daten. Wiederherstellung gemeldeter WAT-9a-Eingaben und echte Gerätetests offen.
+
 ## v8.0.9 – 22.11.2026 · Codex
 
 Zugang nur mit angemeldetem, freigeschaltetem Konto. Kompakte gemeinsame Kursköpfe in der obersten Inhaltskachel. Neue Konten starten ohne Beispielkurse; vorhandene Kursnamen bleiben erhalten. Manuelle Kursanlage bleibt verfügbar.

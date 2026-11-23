@@ -12,12 +12,14 @@ function access(allowed){
 }
 access(false);
 let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
-let loggingOut=false;
+let loggingOut=false,retrying=false,pendingBackupFailed=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
 function validDemoData(data){return data&&typeof data==="object"&&!Array.isArray(data);}
 function status(message,issue=false){
  const badge=el("hblCloudState");
  if(badge){badge.textContent=message;badge.style.color=issue?"#ffc387":"";}
+ const notice=el("hblSyncNotice");
+ if(notice){notice.textContent=message;notice.dataset.issue=String(issue);notice.hidden=!user;}
  if(active && typeof prepStatus==="function")prepStatus(message,issue);
  if(active && typeof setParticipationStatus==="function")setParticipationStatus(message,issue);
 }
@@ -41,12 +43,12 @@ function controls(){
  if(!signed)status("Anmeldung erforderlich");
 }
 function rememberPending(snapshot){
- try{localStorage.setItem(userKey(),JSON.stringify({content:snapshot,expectedRevision:revision,at:Date.now()}));}catch(e){}
+ try{localStorage.setItem(userKey(),JSON.stringify({content:snapshot,expectedRevision:revision,at:Date.now()}));pendingBackupFailed=false;}catch(e){pendingBackupFailed=true;status("Lokale Sicherung fehlgeschlagen – App offen lassen und Daten exportieren!",true);throw e;}
 }
 function downloadLocalBackup(){
  try{
   const pending=getPending();
-  const content=pending?pending.content:prepDone;
+  const content=pendingBackupFailed?prepDone:(pending?pending.content:prepDone);
   if(!validDemoData(content))throw Error("Lokale Sicherung ist ungültig.");
   const blob=new Blob([JSON.stringify(content,null,2)],{type:"application/json"});
   const url=window.URL.createObjectURL(blob),a=document.createElement("a");
@@ -86,7 +88,10 @@ async function loadRemote({force=false}={}){
 }
 async function cloudWrite(snapshot){
  if(!active||!client||!user)throw Error("Nicht angemeldet");
- if(paused)throw Error("Cloud-Synchronisierung pausiert. Bitte Konflikt lösen.");
+ if(paused){
+  status("Nicht synchronisiert · lokale Änderungen gesichert. Einstellungen → Daten & Synchronisierung öffnen.",true);
+  throw Error("Cloud-Synchronisierung pausiert. Bitte Konflikt lösen.");
+ }
  const session=sessionVersion;
  const {data,error}=await client.rpc("hbl_save_snapshot",{p_content:snapshot,p_expected_revision:revision});
  if(session!==sessionVersion)throw Error("Sitzung wurde gewechselt. Lokale Sicherung bleibt erhalten.");
@@ -101,7 +106,7 @@ async function cloudWrite(snapshot){
  if(pending && JSON.stringify(pending.content)===JSON.stringify(snapshot)){clearPending();dirty=false;}
  else if(pending){pending.expectedRevision=revision;try{localStorage.setItem(userKey(),JSON.stringify(pending));}catch(e){}}
  lastError="";
- status("Cloud synchronisiert · Stand "+revision+" ✓");
+ status(dirty?"Weitere Änderungen werden gespeichert …":"Cloud synchronisiert · Stand "+revision+" ✓");
 }
 window.savePrepFile=function(){
  if(loggingOut)return Promise.reject(Error("Abmeldung läuft. Bitte kurz warten."));
@@ -110,7 +115,8 @@ window.savePrepFile=function(){
  const snapshot=JSON.parse(JSON.stringify(prepDone));
  const session=sessionVersion;
  changeVersion++;
- dirty=true;rememberPending(snapshot);
+ dirty=true;
+ try{rememberPending(snapshot);}catch(e){return Promise.reject(e);}
  status("Speichert in der Cloud …");
  queue=queue.catch(()=>{}).then(()=>{
   if(session!==sessionVersion)throw Error("Sitzung wurde gewechselt. Lokale Sicherung bleibt erhalten.");
@@ -122,7 +128,7 @@ async function startSession(session){
  const version=++sessionVersion;
  access(false);
  user=session?.user||null;
- active=false;paused=false;dirty=false;revision=0;
+ active=false;paused=false;dirty=false;revision=0;pendingBackupFailed=false;
  if(!user){active=false;paused=false;dirty=false;revision=0;controls();showModal(true);return;}
  controls();
  try{
@@ -200,6 +206,10 @@ async function initializeAuth(){
  };
  document.body.prepend(bar);
  document.body.appendChild(modal);
+ const notice=document.createElement("button");notice.type="button";notice.id="hblSyncNotice";
+ notice.setAttribute("aria-live","polite");
+ notice.onclick=()=>{window.openMeinHbl?.();document.querySelector(".mein-hbl [data-sync]")?.click();};
+ document.body.appendChild(notice);
  el("hblCloudClose").onclick=()=>showModal(false);
  modal.onclick=e=>{if(e.target===modal)showModal(false)};
  el("hblCloudLogin").onclick=()=>showModal(true);
@@ -215,25 +225,7 @@ async function initializeAuth(){
  el("hblCloudRefresh").onclick=async()=>{
   try{await loadRemote({force:true});}catch(e){status("Abgleich fehlgeschlagen: "+e.message,true);}
  };
- el("hblCloudRetry").onclick=async()=>{
-  if(!user)return;
-  const session=sessionVersion,changes=changeVersion;
-  await queue.catch(()=>{});
-  if(session!==sessionVersion||changes!==changeVersion)return;
-  const pending=getPending();
-  if(!pending){status("Keine ausstehenden Änderungen");return;}
-  try{
-   const {data,error}=await client.from("hbl_dashboard_snapshots").select("revision").eq("user_id",user.id).maybeSingle();
-   if(session!==sessionVersion||changes!==changeVersion)return;
-   if(error)throw error;
-   if(Number(data?.revision||0)!==Number(pending.expectedRevision)){
-    status("Konflikt: Cloud wurde geändert. Bitte lokale Daten als JSON exportieren, bevor du neu lädst.",true);return;
-   }
-   revision=Number(pending.expectedRevision);paused=false;active=true;
-   queue=cloudWrite(pending.content);
-   await queue;
-  }catch(e){status("Erneut speichern fehlgeschlagen: "+e.message,true);}
- };
+ el("hblCloudRetry").onclick=retryPending;
  el("hblCloudImport").onclick=async()=>{
   if(!active||paused)return;
   let saved;
@@ -274,13 +266,49 @@ async function initializeAuth(){
  else if(data.session)await startSession(data.session);
  else {controls();showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
  window.addEventListener("hbl-profile-changed",controls);
- document.addEventListener("visibilitychange",()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();});
- setInterval(()=>{if(!document.hidden&&active&&!dirty&&!paused)checkRemote();},45000);
+ window.addEventListener("online",()=>void resumeSync());
+ window.addEventListener("focus",()=>void resumeSync());
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)void resumeSync();});
+ setInterval(()=>{if(!document.hidden)void resumeSync();},45000);
+}
+async function retryPending(){
+  if(!user||retrying||loggingOut)return;
+  retrying=true;
+  try{
+  const session=sessionVersion,changes=changeVersion;
+  await queue.catch(()=>{});
+  if(session!==sessionVersion||changes!==changeVersion)return;
+  if(dirty){
+   try{rememberPending(JSON.parse(JSON.stringify(prepDone)));}
+   catch(e){return;}
+  }
+  const pending=getPending();
+  if(!pending){status("Keine ausstehenden Änderungen");return;}
+  try{
+   const {data,error}=await client.from("hbl_dashboard_snapshots").select("revision").eq("user_id",user.id).maybeSingle();
+   if(session!==sessionVersion||changes!==changeVersion)return;
+   if(error)throw error;
+   if(Number(data?.revision||0)!==Number(pending.expectedRevision)){
+    status("Konflikt: Cloud wurde geändert. Bitte lokale Daten als JSON exportieren, bevor du neu lädst.",true);return;
+   }
+   revision=Number(pending.expectedRevision);paused=false;active=true;
+   queue=cloudWrite(pending.content);
+   await queue;
+  }catch(e){status("Erneut speichern fehlgeschlagen: "+e.message,true);}
+   }finally{retrying=false;}
+}
+async function resumeSync(){
+ if(!active||loggingOut)return;
+ if(dirty||paused){
+  await retryPending();
+  return;
+ }
+ try{await checkRemote();}catch(e){status("Abgleich fehlgeschlagen: "+e.message,true);}
 }
 async function checkRemote(){
  if(!user||!active||dirty||paused)return;
  const {data,error}=await client.from("hbl_dashboard_snapshots").select("revision").eq("user_id",user.id).maybeSingle();
- if(error)return;
+ if(error){status("Abgleich fehlgeschlagen: "+error.message,true);return;}
  const newest=Number(data?.revision||0);
  if(newest>revision){
   const typing=/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||"");
