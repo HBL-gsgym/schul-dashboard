@@ -109,7 +109,7 @@ html[data-world] body.dark[data-backdrop=none] .searchbar button{color:var(--ws-
 
 @media screen and (orientation:landscape){
  html[data-platform=app] #hblMobileNav{display:none!important}
- html[data-platform=app] #hblQuickbar:not([hidden]){display:block!important}
+ html[data-platform=app] #hblQuickbar:not([hidden]){display:grid!important}
 }
 html[data-world] body{
  --ws-control-radius:8px;--ws-heading-weight:750;--ws-heading-space:-.025em;
@@ -263,7 +263,17 @@ html[data-world] body #hblSyncNotice{background:var(--sync-bg);color:var(--sync-
 #hblSyncNotice .sync-symbol{font-weight:900;font-size:17px}
 #hblSyncNotice:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 html[data-compact=true] #workspaceNav #hblSyncNotice .sync-label{display:none}
-#hblQuickbar #hblSyncNotice{width:100%;margin-bottom:4px}
+/* In der schwebenden App-Leiste nur die kompakte, farbige Sync-Ampel anzeigen. */
+html[data-platform=app] #hblQuickbar #hblSyncNotice{
+ grid-area:sync;box-sizing:border-box;
+ width:25px;min-width:25px;max-width:25px;height:27px;min-height:27px;
+ margin:0;padding:0;gap:0;border:0;border-radius:7px;
+ --sync-bg:#e4a928;--sync-ink:#392707;
+}
+html[data-platform=app] #hblQuickbar #hblSyncNotice[data-sync=synced]{--sync-bg:#279b56;--sync-ink:#fff}
+html[data-platform=app] #hblQuickbar #hblSyncNotice[data-sync=error]{--sync-bg:#cb3f45;--sync-ink:#fff}
+html[data-platform=app] #hblQuickbar #hblSyncNotice .sync-label{display:none!important}
+html[data-platform=app] #hblQuickbar #hblSyncNotice .sync-symbol{font-size:17px;line-height:1}
 html[data-world] #hblMobileNav #hblSyncNotice{grid-column:1/-1;display:flex;min-height:28px;padding:3px 8px}
 @media screen and (orientation:portrait){
  html[data-platform=app] body{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
