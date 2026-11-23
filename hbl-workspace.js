@@ -16,7 +16,7 @@
  function apply(value={}){
   value=value||{};
   root.dataset.world=["organic","professional","glass"].includes(value.theme)?value.theme:defaults.theme;
-  root.dataset.dock=value.position==="left"?"left":"top";
+  root.dataset.dock=["top","bottom","left","right"].includes(value.position)?value.position:"top";
   root.dataset.compact=String(value.collapsed===true);
   const toggle=document.querySelector("#workspaceNav [data-action=fold]");
   if(toggle){
@@ -55,7 +55,8 @@
   button.onclick=()=>{
    if(key==="fold"){change({collapsed:root.dataset.compact!=="true"});return;}
    if(key==="settings"){window.openMeinHbl();return;}
-   if(key==="chat"||key==="account"){document.getElementById(key==="chat"?"hblQChat":"hblQAccount")?.click();return;}
+   if(key==="chat"){document.getElementById("hblQChat")?.click();return;}
+   if(key==="account"){window.openMeinHbl?.();document.querySelector("dialog.mein-hbl [data-account]")?.click();return;}
    window.hblNavigate("./");
    requestAnimationFrame(()=>{
     if(key==="home"){window.scrollTo({top:0,behavior:"instant"});active(key);return;}

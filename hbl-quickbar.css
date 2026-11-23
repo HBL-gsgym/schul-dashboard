@@ -1,10 +1,10 @@
 /* Kompakter, verschiebbarer Schnellzugriff ausschließlich für die App im Querformat. */
 .hbl-quickbar{
  position:fixed;top:16px;left:calc(100vw - 206px);z-index:1200;
- box-sizing:border-box;width:186px;max-width:calc(100vw - 16px);
+ box-sizing:border-box;width:161px;max-width:calc(100vw - 16px);
  display:grid;align-items:center;gap:3px;padding:5px;
- grid-template-columns:24px 25px minmax(51px,1fr) 28px 24px;
- grid-template-areas:"grip sync chat settings fold";
+ grid-template-columns:24px 25px minmax(54px,1fr) 28px;
+ grid-template-areas:"grip sync chat settings";
  background:var(--panel,#fff);color:var(--text,#18202a);
  border:1px solid var(--line,#ddd);border-radius:12px;
  box-shadow:0 8px 24px #0003;font:600 12px/1.2 Inter,Segoe UI,Arial,sans-serif;
@@ -26,17 +26,11 @@
 #hblQChat{grid-area:chat;gap:3px;position:relative;white-space:nowrap;font-size:11px}
 #hblQChat>span:first-child{font-size:17px}
 #hblQSettings{grid-area:settings;font-size:20px}
-#hblQFold{grid-area:fold;font-size:18px}
 .hbl-q-badge{
  position:absolute;top:-3px;right:-3px;min-width:15px;padding:0 3px;
  border-radius:9px;background:#b32635;color:#fff;font:700 10px/16px system-ui;text-align:center;
 }
 .hbl-q-badge[hidden]{display:none!important}
-.hbl-q-small{
- width:150px;grid-template-columns:24px 25px minmax(51px,1fr) 24px;
- grid-template-areas:"grip sync chat fold";
-}
-.hbl-q-small #hblQSettings{display:none}
 @media(max-width:710px){.hbl-quickbar{display:none!important}}
 @media(min-width:711px){.hbl-hero-settings{display:none!important}}
 .hbl-quickbar[hidden],body:has(.hbl-course-layout) .hbl-quickbar{display:none!important}

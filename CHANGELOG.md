@@ -1,3 +1,7 @@
+## v8.0.14 – 23.11.2026 · Codex
+
+Veröffentlichungsblockade behoben: Navigationstest misst den nutzbaren Viewport ohne Scrollleiste und liefert konkrete Geometriedaten bei Fehlern. Vier Desktop-Positionen, Klappzustand, Beschriftungen, feste Position beim Scrollen und Wiederherstellung geprüft. Kompakter App-Schnellzugriff ohne Minimierbutton: Touch-Verschieben, Positionsspeicherung, Sync-Ampel und Einstellungen geprüft. Bestehende Anwendungslogik unverändert. Prüfstand: 116 Tests, Release-Pakettests und Chrome-Interaktionstests auf Desktop, Smartphone-/Tablet-Emulation; echte Gerätetests offen.
+
 ## v8.0.11 – 23.11.2026 · Codex
 
 Sync-Ampel in der Desktop-Navigation und den App-Schnellzugriffen: Grün bestätigt, Gelb ausstehend/offline, Rot bei Fehlern oder Konflikten. Symbol, Text und direkter Zugang zum Speicherstatus; Ersatzanzeige in Ansichten ohne sichtbare Navigation. Geprüft: 116 Tests und Browserinteraktionen für Statuswechsel, Konflikt, Wiederaufnahme und Navigation auf Desktop, Smartphone und Tablet-Emulation. Echte Gerätetests offen.

@@ -280,3 +280,19 @@ html[data-world] #hblMobileNav #hblSyncNotice{grid-column:1/-1;display:flex;min-
  #hblSyncNotice[data-docked=false]{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 }
 @media print{#hblSyncNotice{display:none!important}}
+
+/* Desktop: navigation at four edges, reserve area for the workspace. */
+@media screen{
+ html[data-world][data-platform=desktop][data-dock=bottom]{scroll-padding-top:0;scroll-padding-bottom:56px}
+ html[data-world][data-platform=desktop][data-dock=bottom][data-compact=true]{--dock-space:48px;scroll-padding-bottom:48px}
+ html[data-world][data-platform=desktop][data-dock=bottom] body{padding-top:0;padding-bottom:var(--dock-space)}
+ html[data-platform=desktop][data-dock=bottom] #workspaceNav{inset:auto 0 0 0;width:100%;height:var(--dock-space)}
+ html[data-world][data-platform=desktop][data-dock=right]{--dock-space:158px;scroll-padding-top:0;scroll-padding-right:var(--dock-space)}
+ html[data-world][data-platform=desktop][data-dock=right][data-compact=true]{--dock-space:55px}
+ html[data-world][data-platform=desktop][data-dock=right] body{padding-top:0;padding-right:var(--dock-space)}
+ html[data-platform=desktop][data-dock=right] #workspaceNav{inset:0 0 0 auto;width:var(--dock-space);height:100dvh;flex-direction:column;align-items:stretch}
+ html[data-platform=desktop][data-dock=right] #workspaceNav button{justify-content:flex-start}
+ html[data-platform=desktop][data-dock=right] #workspaceNav [data-action=fold]{margin:auto 0 0}
+ html[data-world=organic][data-dock=right] #workspaceNav{border-right:0;border-left:1px solid var(--ws-line)}
+ html[data-world=organic][data-dock=bottom] #workspaceNav{border-right:0;border-top:1px solid var(--ws-line)}
+}
