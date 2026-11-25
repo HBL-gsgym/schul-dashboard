@@ -1,3 +1,7 @@
+## v9.1.0 – 25.11.2026 · Codex
+
+Stundenplan und datierte Aufgaben als optionale Einblendungen aus bestehenden Datenquellen. Termindetails, Schnellerfassung aus Monat und Zeitraster sowie Bereichsauswahl per Maus. Verständliche Erinnerungszeiten bei unveränderten Minutenwerten. Kalender-Push nutzt den bestehenden Dispatcher, Gerätesubscriptions, Ruhezeiten und die Kalender-Einstellung. Kalender-Push zeigt eine allgemeine Nachricht zum Schutz privater Titel. Automatisierte Browser-, Kalender- und Berechtigungsprüfungen; physische Geräteabnahme offen.
+
 ## v9.0.2 – 25.11.2026 · Codex
 
 Nur das tatsächliche heutige Datum erhält die Heute-Markierung. Die Auswahl hat einen Rahmen und springt beim Monatswechsel auf den Monatsersten. Browserprüfung für Monatswechsel und Heute ergänzt.

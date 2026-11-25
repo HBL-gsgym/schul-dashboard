@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="9.0.2">
-<title>Schul-Dashboard HBL · v9.0.2</title>
+<meta name="hbl-version" content="9.1.0">
+<title>Schul-Dashboard HBL · v9.1.0</title>
 <style>
 #hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
 html[data-startup-world=organic]{--start-bg:#f5ecdf;--start-ink:#183c2b}
@@ -1426,9 +1426,10 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script defer src="./mobile.js?v=9.0.0"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
-<link rel="stylesheet" href="./hbl-calendar.css?v=9.0.2">
-<script src="./hbl-calendar-model.js?v=9.0.0"></script>
-<script src="./hbl-calendar.js?v=9.0.2"></script>
+<link rel="stylesheet" href="./hbl-calendar.css?v=9.1.0">
+<script src="./hbl-school-calendar.js?v=9.1.0"></script>
+<script src="./hbl-calendar-model.js?v=9.1.0"></script>
+<script src="./hbl-calendar.js?v=9.1.0"></script>
 <script defer src="./cloud.js?v=8.1.0"></script>
 <script defer src="./hbl-v55.js?v=7.0.8"></script>
 <script defer src="./hbl-v56.js?v=6.0.8"></script>
@@ -1804,6 +1805,7 @@ function applyPrepData(data){
  if(typeof window.hblAfterPrepLoad==="function")window.hblAfterPrepLoad();
  if(typeof window.hblScheduleAfterLoad==='function')window.hblScheduleAfterLoad();
  if(typeof window.hblDutyAfterLoad==='function')window.hblDutyAfterLoad();
+ window.dispatchEvent(new Event("hbl-calendar-sources-changed"));
 }
 const HBL_DEMO_KEY = "hbl-github-pages-demo-v1";
 async function loadPrepFromServer(){serverReady=false;}
@@ -2131,52 +2133,7 @@ function importPreparation(event){
 }
 
 
-const SCHOOL_YEARS=[
- {label:"2026/27",start:"2026-08-24",end:"2027-06-30",vacations:[
-  {name:"Herbstferien",start:"2026-10-19",end:"2026-10-30"},
-  {name:"Weihnachtsferien",start:"2026-12-23",end:"2027-01-02"},
-  {name:"Winterferien",start:"2027-02-01",end:"2027-02-06"},
-  {name:"Osterferien",start:"2027-03-22",end:"2027-04-03"},
-  {name:"Pfingstfreier Tag",start:"2027-05-18",end:"2027-05-18"},
-  {name:"Sommerferien",start:"2027-07-01",end:"2027-08-14"}
- ],variable:[{date:"2027-05-07",name:"Variabler Ferientag (vorbehaltlich Schulbeschluss)"}]},
- {label:"2027/28",start:"2027-08-16",end:"2028-06-28",vacations:[
-  {name:"Herbstferien",start:"2027-10-11",end:"2027-10-23"},
-  {name:"Weihnachtsferien",start:"2027-12-23",end:"2027-12-31"},
-  {name:"Winterferien",start:"2028-01-31",end:"2028-02-05"},
-  {name:"Osterferien",start:"2028-04-10",end:"2028-04-22"},
-  {name:"Sommerferien",start:"2028-06-29",end:"2028-08-12"}
- ],variable:[{date:"2028-05-26",name:"Variabler Ferientag (vorbehaltlich Schulbeschluss)"}]}
-];
-function parseSchoolDate(str){return new Date(Number(str.slice(0,4)),Number(str.slice(5,7))-1,Number(str.slice(8,10)),12)}
-function gregorianEaster(year){
- const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k+7)%7,m=Math.floor((a+11*h+22*l)/451),month=Math.floor((h+l-7*m+114)/31),day=(h+l-7*m+114)%31+1;
- return new Date(year,month-1,day,12);
-}
-function publicHolidays(year){
- const dates=new Map([
-  [`${year}-01-01`,"Neujahr"],[`${year}-05-01`,"Tag der Arbeit"],[`${year}-10-03`,"Tag der Deutschen Einheit"],
-  [`${year}-10-31`,"Reformationstag"],[`${year}-12-25`,"1. Weihnachtstag"],[`${year}-12-26`,"2. Weihnachtstag"]
- ]);
- const easter=gregorianEaster(year);
- for(const [days,name] of [[-2,"Karfreitag"],[1,"Ostermontag"],[39,"Christi Himmelfahrt"],[50,"Pfingstmontag"]]){
-  dates.set(taskDateString(dayOffset(easter,days)),name);
- }
- return dates;
-}
-function currentSchoolYear(date){
- const d=taskDateString(date);
- if(d<SCHOOL_YEARS[0].start)return SCHOOL_YEARS[0];
- for(let i=SCHOOL_YEARS.length-1;i>=0;i--){if(d>=SCHOOL_YEARS[i].start)return SCHOOL_YEARS[i];}
- return SCHOOL_YEARS[0];
-}
-function schoolDateDescription(key,year,holidays){
- for(const v of year.vacations)if(key>=v.start&&key<=v.end)return {kind:"vacation",label:v.name};
- const varDay=year.variable.find(v=>v.date===key);
- if(varDay)return {kind:"free",label:varDay.name};
- if(holidays.has(key))return {kind:"free",label:holidays.get(key)};
- return {kind:"school",label:"Schultag"};
-}
+const {SCHOOL_YEARS,parseSchoolDate,publicHolidays,currentSchoolYear,schoolDateDescription}=HblSchoolCalendar;
 const schoolCalendarScrollStates=new WeakMap();
 function syncSchoolCalendarScroll(grid,weekKey){
  const region=grid.closest('.school-calendar-scroll');
@@ -2765,7 +2722,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 25. November 2026">v9.0.2 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 25. November 2026">v9.1.0 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>

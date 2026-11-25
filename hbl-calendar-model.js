@@ -68,5 +68,56 @@
    return result;
   });
  }
- root.HblCalendarModel={validDate,add,distance,weekday,monday,berlinToday,minutes,shiftMonth,occurrences,overlaps,update};
+ const berlinClock=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+ function berlinInstant(date,time){
+  const wall=Date.parse(date+'T'+time+':00Z');
+  // Berlin's repeated autumn hour uses its first occurrence. In spring, advance by one hour.
+  const summer=wall-7200000,winter=wall-3600000;
+  const target=date+' '+time;
+  if(berlinClock.format(summer)===target)return summer;
+  return winter;
+ }
+ function dueReminders(events,now,rules){
+  const minute=Math.floor(now/60000)*60000;
+  const date=berlinClock.format(new Date(now)).slice(0,10);
+  const candidates=events.filter(e=>e&&typeof e.id==='string'&&validDate(e.start)&&validDate(e.end)&&distance(e.start,e.end)>=0&&distance(e.start,e.end)<=3660)
+   .map(e=>({...e,title:typeof e.title==='string'?e.title:'',startTime:typeof e.startTime==='string'?e.startTime:'00:00',
+     exceptions:Object.fromEntries(Object.entries(e.exceptions||{}).filter(([,v])=>v===null||(typeof v?.title==='string'&&typeof v.startTime==='string'&&validDate(v.start)&&validDate(v.end))))}));
+  const result=[];
+  for(const entry of occurrences(candidates,date,add(date,8),rules)){
+   if(entry.start<date||!Array.isArray(entry.reminders))continue;
+   const start=berlinInstant(entry.start,entry.allDay?'00:00':entry.startTime);
+   for(const lead of new Set(entry.reminders)){
+    if(Number.isInteger(lead)&&lead>=0&&lead<=10080&&start-lead*60000===minute)
+     result.push({key:'calendar|'+entry.seriesId+'|'+entry.original+'|'+lead});
+   }
+  }
+  return result;
+ }
+ function reminderLabel(value){
+  if(value===0)return 'Zum Terminbeginn';
+  for(const [factor,one,many] of [[10080,'Woche','Wochen'],[1440,'Tag','Tage'],[60,'Stunde','Stunden'],[1,'Minute','Minuten']]){
+   if(value>=factor&&value%factor===0){const n=value/factor;return n+' '+(n===1?one:many)+' vorher';}
+  }
+  return String(value)+' Minuten vorher';
+ }
+ function overlays(first,last,preferences,sources){
+  const result=[];
+  if(preferences.tasks!==false){
+   const seen=new Set();
+   for(const task of sources.tasks()){
+    if(!task?.id||seen.has(task.id)||!validDate(task.due)||task.due<first||task.due>last||(task.done&&!preferences.completed))continue;
+    seen.add(task.id);result.push({source:'task',sourceId:task.id,title:task.title,start:task.due,end:task.due,startTime:'00:00',endTime:'00:00',allDay:true,category:'task',done:task.done});
+   }
+  }
+  if(preferences.timetable)for(let date=first;date<=last;date=add(date,1)){
+   for(const block of sources.lessons(date)){
+    for(const [subject,group,room] of block.entries){
+     result.push({source:'lesson',title:[subject,group].filter(Boolean).join(' · '),place:room?'Raum '+room:'',start:date,end:date,startTime:block.start,endTime:block.end,category:'lesson'});
+    }
+   }
+  }
+  return result;
+ }
+ root.HblCalendarModel={validDate,add,distance,weekday,monday,berlinToday,minutes,shiftMonth,occurrences,overlaps,update,reminderLabel,overlays,dueReminders,berlinInstant};
 })(globalThis);
