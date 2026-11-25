@@ -1,3 +1,7 @@
+## v8.1.0 – 25.11.2026 · Codex
+
+Gemeinsamer Hero mit A/B-Woche, Uhrzeit, Datum und KW. Auf breiten Ansichten stehen die Wocheninfos neben dem Titelbereich, im Smartphone-Querformat platzsparend darunter. Der schwebende Schnellzugriff weicht dem Hero aus. Der Schuljahreskalender scrollt nur sein Wochenraster horizontal und beginnt bei Bedarf an der aktuellen Woche. Überschrift, Legende und Ferieninfos bleiben in der Kachel. Geprüft mit automatisierten Tests und Chrome auf Desktop, Smartphone- und Tablet-Größen. Echte Geräteabnahme offen.
+
 ## v8.0.18 – 25.11.2026 · Codex
 
 Vier freistehende Kacheln für Browser, Apple-Touch-Icon und Ladebildschirm. Kreis, Bogen und Stern entfernt. Android-Maskable-Icon mit neutraler Systemfläche und sicheren Abständen. Prüfstand: automatisierte Tests, Release-Paket, Browser- und Icon-Pixelprüfung. Homescreen-Darstellung auf echten Geräten offen.

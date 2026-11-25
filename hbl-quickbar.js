@@ -8,7 +8,18 @@ let box,handle,location=null,drag=null;
 function read(){try{const v=JSON.parse(localStorage.getItem(key())||"null");return v&&typeof v==="object"?{x:Number.isFinite(v.x)?v.x:null,y:Number.isFinite(v.y)?v.y:null}:null}catch(_){return null}}
 function save(){try{localStorage.setItem(key(),JSON.stringify({x:location?.x??null,y:location?.y??null}))}catch(_){}}
 function clamp(x,y){return {x:Math.max(8,Math.min(Math.max(8,innerWidth-box.offsetWidth-8),x)),y:Math.max(8,Math.min(Math.max(8,innerHeight-box.offsetHeight-8),y))}}
-function place(){if(!mq.matches||box?.hidden)return;const p=location?.x==null?{x:innerWidth-box.offsetWidth-20,y:16}:location;location=clamp(p.x,p.y);box.style.left=location.x+"px";box.style.top=location.y+"px"}
+function place(){
+ if(!mq.matches||box?.hidden||!box.offsetWidth)return;
+ const preferred=location?.x==null?{x:innerWidth-box.offsetWidth-20,y:8}:location;
+ const point=clamp(preferred.x,preferred.y);
+ const hero=document.querySelector('.wrapper > header > .hero')?.getBoundingClientRect();
+ if(hero&&point.x<hero.right&&point.x+box.offsetWidth>hero.left&&point.y<hero.bottom&&point.y+box.offsetHeight>hero.top){
+  const above=hero.top-box.offsetHeight-8;
+  const below=hero.bottom+8;
+  point.y=above>=8?above:Math.min(innerHeight-box.offsetHeight-8,below);
+ }
+ box.style.left=point.x+'px';box.style.top=point.y+'px';
+}
 function chat(){const source=get("hblChatToggle"),badge=get("hblChatBadge"),out=get("hblQCount"),n=source&&!source.hidden&&badge&&!badge.hidden?badge.textContent.trim():"";out.hidden=!n;out.textContent=n;get("hblQChat").setAttribute("aria-label",n?"Chat: "+n+" ungelesen":"Kollegium-Chat")}
 // In Kursübersicht, Mitarbeit und Noten die Schnellleiste vollständig ausblenden.
 function courseRoute(route){
@@ -34,12 +45,12 @@ function mount(){
  handle.addEventListener("keydown",e=>{
   if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home"].includes(e.key))return;
   e.preventDefault();if(e.key==="Home"){location=null;place();save();return}
-  const v=e.shiftKey?25:10,p=location||{x:box.offsetLeft,y:box.offsetTop};
+  const v=e.shiftKey?25:10,p={x:box.offsetLeft,y:box.offsetTop};
   location=clamp(p.x+(e.key==="ArrowLeft"?-v:e.key==="ArrowRight"?v:0),p.y+(e.key==="ArrowUp"?-v:e.key==="ArrowDown"?v:0));place();save();
  });
  handle.addEventListener("pointerdown",e=>{
   if(e.button!==0||!mq.matches)return;
-  drag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:location?.x??box.offsetLeft,startY:location?.y??box.offsetTop};
+  drag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:box.offsetLeft,startY:box.offsetTop};
   handle.setPointerCapture(e.pointerId);box.classList.add("hbl-q-dragging");
  });
  handle.addEventListener("pointermove",e=>{if(!drag||e.pointerId!==drag.id)return;location=clamp(drag.startX+e.clientX-drag.x,drag.startY+e.clientY-drag.y);place()});
@@ -61,6 +72,7 @@ function mount(){
  const controls=document.querySelector("#hblCloudControls .hbl-cloud-actions");
  if(controls)new MutationObserver(chat).observe(controls,{subtree:true,attributes:true,attributeFilter:["hidden"],characterData:true,childList:true});
  window.addEventListener("hbl-sync-mounted",place);
+ window.addEventListener("scroll",place,{passive:true});
  window.addEventListener("resize",place);mq.addEventListener("change",place);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
