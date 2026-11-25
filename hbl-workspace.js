@@ -46,7 +46,7 @@
    else button.removeAttribute("aria-current");
   }
  }
- function route(){active(/[?&](kurs|mitarbeit|noten)=/.test(location.search)?"mitarbeit":"home");}
+ function route(){active(new URLSearchParams(location.search).has("kalender")?"kalender":/[?&](kurs|mitarbeit|noten)=/.test(location.search)?"mitarbeit":"home");}
  for(const [key,icon,label] of items){
   const button=document.createElement("button");button.type="button";button.title=label;
   button.dataset.action=key;button.setAttribute("aria-label",label);
@@ -55,6 +55,7 @@
   button.append(glyph,text);nav.append(button);
   button.onclick=()=>{
    if(key==="fold"){change({collapsed:root.dataset.compact!=="true"});return;}
+   if(key==="kalender"){window.hblNavigate("?kalender");return;}
    if(key==="settings"){window.openMeinHbl();return;}
    if(key==="chat"){document.getElementById("hblQChat")?.click();return;}
    if(key==="account"){window.openMeinHbl?.();document.querySelector("dialog.mein-hbl [data-account]")?.click();return;}

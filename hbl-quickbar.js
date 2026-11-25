@@ -12,7 +12,7 @@ function place(){
  if(!mq.matches||box?.hidden||!box.offsetWidth)return;
  const preferred=location?.x==null?{x:innerWidth-box.offsetWidth-20,y:8}:location;
  const point=clamp(preferred.x,preferred.y);
- const hero=document.querySelector('.wrapper > header > .hero')?.getBoundingClientRect();
+ const hero=document.querySelector('.wrapper > header > .hero,.personal-calendar-toolbar')?.getBoundingClientRect();
  if(hero&&point.x<hero.right&&point.x+box.offsetWidth>hero.left&&point.y<hero.bottom&&point.y+box.offsetHeight>hero.top){
   const above=hero.top-box.offsetHeight-8;
   const below=hero.bottom+8;
@@ -38,8 +38,9 @@ function openChat(){const button=get("hblChatToggle");if(button&&!button.hidden)
 function mount(){
  if(get("hblQuickbar"))return;
  box=document.createElement("aside");box.id="hblQuickbar";box.className="hbl-quickbar";box.setAttribute("aria-label","HBL-Schnellleiste");box.hidden=courseRoute();
- box.innerHTML='<div class="hbl-q-head"><button id="hblQGrip" type="button" aria-label="Schnellzugriff verschieben" title="Ziehen · Pfeiltasten: verschieben · Doppelklick: Position zurücksetzen">⠿</button></div><div class="hbl-q-links"><button id="hblQChat" type="button" title="Kollegium-Chat"><span aria-hidden="true">💬</span><span>Chat</span><span id="hblQCount" class="hbl-q-badge" hidden></span></button><button id="hblQSettings" type="button" aria-label="Einstellungen und Konto" title="Einstellungen · Konto">⚙</button></div>';
+ box.innerHTML='<div class="hbl-q-head"><button id="hblQGrip" type="button" aria-label="Schnellzugriff verschieben" title="Ziehen · Pfeiltasten: verschieben · Doppelklick: Position zurücksetzen">⠿</button></div><div class="hbl-q-links"><button id="hblQChat" type="button" title="Kollegium-Chat"><span aria-hidden="true">💬</span><span>Chat</span><span id="hblQCount" class="hbl-q-badge" hidden></span></button><button id="hblQCalendar" type="button" title="Kalender" aria-label="Kalender">▧</button><button id="hblQSettings" type="button" aria-label="Einstellungen und Konto" title="Einstellungen · Konto">⚙</button></div>';
  document.body.append(box);handle=get("hblQGrip");
+ get("hblQCalendar").onclick=()=>window.hblNavigate("?kalender");
  get("hblQChat").onclick=openChat;get("hblQSettings").onclick=()=>window.openMeinHbl?.();
  handle.addEventListener("dblclick",()=>{location=null;place();save()});
  handle.addEventListener("keydown",e=>{

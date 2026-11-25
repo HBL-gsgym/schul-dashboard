@@ -19,7 +19,8 @@
     const onCourse=!!document.querySelector('.part-shell');
     const onWorkspace=!!document.querySelector('.course-workspace');
     const onDashboard=!!document.getElementById('dashboardBoard');
-    const mode=onCourse?'participation':onWorkspace?'course':onDashboard?'dashboard':'none';
+    const onCalendar=!!document.getElementById('hblPersonalCalendar');
+    const mode=onCalendar?'calendar':onCourse?'participation':onWorkspace?'course':onDashboard?'dashboard':'none';
     const previous=document.getElementById('hblMobileNav');
     // Kein Austausch derselben Leiste bei Kurs- oder Tabwechseln.
     if(previous?.dataset.navMode===mode)return;
@@ -33,10 +34,14 @@
     if(groups.has(mode)){
       nav.append(...groups.get(mode));
       if(mode==='dashboard')syncDashboard();
+      if(mode==='calendar')nav.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
       if(mode==='course')nav.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';
       return;
     }
-    if(onCourse){
+    if(onCalendar){
+      nav.append(createButton('⌂','Dashboard',()=>window.hblNavigate('./')),createButton('▧','Kalender',()=>window.hblNavigate('?kalender')),createButton('⚙','Mein HBL',()=>window.openMeinHbl()));
+      nav.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
+    }else if(onCourse){
       const link=document.createElement('a');link.href='./';
       const icon=document.createElement('span');icon.className='hbl-mobile-icon';icon.textContent='⌂';
       const txt=document.createElement('span');txt.textContent='Start';link.append(icon,txt);nav.appendChild(link);
@@ -90,6 +95,7 @@
         document.querySelector('dialog.mein-hbl [data-account]')?.click();
       });
       accountButton.id='hblMobileAccount';nav.appendChild(accountButton);
+      nav.appendChild(createButton('▧','Kalender',()=>window.hblNavigate('?kalender')));
       nav.appendChild(createButton('⚙','Mein HBL',()=>window.openMeinHbl()));
       function syncAccount(){
         const user=window.hblCloudUser?.();
@@ -106,7 +112,7 @@
       }
       function syncShortcuts(){
         if(nav.dataset.navMode!=='dashboard')return;
-        let visible=3; // Chat, Konto und Mein HBL bleiben immer erreichbar.
+        let visible=4; // Chat, Konto und Mein HBL bleiben immer erreichbar.
         for(const button of nav.querySelectorAll('[data-tile-link]')){
           const tile=document.querySelector('.dashboard-tile[data-tile="'+button.dataset.tileLink+'"]');
           button.hidden=!tile||tile.hidden;

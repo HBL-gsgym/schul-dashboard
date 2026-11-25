@@ -1,10 +1,10 @@
 /* Kompakter, verschiebbarer Schnellzugriff ausschließlich für die App im Querformat. */
 .hbl-quickbar{
  position:fixed;top:16px;left:calc(100vw - 206px);z-index:1200;
- box-sizing:border-box;width:161px;max-width:calc(100vw - 16px);
+ box-sizing:border-box;width:175px;max-width:calc(100vw - 16px);
  display:grid;align-items:center;gap:3px;padding:5px;
- grid-template-columns:24px 25px minmax(54px,1fr) 28px;
- grid-template-areas:"grip sync chat settings";
+ grid-template-columns:24px 25px minmax(49px,1fr) 22px 26px;
+ grid-template-areas:"grip sync chat calendar settings";
  background:var(--panel,#fff);color:var(--text,#18202a);
  border:1px solid var(--line,#ddd);border-radius:12px;
  box-shadow:0 8px 24px #0003;font:600 12px/1.2 Inter,Segoe UI,Arial,sans-serif;
@@ -34,3 +34,5 @@
 @media(max-width:710px){.hbl-quickbar{display:none!important}}
 @media(min-width:711px){.hbl-hero-settings{display:none!important}}
 .hbl-quickbar[hidden],body:has(.hbl-course-layout) .hbl-quickbar{display:none!important}
+
+#hblQCalendar{grid-area:calendar;font-size:17px}
