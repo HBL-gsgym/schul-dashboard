@@ -43,6 +43,6 @@ body:has(#dashboardBoard) #hblCloudControls :is(#hblAccountMore,#hblProfileButto
 }
 /* v6.0.5: Dashboard ohne Cloud-/Rücksetzleiste. Cloud bleibt im DOM für Auth,
    Chat und Statusabfragen; Benutzeraktionen sind über Mein HBL erreichbar. */
-body:has(#dashboardBoard) #hblCloudControls,body:has(.part-shell) #hblCloudControls,body:has(.course-workspace) #hblCloudControls,body:has(#hblPersonalCalendar) #hblCloudControls{display:none!important}
+body:has(#dashboardBoard) #hblCloudControls,body:has(.part-shell) #hblCloudControls,body:has(.course-workspace) #hblCloudControls,body:has(#hblPersonalCalendar,#hblSchoolPage) #hblCloudControls{display:none!important}
 body:has(#dashboardBoard) .board-toolbar,
 body:has(#dashboardBoard) .preptools{display:none!important}

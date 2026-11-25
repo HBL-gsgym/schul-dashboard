@@ -126,13 +126,31 @@ window.openMeinHbl=function(){
  get('[data-version]').textContent=document.querySelector('.dashboard-version')?.firstChild.textContent.trim()||'';
  const admin=document.createElement('button');
  admin.type='button';admin.textContent='Administration';
- admin.onclick=()=>{if(window.hblCanManageUsers?.()){handedOff=true;dialog.close();window.hblOpenAdminUsers?.();}};
+ let schoolAdmin=false;
+ const school= document.createElement('button');school.type='button';school.textContent='Schulzugehörigkeit';
+ school.onclick=()=>{handedOff=true;dialog.close();window.hblNavigate('?schule');};
+ const accountEntry=get('[data-account]');
+ accountEntry.addEventListener('click',()=>queueMicrotask(()=>{
+  if(dialog.open&&school.dataset.available==='true')extra.append(school);
+ }));
+ admin.onclick=()=>{
+  if(schoolAdmin||window.hblCanManageUsers?.()){
+   handedOff=true;dialog.close();
+   if(schoolAdmin)window.hblNavigate('?administration');else window.hblOpenAdminUsers?.();
+  }
+ };
  function syncAdminAccess(){
-  const allowed=!!window.hblCanManageUsers?.();
+  const allowed=schoolAdmin||!!window.hblCanManageUsers?.();
   if(allowed&&!admin.isConnected)get('[data-home] p').before(admin);
   else if(!allowed&&admin.isConnected)admin.remove();
  }
  syncAdminAccess();
+ window.HblSchool?.accountAccess().then(data=>{
+  if(!dialog.open||accountId()!==initialId)return;
+  schoolAdmin=!!data?.admin;school.dataset.available=String(!!data?.available);
+  if(data?.available&&(get('h2').textContent==='Mein Konto'))extra.append(school);
+  syncAdminAccess();
+ });
  window.addEventListener('hbl-admin-rights-changed',syncAdminAccess);
  dialog.addEventListener('close',()=>window.removeEventListener('hbl-admin-rights-changed',syncAdminAccess),{once:true});
  function showDesign(detail){

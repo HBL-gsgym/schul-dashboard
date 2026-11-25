@@ -1,3 +1,7 @@
+## v10.0.0 – 25.11.2026 · Codex
+
+Schulorganisation mit eigener Administration, Einzelübernahme, Einladungen, Anträgen, Fachgruppen und Gremien. Neue Schulrolle getrennt von Schulleitung und Altberechtigungen. Bestehende persönliche Daten und Chatgruppen bleiben im bisherigen Zugriffssystem. Geprüft mit synthetischen Konten, Browser- und Release-Tests. Physische Geräteabnahme offen.
+
 ## v9.1.0 – 25.11.2026 · Codex
 
 Stundenplan und datierte Aufgaben als optionale Einblendungen aus bestehenden Datenquellen. Termindetails, Schnellerfassung aus Monat und Zeitraster sowie Bereichsauswahl per Maus. Verständliche Erinnerungszeiten bei unveränderten Minutenwerten. Kalender-Push nutzt den bestehenden Dispatcher, Gerätesubscriptions, Ruhezeiten und die Kalender-Einstellung. Kalender-Push zeigt eine allgemeine Nachricht zum Schutz privater Titel. Automatisierte Browser-, Kalender- und Berechtigungsprüfungen; physische Geräteabnahme offen.

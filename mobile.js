@@ -19,7 +19,7 @@
     const onCourse=!!document.querySelector('.part-shell');
     const onWorkspace=!!document.querySelector('.course-workspace');
     const onDashboard=!!document.getElementById('dashboardBoard');
-    const onCalendar=!!document.getElementById('hblPersonalCalendar');
+    const onCalendar=!!document.querySelector('#hblPersonalCalendar,#hblSchoolPage');
     const mode=onCalendar?'calendar':onCourse?'participation':onWorkspace?'course':onDashboard?'dashboard':'none';
     const previous=document.getElementById('hblMobileNav');
     // Kein Austausch derselben Leiste bei Kurs- oder Tabwechseln.

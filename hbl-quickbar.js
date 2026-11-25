@@ -12,7 +12,7 @@ function place(){
  if(!mq.matches||box?.hidden||!box.offsetWidth)return;
  const preferred=location?.x==null?{x:innerWidth-box.offsetWidth-20,y:8}:location;
  const point=clamp(preferred.x,preferred.y);
- const hero=document.querySelector('.wrapper > header > .hero,.personal-calendar-toolbar')?.getBoundingClientRect();
+ const hero=document.querySelector('.wrapper > header > .hero,.personal-calendar-toolbar,#hblSchoolPage h1')?.getBoundingClientRect();
  if(hero&&point.x<hero.right&&point.x+box.offsetWidth>hero.left&&point.y<hero.bottom&&point.y+box.offsetHeight>hero.top){
   const above=hero.top-box.offsetHeight-8;
   const below=hero.bottom+8;

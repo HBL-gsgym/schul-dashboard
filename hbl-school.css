@@ -1,0 +1,16 @@
+
+#hblSchoolPage{max-width:1050px;margin:auto;padding:20px clamp(12px,3vw,30px);min-width:0}
+#hblSchoolPage h1{margin:0 0 10px}
+.hbl-school-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.hbl-school-section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.hbl-school-section article,.hbl-school-section details{padding:8px 0;border-bottom:1px solid var(--line)}
+.hbl-school-form{display:grid;gap:7px;max-width:100%;padding:8px 0}
+.hbl-school-form label{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px}
+.hbl-school-form p{overflow-wrap:anywhere;margin:0}
+.hbl-school-choices{margin:0;min-width:0;max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.hbl-school-choices label{justify-content:space-between;min-height:36px;padding:2px 0}
+#hblSchoolPage :is(input,select,button){max-width:100%;min-height:40px;padding:6px 10px;font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+#hblSchoolPage input[type=checkbox]{min-height:0}
+#hblSchoolPage :is(button,summary){cursor:pointer}
+#hblSchoolPage button[aria-current]{border-color:var(--accent);font-weight:700}
+@media(orientation:landscape){html[data-platform=app] #hblSchoolPage{padding-top:58px}}
