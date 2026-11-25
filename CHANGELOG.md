@@ -1,3 +1,7 @@
+## v10.0.1 – 25.11.2026 · Codex
+
+Musiklinks sind jetzt ein Abschnitt in „Meine Links“. Gespeicherte Musiklinks und Bearbeitung bleiben erhalten. Die separate Kachel entfällt. Automatisierte Tests und Browserprüfung des Links-Bereichs.
+
 ## v10.0.0 – 25.11.2026 · Codex
 
 Schulorganisation mit eigener Administration, Einzelübernahme, Einladungen, Anträgen, Fachgruppen und Gremien. Neue Schulrolle getrennt von Schulleitung und Altberechtigungen. Bestehende persönliche Daten und Chatgruppen bleiben im bisherigen Zugriffssystem. Geprüft mit synthetischen Konten, Browser- und Release-Tests. Physische Geräteabnahme offen.

@@ -1,4 +1,4 @@
-/* HBL Musiklinks: persönliche Kachel mit vier sicheren, frei benennbaren Verknüpfungen. */
+/* HBL Musiklinks: Bereich in „Meine Links“ mit vier sicheren, frei benennbaren Verknüpfungen. */
 (()=>{
 "use strict";
 const MAX=4;
@@ -26,7 +26,7 @@ function render(){
  const entries=items();
  if(!entries.length){
   const note=document.createElement("span");
-  note.textContent="Noch keine Musiklinks – über „Links bearbeiten“ hinzufügen.";
+  note.textContent="Noch keine Musiklinks – über „Musiklinks bearbeiten“ hinzufügen.";
   list.append(note);return;
  }
  for(const item of entries){

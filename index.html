@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="10.0.0">
-<title>Schul-Dashboard HBL · v10.0.0</title>
+<meta name="hbl-version" content="10.0.1">
+<title>Schul-Dashboard HBL · v10.0.1</title>
 <style>
 #hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
 html[data-startup-world=organic]{--start-bg:#f5ecdf;--start-ink:#183c2b}
@@ -455,6 +455,7 @@ body[data-backdrop="physics"] .dashboard-scene{
   margin-top:18px;padding-top:14px;border-top:1px solid var(--design-edge);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1;
 }
+.links-music .music-shortcut{max-width:100%;overflow-wrap:anywhere}
 .music-caption{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.075em;text-transform:uppercase;font-weight:850;color:var(--muted);white-space:nowrap}
 .music-caption-icon{font-size:18px;color:var(--accent);line-height:1}
 .music-shortcut-links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-width:0}
@@ -470,10 +471,9 @@ body.dark .music-shortcut{background:rgba(255,255,255,.055)}
 .music-shortcut>span:first-child{font-size:14px;color:var(--accent);font-weight:900}
 .music-external{font-size:13px;color:var(--muted);font-weight:700}
 @media(max-width:800px){.music-shortcuts{align-items:flex-start;flex-direction:column;gap:9px}.music-shortcut-links{gap:6px}}
-/* Musik als reguläre Dashboard-Kachel mit Inline-Verwaltung. */
-.dashboard-board .music-shortcuts.dashboard-tile{margin:0!important;padding:16px 18px!important;border-top:2px solid var(--hbl-highlight,var(--line));gap:10px;align-items:center}
-.dashboard-board .music-shortcuts .tile-controls{width:100%;flex-basis:100%}
+/* Musiklinks innerhalb der Links-Kachel. */
 .dashboard-board .music-shortcut-links{flex:1;min-width:0}
+@media(max-width:650px){.music-editor-row{grid-template-columns:minmax(0,1fr)}.music-editor-remove{justify-self:start}.music-shortcut-links{width:100%}}
 .music-edit-button,.music-editor-actions button,.music-editor-remove{min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .music-edit-button:hover,.music-editor-actions button:hover,.music-editor-remove:hover{border-color:var(--accent)}
 .music-editor{width:100%;flex-basis:100%;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px}
@@ -485,7 +485,6 @@ body.dark .music-shortcut{background:rgba(255,255,255,.055)}
 .music-editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
 .music-editor-actions .music-save{background:var(--accent);color:#fff}
 #hblMusicStatus{margin:8px 0 0;font-size:12px;color:var(--muted)}
-@media(max-width:650px){.music-editor-row{grid-template-columns:minmax(0,1fr)}.music-editor-remove{justify-self:start}.dashboard-board .music-shortcuts.dashboard-tile{align-items:stretch}.music-shortcut-links{width:100%}}
 
 
 
@@ -1422,7 +1421,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-course-page.js?v=8.1.0"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=8.1.0">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=9.0.0">
-<script defer src="./mein-hbl.js?v=10.0.0"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
+<script defer src="./mein-hbl.js?v=10.0.0"></script><script defer src="./hbl-music.js?v=10.0.1"></script>
 <script defer src="./mobile.js?v=10.0.0"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
@@ -2338,7 +2337,6 @@ const HBL_TILE_SPECS=[
  {id:"vorbereitung-diese",selector:".planninggrid > .planningpanel:nth-child(3)",title:"Vorbereitung – diese Woche",span:3},
  {id:"vorbereitung-naechste",selector:".planninggrid > .planningpanel:nth-child(4)",title:"Vorbereitung – nächste Woche",span:3},
  {id:"kalender",selector:".schoolyear-card",title:"Schuljahreskalender",span:12},
- {id:"musik",selector:"section.music-shortcuts",title:"Musik zum Arbeiten",span:12},
  {id:"suche",selector:"section.search-tile",title:"Websuche",span:12},
  {id:"links",core:true,selector:"main.grid > .hbl-links-card",title:"Meine Links",span:6},
  {id:"stundenplan",core:true,selector:"main.grid > .timetablecard",title:"Wochenstundenplan",span:6},
@@ -2724,7 +2722,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 25. November 2026">v10.0.0 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 25. November 2026">v10.0.1 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2767,20 +2765,7 @@ function renderHome(){
       </form>
     </section>
 
-    <section class="music-shortcuts" aria-label="Musik zum Arbeiten">
-      <span class="music-caption"><span class="music-caption-icon" aria-hidden="true">♫</span> Musik zum Arbeiten</span>
-      <div class="music-shortcut-links" id="hblMusicLinks"></div>
-      <button type="button" class="music-edit-button" id="hblMusicEdit">✎ Links bearbeiten</button>
-      <form class="music-editor" id="hblMusicEditor" hidden>
-        <div id="hblMusicRows" class="music-editor-rows"></div>
-        <div class="music-editor-actions">
-          <button type="button" id="hblMusicAdd">+ Link hinzufügen</button>
-          <button type="submit" class="music-save">Speichern</button>
-          <button type="button" id="hblMusicCancel">Abbrechen</button>
-        </div>
-        <p id="hblMusicStatus" role="status" aria-live="polite"></p>
-      </form>
-    </section>
+
 
     <section class="planninggrid">
   <div class="todaybox planningpanel"><div class="todayhead"><h2>Heute & Ausblick</h2><span class="versionhint">Unterricht und Aufsichten</span></div><div id="todayLessons"></div>
@@ -2831,7 +2816,22 @@ function renderHome(){
 
 
     <main class="grid">
-      <section class="card hbl-links-card"><div class="card-title"><h2>Meine Links</h2></div><div id="hblLinksRoot"></div></section>
+      <section class="card hbl-links-card"><div class="card-title"><h2>Meine Links</h2></div><div id="hblLinksRoot"></div>
+        <section class="music-shortcuts links-music" aria-label="Musik zum Arbeiten">
+      <span class="music-caption"><span class="music-caption-icon" aria-hidden="true">♫</span> Musik zum Arbeiten</span>
+      <div class="music-shortcut-links" id="hblMusicLinks"></div>
+      <button type="button" class="music-edit-button" id="hblMusicEdit">✎ Musiklinks bearbeiten</button>
+      <form class="music-editor" id="hblMusicEditor" hidden>
+        <div id="hblMusicRows" class="music-editor-rows"></div>
+        <div class="music-editor-actions">
+          <button type="button" id="hblMusicAdd">+ Link hinzufügen</button>
+          <button type="submit" class="music-save">Speichern</button>
+          <button type="button" id="hblMusicCancel">Abbrechen</button>
+        </div>
+        <p id="hblMusicStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+      </section>
 <section class="card timetablecard"><div class="hbl-plan-heading"><h2>Wochenstundenplan</h2><button type="button" class="hbl-plan-manage" onclick="hblOpenPlanManager()">✎ Bearbeiten</button></div><div class="timetablegrid" id="weeklyTimetable"></div><div class="timetablelegend">Grau: A und B · Grün: nur A · Blau: nur B · Unterschiedliche Belegungen werden für A und B getrennt angezeigt.</div><div id="hblPlanHint" class="hbl-plan-hint"></div></section>
     </main>
 
