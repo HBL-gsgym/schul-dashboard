@@ -1,3 +1,7 @@
+## v8.0.18 – 25.11.2026 · Codex
+
+Vier freistehende Kacheln für Browser, Apple-Touch-Icon und Ladebildschirm. Kreis, Bogen und Stern entfernt. Android-Maskable-Icon mit neutraler Systemfläche und sicheren Abständen. Prüfstand: automatisierte Tests, Release-Paket, Browser- und Icon-Pixelprüfung. Homescreen-Darstellung auf echten Geräten offen.
+
 ## v8.0.17 – 25.11.2026 · Codex
 
 Gewähltes rundes Icon unverändert aus der SVG-Vorlage in alle PNG-Größen übernommen, mit transparenten Ecken und eigener undurchsichtiger Android-Maske innerhalb der sicheren Kreisfläche. App-Start zeigt dasselbe Icon und prüft Sitzung, Freigabe und Daten vor dem Öffnen; kein vorzeitiges Login. Verbindungsfehler/15-Sekunden-Zeitlimit mit Wiederholen, verspätete Antworten verworfen, reduzierte Bewegung berücksichtigt. Prüfstand: 120 Tests, Release-Paketprüfung, Browser-Starttests und Icon-Pixelprüfung; echte Android-/iPad-Launcher-Abnahme offen. Endgültige Homescreen-Maske und Symbol-Cache bleiben Betriebssystemvorgaben.
