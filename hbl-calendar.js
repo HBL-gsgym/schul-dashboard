@@ -139,7 +139,7 @@
   const title=node('h1','Kalender');
   const head=node('div',null,'personal-calendar-toolbar');
   const input=node('input');input.type='date';input.value=date;input.setAttribute('aria-label','Zu Datum springen');input.onchange=()=>selectDate(input.value);
-  const move=direction=>selectDate(mode==='month'?M.shiftMonth(date,direction):M.add(date,direction*(mode==='week'?7:1)));
+  const move=direction=>selectDate(mode==='month'?M.shiftMonth(date.slice(0,7)+'-01',direction):M.add(date,direction*(mode==='week'?7:1)));
   const previous=btn('‹',()=>move(-1));previous.setAttribute('aria-label','Zurück');
   const next=btn('›',()=>move(1));next.setAttribute('aria-label','Weiter');
   const views=node('select');views.setAttribute('aria-label','Kalenderansicht');
@@ -153,11 +153,14 @@
   const all=M.occurrences(events,first,M.add(first,count-1),rules);
   const pane=node('div',null,mode==='month'?'personal-calendar-month':'personal-calendar-time-scroll');
   if(mode==='month'){
+   const today=M.berlinToday();
    for(const name of ['Mo','Di','Mi','Do','Fr','Sa','So'])pane.append(node('strong',name));
    for(let i=0;i<count;i++){
     const value=M.add(first,i),cell=node('div',null,'personal-calendar-cell');
     const choose=btn(String(Number(value.slice(8))),()=>selectDate(value));choose.setAttribute('aria-label',label(value,{dateStyle:'full'}));
-    choose.setAttribute('aria-pressed',String(value===date));cell.append(choose);
+    choose.setAttribute('aria-pressed',String(value===date));
+    if(value===today)choose.setAttribute('aria-current','date');
+    cell.append(choose);
     const marks=node('div',null,'personal-calendar-marks');for(const entry of all.filter(e=>onDay(e,value)))marks.append(eventButton(entry,true));
     cell.append(marks);pane.append(cell);
    }

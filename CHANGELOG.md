@@ -1,3 +1,7 @@
+## v9.0.2 – 25.11.2026 · Codex
+
+Nur das tatsächliche heutige Datum erhält die Heute-Markierung. Die Auswahl hat einen Rahmen und springt beim Monatswechsel auf den Monatsersten. Browserprüfung für Monatswechsel und Heute ergänzt.
+
 ## v9.0.1 – 25.11.2026 · Codex
 
 Alte blaue Kontoleiste im persönlichen Kalender ausgeblendet. Der Kalender nutzt die gewählte Desktop-Navigation oder die vorhandenen mobilen Schnellzugriffe. Automatisierte Browserprüfung für alle vier Desktop-Positionen und beide mobilen Ausrichtungen ergänzt.
