@@ -1,3 +1,7 @@
+## v8.0.15 – 25.11.2026 · ChatGPT
+
+Neues App-Symbol (gewählter Vorschlag 3): vier farbige Kacheln für Bildung, Kalender, Aufgaben und Kollegium ohne HBL-Schriftzug. Eigene PNG-Icons für PWA (192/512), maskierbares Android-Icon (512), Apple-Startbildschirm (180) und Browser-Favicon (48), dazu gleich gestaltetes SVG. Manifest, HTML-Icon-Links, Service-Worker-Cache und öffentliche Release-Whitelist aktualisiert. Automatische Größen-/Releaseprüfung ergänzt; echte Gerätetests sowie Aktualisierung bereits installierter Homescreen-Symbole offen.
+
 ## v8.0.14 – 23.11.2026 · Codex
 
 Veröffentlichungsblockade behoben: Navigationstest misst den nutzbaren Viewport ohne Scrollleiste und liefert konkrete Geometriedaten bei Fehlern. Vier Desktop-Positionen, Klappzustand, Beschriftungen, feste Position beim Scrollen und Wiederherstellung geprüft. Kompakter App-Schnellzugriff ohne Minimierbutton: Touch-Verschieben, Positionsspeicherung, Sync-Ampel und Einstellungen geprüft. Bestehende Anwendungslogik unverändert. Prüfstand: 116 Tests, Release-Pakettests und Chrome-Interaktionstests auf Desktop, Smartphone-/Tablet-Emulation; echte Gerätetests offen.
