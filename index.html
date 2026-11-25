@@ -1,10 +1,32 @@
 <!DOCTYPE html>
-<html lang="de" data-access="locked">
+<html lang="de" data-access="locked" data-startup="loading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="8.0.16">
-<title>Schul-Dashboard HBL · v8.0.16</title>
+<meta name="hbl-version" content="8.0.17">
+<title>Schul-Dashboard HBL · v8.0.17</title>
+<style>
+#hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
+html[data-startup-world=organic]{--start-bg:#f5ecdf;--start-ink:#183c2b}
+html[data-startup-world=glass]{--start-bg:linear-gradient(135deg,#edf5ff,#e8e5f7);--start-ink:#202c4b}
+html[data-startup-dark=true]{--start-bg:#111a29;--start-ink:#edf4ff}
+html[data-startup-world=organic][data-startup-dark=true]{--start-bg:#17271f;--start-ink:#edf3e9}
+html[data-startup-world=glass][data-startup-dark=true]{--start-bg:linear-gradient(135deg,#101d32,#29223d);--start-ink:#edf4ff}
+#hblStartup>section{max-width:28rem}
+#hblStartup img{display:block;width:clamp(110px,24vmin,180px);height:auto;aspect-ratio:1;margin:0 auto 20px}
+#hblStartup h1{font-size:clamp(20px,4vw,26px);margin:0 0 16px}
+#hblStartup p{line-height:1.5;margin:12px 0}
+#hblStartupDots{display:flex;justify-content:center;gap:7px}
+#hblStartupDots i{width:6px;height:6px;border-radius:50%;background:currentColor;animation:hbl-start-pulse 1s ease-in-out infinite alternate}
+#hblStartupDots i:nth-child(2){animation-delay:.15s}#hblStartupDots i:nth-child(3){animation-delay:.3s}
+#hblStartupRetry{min-height:44px;padding:10px 18px;border:1px solid currentColor;border-radius:10px;background:transparent;color:inherit;font:600 15px system-ui;cursor:pointer}
+html:not([data-startup=loading]):not([data-startup=error]) #hblStartup{display:none!important}
+html[data-startup=error] #hblStartupDots{display:none}
+html:is([data-startup=loading],[data-startup=error]) :is(#hblCloudModal,#hblProfileOverlay){display:none!important}
+@keyframes hbl-start-pulse{to{opacity:.25;transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){#hblStartupDots i{animation:none}}
+</style>
+
 <style>
 :root{
   --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef2f5; --text:#18202a; --muted:#697582;
@@ -1381,13 +1403,14 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="stylesheet" href="./hbl-v57.css?v=5.9.7-chat">
 <link rel="stylesheet" href="./hbl-v58.css?v=5.8">
 <link rel="stylesheet" href="./hbl-v59.css?v=5.9.11-courses">
-<link rel="manifest" href="./manifest.webmanifest?v=8.0.16">
+<link rel="manifest" href="./manifest.webmanifest?v=8.0.17">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HBL Dashboard">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="icon" href="./hbl-icon-48.png?v=8.0.16" type="image/png" sizes="48x48">
-<link rel="apple-touch-icon" sizes="180x180" href="./hbl-icon-180.png?v=8.0.16">
+<link rel="icon" href="./hbl-icon-48.png?v=8.0.17" type="image/png" sizes="48x48">
+<link rel="icon" href="./hbl-icon.svg?v=8.0.17" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="./hbl-icon-180.png?v=8.0.17">
 <script src="./hbl-course-ids.js?v=5.9.10"></script>
 <script src="./hbl-courses.js?v=5.9.13"></script>
 <script src="./hbl-grades.js?v=5.9.20"></script>
@@ -1396,27 +1419,61 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-seating.js?v=5.9.21"></script>
 <script src="./hbl-seat-rating.js?v=7.6.0"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=8.0.16"></script>
-<link rel="stylesheet" href="./hbl-course-page.css?v=8.0.16">
-<link rel="stylesheet" href="./hbl-quickbar.css?v=8.0.16">
-<script defer src="./mein-hbl.js?v=8.0.16"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
+<script src="./hbl-course-page.js?v=8.0.17"></script>
+<link rel="stylesheet" href="./hbl-course-page.css?v=8.0.17">
+<link rel="stylesheet" href="./hbl-quickbar.css?v=8.0.17">
+<script defer src="./mein-hbl.js?v=8.0.17"></script><script defer src="./hbl-music.js?v=6.0.1"></script>
 <script defer src="./mobile.js?v=7.0.8"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
-<script defer src="./cloud.js?v=8.0.16"></script>
+<script defer src="./cloud.js?v=8.0.17"></script>
 <script defer src="./hbl-v55.js?v=7.0.8"></script>
 <script defer src="./hbl-v56.js?v=6.0.8"></script>
 <script defer src="./hbl-v57.js?v=5.9.7-chat"></script>
 <script defer src="./hbl-v58.js?v=5.9.5"></script>
 <script defer src="./hbl-v59.js?v=6.0.7"></script>
-<script defer src="./hbl-pwa-update.js?v=8.0.16"></script>
-<script defer src="./hbl-quickbar.js?v=8.0.16"></script>
-<style>#dashboardBoard>.dashboard-tile[hidden],#hblMobileNav button[hidden]{display:none!important}.mein-hbl fieldset{min-width:0;border:1px solid var(--line);border-radius:8px}.mein-hbl fieldset label{display:flex;align-items:center;min-height:40px}.mein-hbl{box-sizing:border-box;width:min(28rem,94vw);max-height:85dvh;overflow:auto;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem}.mein-hbl::backdrop{background:#10182077}.mein-hbl header{display:flex;align-items:center;justify-content:space-between}.mein-hbl section:not([hidden]),.mein-hbl label{display:grid;gap:.5rem}.mein-hbl button,.mein-hbl select{min-height:44px;padding:.5rem .8rem;border:1px solid var(--line);border-radius:8px;color:inherit;background:var(--panel2);font:inherit}.mein-hbl button:disabled{opacity:.6}.mein-hbl footer{border-top:1px solid var(--line);padding-top:.75rem}.mein-hbl a{color:var(--accent)}</style><style>#hblAppRoot{display:contents}</style><link rel="stylesheet" href="./hbl-workspace.css?v=8.0.16"><script defer src="./hbl-workspace.js?v=8.0.16"></script><script defer src="./hbl-sync-indicator.js?v=8.0.16"></script><style>
-html:not([data-access=ready]) body > :not(#hblCloudModal):not(#hblProfileOverlay):not(#hblUpdateNotice):not(script):not(style){display:none!important}
+<script defer src="./hbl-pwa-update.js?v=8.0.17"></script>
+<script defer src="./hbl-quickbar.js?v=8.0.17"></script>
+<style>#dashboardBoard>.dashboard-tile[hidden],#hblMobileNav button[hidden]{display:none!important}.mein-hbl fieldset{min-width:0;border:1px solid var(--line);border-radius:8px}.mein-hbl fieldset label{display:flex;align-items:center;min-height:40px}.mein-hbl{box-sizing:border-box;width:min(28rem,94vw);max-height:85dvh;overflow:auto;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem}.mein-hbl::backdrop{background:#10182077}.mein-hbl header{display:flex;align-items:center;justify-content:space-between}.mein-hbl section:not([hidden]),.mein-hbl label{display:grid;gap:.5rem}.mein-hbl button,.mein-hbl select{min-height:44px;padding:.5rem .8rem;border:1px solid var(--line);border-radius:8px;color:inherit;background:var(--panel2);font:inherit}.mein-hbl button:disabled{opacity:.6}.mein-hbl footer{border-top:1px solid var(--line);padding-top:.75rem}.mein-hbl a{color:var(--accent)}</style><style>#hblAppRoot{display:contents}</style><link rel="stylesheet" href="./hbl-workspace.css?v=8.0.17"><script defer src="./hbl-workspace.js?v=8.0.17"></script><script defer src="./hbl-sync-indicator.js?v=8.0.17"></script><style>
+html:not([data-access=ready]) body > :not(#hblStartup):not(#hblCloudModal):not(#hblProfileOverlay):not(#hblUpdateNotice):not(script):not(style){display:none!important}
 html:not([data-access=ready]) #hblCloudClose{display:none}
 html:not([data-access=ready]) body{padding:0!important}
 </style></head>
 <body>
+<div id="hblStartup" role="status" aria-live="polite" aria-label="App-Start">
+ <section><img src="./hbl-icon-192.png?v=8.0.17" width="192" height="192" alt="Schul-Dashboard App-Symbol" fetchpriority="high">
+ <h1>Schul-Dashboard</h1><div id="hblStartupDots" aria-hidden="true"><i></i><i></i><i></i></div>
+ <p id="hblStartupText">Anmeldung wird geprüft …</p><button id="hblStartupRetry" type="button" hidden>Erneut versuchen</button>
+ <noscript>Bitte JavaScript aktivieren, um das Dashboard zu öffnen.</noscript></section>
+</div>
+<script id="hblStartupController">
+(()=>{
+ const root=document.documentElement,byId=id=>document.getElementById(id);
+ try{
+  const world=localStorage.getItem('hbl-startup-world');
+  if(['organic','professional','glass'].includes(world))root.dataset.startupWorld=world;
+  root.dataset.startupDark=String(localStorage.getItem('schoolTheme')==='dark');
+ }catch(_){}
+ let timer,cancel;
+ function finish(state){clearTimeout(timer);cancel=null;root.dataset.startup=state;}
+ function fail(text){
+  clearTimeout(timer);const abort=cancel;cancel=null;abort?.();
+  root.dataset.startup='error';
+  byId('hblStartupText').textContent=text||'Die Verbindung konnte nicht hergestellt werden. Bitte Internetverbindung prüfen und erneut versuchen.';
+  byId('hblStartupRetry').hidden=false;
+ }
+ function begin(onCancel){
+  clearTimeout(timer);cancel=onCancel;
+  root.dataset.startup='loading';byId('hblStartupRetry').hidden=true;
+  byId('hblStartupText').textContent='Anmeldung wird geprüft …';
+  timer=setTimeout(()=>fail('Die Prüfung dauert zu lange. Bitte Internetverbindung prüfen und erneut versuchen.'),15000);
+ }
+ byId('hblStartupRetry').onclick=()=>location.reload();
+ window.hblStartup={begin,finish,fail};
+ begin();
+})();
+</script>
+
 <script>
 /* =========================
    EINFACH ANPASSEN
@@ -2677,7 +2734,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 22. November 2026">v8.0.16 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 22. November 2026">v8.0.17 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>

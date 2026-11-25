@@ -16,6 +16,7 @@
  function apply(value={}){
   value=value||{};
   root.dataset.world=["organic","professional","glass"].includes(value.theme)?value.theme:defaults.theme;
+  if(typeof serverReady!=='undefined'&&serverReady){try{localStorage.setItem('hbl-startup-world',root.dataset.world);}catch(_){}}
   root.dataset.dock=["top","bottom","left","right"].includes(value.position)?value.position:"top";
   root.dataset.compact=String(value.collapsed===true);
   const toggle=document.querySelector("#workspaceNav [data-action=fold]");

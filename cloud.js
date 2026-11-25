@@ -11,7 +11,7 @@ function access(allowed){
  const root=document.getElementById("hblAppRoot");if(root)root.inert=!allowed;
 }
 access(false);
-let sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
+let bootVersion=0,sessionVersion=0,changeVersion=0,readVersion=0,restoring=false;
 let loggingOut=false,retrying=false,pendingBackupFailed=false;
 function userKey(){return user ? "hbl-cloud-pending-"+user.id : "";}
 function validDemoData(data){return data&&typeof data==="object"&&!Array.isArray(data);}
@@ -127,12 +127,29 @@ window.savePrepFile=function(){
  });
  return queue;
 };
+function beginStartup(){
+ window.hblStartup?.begin(()=>{
+  bootVersion++;sessionVersion++;readVersion++;
+  active=false;serverReady=false;access(false);
+ });
+}
+function startupFailure(error){
+ if(error?.status===401||['refresh_token_not_found','refresh_token_already_used','bad_jwt','session_not_found'].includes(error?.code)){
+  user=null;active=false;serverReady=false;access(false);controls();
+  message("Deine Sitzung ist abgelaufen. Bitte erneut anmelden.",true);
+  window.hblStartup?.finish("login");showModal(true);
+ }else{
+  status("Start fehlgeschlagen: "+(error?.message||"Verbindung nicht erreichbar"),true);
+  window.hblStartup?.fail();
+ }
+}
 async function startSession(session){
+ beginStartup();
  const version=++sessionVersion;
- access(false);
+ serverReady=false;access(false);
  user=session?.user||null;
  active=false;paused=false;dirty=false;revision=0;pendingBackupFailed=false;
- if(!user){active=false;paused=false;dirty=false;revision=0;controls();showModal(true);return;}
+ if(!user){active=false;paused=false;dirty=false;revision=0;controls();window.hblStartup?.finish("login");showModal(true);return;}
  controls();
  try{
   const membership=await client.from("hbl_dashboard_members").select("enabled").eq("user_id",user.id).maybeSingle();
@@ -141,7 +158,7 @@ async function startSession(session){
   if(!membership.data?.enabled){
    active=false;
    status("Konto nicht freigeschaltet – bitte Administrator kontaktieren",true);
-   message("Konto nicht freigeschaltet – bitte Administrator kontaktieren",true);showModal(true);
+   message("Konto nicht freigeschaltet – bitte Administrator kontaktieren",true);window.hblStartup?.finish("login");showModal(true);
    window.dispatchEvent(new Event("hbl-cloud-status"));
    return;
   }
@@ -156,9 +173,9 @@ async function startSession(session){
    status("Lokale Änderungen wiederhergestellt – bitte exportieren oder erneut speichern",true);
   }else await loadRemote();
   if(version!==sessionVersion)return;
-  access(true);showModal(false);
+  access(true);window.hblStartup?.finish("ready");showModal(false);
   window.dispatchEvent(new Event("hbl-cloud-status"));
- }catch(e){status("Cloud-Laden fehlgeschlagen: "+e.message,true);message(e.message,true);}
+ }catch(e){if(version===sessionVersion)startupFailure(e);}
 }
 window.hblLogout=async function(){
  if(loggingOut||!client)return false;
@@ -219,9 +236,14 @@ async function initializeAuth(){
  el("hblCloudForm").onsubmit=async e=>{
   e.preventDefault();
   if(!client)return message("Supabase-Anmeldung konnte nicht geladen werden.",true);
+  beginStartup();const attempt=++bootVersion;
   message("Anmeldung läuft …");
-  const {data,error}=await client.auth.signInWithPassword({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value});
-  if(error)message(error.message,true);else {message("Angemeldet ✓");await startSession(data.session);}
+  try{
+   const {data,error}=await client.auth.signInWithPassword({email:el("hblCloudEmail").value.trim(),password:el("hblCloudPassword").value});
+   if(attempt!==bootVersion)return;
+   if(error){window.hblStartup?.finish("login");showModal(true);message(error.message,true);}
+   else {message("Angemeldet ✓");await startSession(data.session);}
+  }catch(e){if(attempt===bootVersion)startupFailure(e);}
  };
  el("hblLocalBackup").onclick=downloadLocalBackup;
  el("hblCloudLogout").onclick=()=>window.hblLogout();
@@ -238,8 +260,8 @@ async function initializeAuth(){
   try{await cloudWrite(saved);applyPrepData(saved);}
   catch(e){status("Übernahme fehlgeschlagen: "+e.message,true);}
  };
- showModal(true);
- if(!window.supabase?.createClient){message("Anmeldung nicht erreichbar. Bitte Internetverbindung prüfen und Seite neu laden.",true);status("Cloud-Bibliothek nicht geladen – bitte Seite neu öffnen",true);return;}
+ beginStartup();
+ if(!window.supabase?.createClient){startupFailure(Error("Cloud-Bibliothek nicht geladen"));return;}
  client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  window.hblCloudClient=client;
  window.hblCloudUser=()=>user;
@@ -258,16 +280,20 @@ async function initializeAuth(){
   }
  };
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT"){sessionVersion++;user=null;active=false;access(false);controls();showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
-  if((event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")&&session?.user&&session.user.id!==user?.id){
-   setTimeout(()=>{if(session?.user&&session.user.id!==user?.id)void startSession(session);},0);
+  if(event==="SIGNED_OUT"){bootVersion++;sessionVersion++;user=null;active=false;access(false);controls();window.hblStartup?.finish("login");showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
+  if(document.documentElement.dataset.startup!=="error"&&(event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")&&session?.user&&session.user.id!==user?.id){
+   setTimeout(()=>{if(document.documentElement.dataset.startup!=="error"&&session?.user&&session.user.id!==user?.id)void startSession(session);},0);
   }
   // TOKEN_REFRESHED does not replace the current state.
  });
- const {data,error}=await client.auth.getSession();
- if(error)status("Anmeldung konnte nicht gelesen werden: "+error.message,true);
- else if(data.session)await startSession(data.session);
- else {controls();showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
+ const attempt=++bootVersion;
+ try{
+  const {data,error}=await client.auth.getSession();
+  if(attempt!==bootVersion)return;
+  if(error)startupFailure(error);
+  else if(data.session)await startSession(data.session);
+  else {controls();window.hblStartup?.finish("login");showModal(true);window.dispatchEvent(new Event("hbl-cloud-status"));}
+ }catch(e){if(attempt===bootVersion)startupFailure(e);}
  window.addEventListener("hbl-profile-changed",controls);
  window.addEventListener("offline",()=>status(paused?"Sync-Problem · offline. Lokale Änderungen prüfen":"Offline · Änderungen bleiben lokal, Verbindung wird benötigt",false,paused?"error":"pending"));
  window.addEventListener("online",()=>void resumeSync());

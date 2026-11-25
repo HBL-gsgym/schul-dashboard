@@ -1,3 +1,7 @@
+## v8.0.17 – 25.11.2026 · Codex
+
+Gewähltes rundes Icon unverändert aus der SVG-Vorlage in alle PNG-Größen übernommen, mit transparenten Ecken und eigener undurchsichtiger Android-Maske innerhalb der sicheren Kreisfläche. App-Start zeigt dasselbe Icon und prüft Sitzung, Freigabe und Daten vor dem Öffnen; kein vorzeitiges Login. Verbindungsfehler/15-Sekunden-Zeitlimit mit Wiederholen, verspätete Antworten verworfen, reduzierte Bewegung berücksichtigt. Prüfstand: 120 Tests, Release-Paketprüfung, Browser-Starttests und Icon-Pixelprüfung; echte Android-/iPad-Launcher-Abnahme offen. Endgültige Homescreen-Maske und Symbol-Cache bleiben Betriebssystemvorgaben.
+
 ## v8.0.15 – 25.11.2026 · ChatGPT
 
 Neues App-Symbol (gewählter Vorschlag 3): vier farbige Kacheln für Bildung, Kalender, Aufgaben und Kollegium ohne HBL-Schriftzug. Eigene PNG-Icons für PWA (192/512), maskierbares Android-Icon (512), Apple-Startbildschirm (180) und Browser-Favicon (48), dazu gleich gestaltetes SVG. Manifest, HTML-Icon-Links, Service-Worker-Cache und öffentliche Release-Whitelist aktualisiert. Automatische Größen-/Releaseprüfung ergänzt; echte Gerätetests sowie Aktualisierung bereits installierter Homescreen-Symbole offen.
