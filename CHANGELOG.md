@@ -1,3 +1,7 @@
+## v9.0.1 – 25.11.2026 · Codex
+
+Alte blaue Kontoleiste im persönlichen Kalender ausgeblendet. Der Kalender nutzt die gewählte Desktop-Navigation oder die vorhandenen mobilen Schnellzugriffe. Automatisierte Browserprüfung für alle vier Desktop-Positionen und beide mobilen Ausrichtungen ergänzt.
+
 ## v9.0.0 – 25.11.2026 · Codex
 
 Privater Kalender mit Monats-, Wochen- und Tagesansicht, Termin- und Serienverwaltung, Ferienausnahmen, A/B-Wochen und Erinnerungszeiten zur Vorbereitung von v9.1. Separate Supabase-Speicherung mit Zugriffsschutz pro Konto und Revisionsprüfung. Offline sind zuvor geladene Termine lesbar. Geräteabnahme und Push-Zustellung sind offen.
