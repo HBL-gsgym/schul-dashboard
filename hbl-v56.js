@@ -96,6 +96,10 @@ async function loadEvents(force){
 // Benutzerverwaltung ausschließlich unter „Mein HBL → Administration“.
 window.hblCanManageUsers=()=>!!user()&&loadedUser===user().id&&isOwner;
 window.hblOpenAdminUsers=()=>{if(window.hblCanManageUsers())void openAdminUsers();};
+window.hblListManagedUsers=async()=>{
+ if(!window.hblCanManageUsers())throw Error("Nur Hauptadministratoren dürfen Dashboard-Konten abrufen.");
+ return (await callAdmin({action:"list"})).users||[];
+};
 function hblNotifyAdminRights(){window.dispatchEvent(new Event("hbl-admin-rights-changed"));}
 async function loadRole(){
  const logged=user(),sb=client();

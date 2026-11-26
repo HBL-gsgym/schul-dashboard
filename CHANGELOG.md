@@ -1,3 +1,7 @@
+## v10.0.3 – 26.11.2026 · Codex
+
+Lehrkräfteansicht zeigt Schulstatus und Gruppen direkt. Hauptadmin kann angelegte Dashboard-Konten ansehen und einzelne bestätigte Konten zur Schule übernehmen. Vorhandene Freigabe- und Zuordnungsregeln bleiben in Kraft.
+
 ## v10.0.2 – 26.11.2026 · Codex
 
 Der einzige aktive Schuladmin kann eigene Fachgruppen- und Gremienanträge sowie Katalogvorschläge entscheiden. Sobald ein zweiter aktiver Schuladmin vorhanden ist, muss ein anderer entscheiden. Die Ausnahme vergibt keine Rollen und bestätigt keinen eigenen Schulbeitritt. Geprüft mit synthetischen Konten.

@@ -63,24 +63,65 @@
     button('Link kopieren',async()=>{try{await navigator.clipboard.writeText(link.value);}catch(_){link.select();}}));
   }));
   const eligible=node('details');eligible.append(node('summary','Bestehendes Konto einzeln übernehmen'));
-  if(window.hblCanManageUsers?.())eligible.append(form([input('Bekannte E-Mail zur Übernahme freigeben','email','email','',true)],'Konto zur Auswahl freigeben',d=>change('allow_existing',{email:d.get('email')})));
-  if(adminData.eligible.length)eligible.append(form([select('Freigegebenes Konto','user_id',adminData.eligible.map(m=>[m.id,m.email])),...identity(),choices()],'Schulzugehörigkeit bestätigen',d=>change('assign_existing',{...Object.fromEntries(d),groups:d.getAll('group')})));
-  else eligible.append(node('p','Aktuell ist kein bestehendes Konto zur Einzelübernahme freigegeben.'));
+  eligible.open=adminData.eligible.length>0;
+  const assign=(accounts,ownerList=false)=>form([
+   select(ownerList?'Dashboard-Konto':'Freigegebenes Konto','user_id',[['','Bitte auswählen'],...accounts.map(m=>[m.id,[m.username,m.email].filter(Boolean).join(' · ')])]),
+   ...identity(),choices()
+  ],'Der Schule zuweisen',async d=>{
+   const selected=accounts.find(account=>account.id===d.get('user_id'));
+   if(!selected)throw Error('Bitte ein Konto auswählen.');
+   if(!confirm(selected.email+' dieser Schule zuweisen?'))return;
+   if(ownerList)await call('allow_existing',{email:selected.email});
+   await change('assign_existing',{...Object.fromEntries(d),groups:d.getAll('group')});
+  });
+  if(adminData.eligible.length)eligible.append(assign(adminData.eligible));
+  else eligible.append(node('p','Kein Konto zur Einzelübernahme freigegeben. Die Lehrkraft kann auch selbst einen Beitrittsantrag stellen.'));
+  if(window.hblCanManageUsers?.()){
+   const directory=node('details');directory.append(node('summary','Angelegte Dashboard-Konten anzeigen'));
+   const content=node('div');directory.append(content);eligible.append(directory);
+   directory.ontoggle=async()=>{
+    if(!directory.open||content.dataset.loaded)return;
+    content.dataset.loaded='true';content.textContent='Konten werden geladen …';
+    try{
+     const accounts=await window.hblListManagedUsers();
+     if(!directory.isConnected)return;
+     const members=new Map(adminData.members.map(m=>[m.user_id,m]));
+     const list=node('ul');list.className='hbl-school-directory';
+     for(const account of accounts){
+      const membership=members.get(account.id);
+      const state=membership?'Schule: '+statuses[membership.status]:
+       !account.is_member?'Dashboard nicht freigegeben':!account.confirmed_at?'E-Mail unbestätigt':'Ohne Schulzuordnung';
+      list.append(node('li',[account.username,account.email,state].filter(Boolean).join(' · ')));
+     }
+     content.replaceChildren(list);
+     const selectable=accounts.filter(a=>a.is_member&&a.confirmed_at&&!members.has(a.id));
+     if(selectable.length)content.append(assign(selectable,true));
+     else content.append(node('p','Keine bestätigten, freigegebenen Konten ohne Schulzuordnung.'));
+    }catch(error){delete content.dataset.loaded;content.textContent=error.message;}
+   };
+  }
   const search=node('input');search.type='search';search.placeholder='Name oder Fach suchen';search.setAttribute('aria-label',search.placeholder);
   const list=node('div');
   for(const m of adminData.members){
    const row=node('details');row.dataset.memberSearch=[memberName(m),...m.groups.map(groupName)].join(' ').toLocaleLowerCase('de');
-   row.append(node('summary',memberName(m)+' · '+statuses[m.status]),node('p',m.groups.map(groupName).filter(Boolean).join(', ')));
+   const groupLabels=m.groups.map(groupName).filter(Boolean);
+   row.append(node('summary','Zuordnungen verwalten'));
+   const record=node('article');
+   record.dataset.memberSearch=row.dataset.memberSearch;
+   record.append(node('strong',m.user_id===window.hblCloudUser?.()?.id?(window.hblCurrentUsername||memberName(m)):memberName(m)),
+    node('span',' · '+statuses[m.status]),node('p',(m.status==='active'?'Gruppen: ':'Hinterlegte Gruppen: ')+(groupLabels.join(', ')||'Keine')));
+
    if(m.user_id!==window.hblCloudUser?.()?.id){
     row.append(form([select('Schulzugang','status',[['active','Bestätigen'],['suspended','Sperren'],['revoked','Entziehen']])],'Status speichern',
       d=>{if(d.get('status')==='revoked'&&!confirm('Schulzugehörigkeit und Gruppenmitgliedschaften entziehen?'))return;return change('member_status',{user_id:m.user_id,status:d.get('status')});}));
     row.append(form([select('Fachgruppe oder Gremium','group_id',groups().map(g=>[g.id,g.name])),select('Zuordnung','enabled',[['true','Hinzufügen'],['false','Entfernen']])],'Zuordnung speichern',
      d=>change('group_member',{user_id:m.user_id,group_id:d.get('group_id'),enabled:d.get('enabled')==='true'})));
    }
-   list.append(row);
+   if(row.children.length>1)record.append(row);
+   list.append(record);
   }
   search.oninput=()=>{for(const row of list.children)row.hidden=!row.dataset.memberSearch.includes(search.value.toLocaleLowerCase('de').trim());};
-  return section('Lehrkräfte',invite,eligible,search,list);
+  return section('Lehrkräfte',node('h3','Schulmitglieder und Gruppen'),search,list,invite,eligible);
  }
  function groupPane(kind){
   const list=node('div');

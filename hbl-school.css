@@ -14,3 +14,7 @@
 #hblSchoolPage :is(button,summary){cursor:pointer}
 #hblSchoolPage button[aria-current]{border-color:var(--accent);font-weight:700}
 @media(orientation:landscape){html[data-platform=app] #hblSchoolPage{padding-top:58px}}
+
+.hbl-school-directory,#hblSchoolPage article{overflow-wrap:anywhere}
+#hblSchoolPage article p{margin:5px 0}
+#hblSchoolPage article details{border:0;padding-bottom:0}
