@@ -159,7 +159,7 @@ function refresh(){
   const warning=!!page.rosterWarning?.();
   const warningText=roster.querySelector('.class-roster-warning'),linkButton=roster.querySelector('[data-link-class]');
   warningText.hidden=!warning;linkButton.hidden=!warning;
-  if(warning)warningText.textContent='Dieser Fachkurs enthält noch eine eigenständige Schülerliste. Prüfe die Zuordnung zu den Klassenbuchnummern, bevor Daten zusammengeführt werden.';
+  if(warning)warningText.textContent='Dieser Fachkurs hat eine eigene Schülerliste. Änderungen und Importe gelten hier nur für diesen Kurs. Über „Klassenliste nach Nummer abgleichen“ kannst du die Zuordnung zur gemeinsamen Klassenliste prüfen.';
   roster.querySelector('summary').textContent='Schülerliste ('+students.length+') · Klassenbuchnummern';
   roster.querySelector('ul').innerHTML=students.map(s=>'<li><button type="button" data-profile="'+esc(s.id)+'" aria-label="Leistungen von '+esc(s.name)+' ansehen">Nr. '+s.number+' · '+esc(s.name)+'</button><button type="button" class="course-person-edit" data-person="'+esc(s.id)+'" aria-label="'+esc(s.name)+' bearbeiten">Bearbeiten</button></li>').join('');
   return;
@@ -422,7 +422,8 @@ function personEditor(button){
  if(id&&!person)return;
  const dialog=document.createElement('dialog');
  dialog.className='grade-dialog';dialog.setAttribute('aria-labelledby','personTitle');
- const nextNumber=Math.max(0,...data.students.map((s,i)=>rosters.numberOf(s,i)))+1;
+ const nextNumber=rosters.firstFreeNumber(data.students);
+ if(!person&&nextNumber===null){status('Alle Klassenbuchnummern von 1 bis 999 sind belegt.');return;}
  const originalNumber=person?rosters.numberOf(person,data.students.indexOf(person)):nextNumber;
  dialog.innerHTML='<form><h2 id="personTitle">'+(person?'Schüler bearbeiten':'Schüler hinzufügen')+'</h2><label>Klassenbuchnummer<input name="number" type="number" required min="1" max="999" step="1"></label><label>Name oder Alias<input name="name" required maxlength="100" autocomplete="off"></label><div class="grade-actions"><button class="part-button primary">Speichern</button><button type="button" class="part-button" data-cancel>Abbrechen</button>'+
   (person?'<button type="button" class="part-button" data-remove>Aus der Schülerliste entfernen</button>':'')+'</div><p role="status"></p></form>';

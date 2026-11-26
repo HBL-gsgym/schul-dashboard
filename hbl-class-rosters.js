@@ -53,9 +53,11 @@ function relink(data,map){
  for(const field of ['marks','finals','gradebook','participationGrades','seating'])
   if(Object.hasOwn(draft,field))data[field]=draft[field];
 }
-function match(student,index,target,used){
- const matches=target.filter(candidate=>
-  candidate.id===student.id||(normal(candidate.name)===normal(student.name)&&!!normal(student.name)));
+function match(student,target,byTarget,used,existingIds){
+ const exact=byTarget.get(student.id);
+ if(exact)return used.has(exact.id)?null:exact;
+ const alias=normal(student.name);
+ const matches=alias?target.filter(candidate=>!existingIds.has(candidate.id)&&normal(candidate.name)===alias):[];
  const unique=matches.length===1?matches[0]:null;
  return unique&&!used.has(unique.id)?unique:null;
 }
@@ -70,8 +72,9 @@ function compatible(data,target){
      Object.values(data.participationGrades?.[t]?.overrides||{}).some(o=>Object.keys(o).length)))return null;
   return map;
  }
- for(const [index,person] of current.entries()){
-  const chosen=match(person,index,target,used);
+ const existingIds=new Set(current.map(person=>person.id));
+ for(const person of current){
+  const chosen=match(person,target,byTarget,used,existingIds);
   if(chosen){map.set(person.id,chosen.id);used.add(chosen.id);continue;}
   // Unbewertete Pseudoplatzhalter dürfen entfallen; benannte/benutzte Personen nicht.
   if(!hasRecords(data,person.id)&&placeholder(person.name))continue;
@@ -190,19 +193,34 @@ function importNames(snapshot,catalog,courseId,year,names,newId){
  if(!m?.roster)throw Error('Dieser Fachkurs gehört nicht zu einer eindeutigen Klasse.');
  if(m.classes[courseId]?.students?.length&&!linked(m.classes[courseId],m.roster.students))
   throw Error('Die bestehende Kursliste muss zuerst abgeglichen werden.');
- if(!Array.isArray(names)||names.length>999||!names.some(n=>String(n||'').trim()))throw Error('Bitte eine Klassenliste mit bis zu 999 Zeilen eingeben.');
  const list=m.roster.students,previousIds=new Set(list.map(s=>s.id));
- for(const [index,raw] of names.entries()){
-  const name=String(raw||'').trim(),number=index+1;
-  // Leerzeilen stehen für freie Klassenbuchnummern und verschieben keine Zuordnungen.
-  if(!name)continue;
-  if(name.length>100)throw Error('Ungültiger Name in Zeile '+number+'.');
-  const student=list.find(s=>s.number===number);
-  if(student)student.name=name;
-  else list.push({id:newId(),name,number});
- }
+ importByNumber(list,names,newId);
  propagate(snapshot,catalog,year,m.key,list,previousIds);
  return list.length;
+}
+function importByNumber(students,names,newId){
+ if(!Array.isArray(names)||names.length>999||!names.some(n=>String(n||'').trim()))
+  throw Error('Bitte eine Klassenliste mit bis zu 999 Zeilen eingeben.');
+ const rows=names.map(raw=>String(raw||'').trim());
+ const invalid=rows.findIndex(name=>name.length>100);
+ if(invalid!==-1)throw Error('Ungültiger Name in Zeile '+(invalid+1)+'.');
+ const byNumber=new Map();
+ for(const [index,student] of students.entries()){
+  const number=numberOf(student,index);
+  if(byNumber.has(number))throw Error('Klassenbuchnummer '+number+' ist mehrfach vergeben. Bitte zuerst korrigieren.');
+  byNumber.set(number,student);
+ }
+ for(const [index,name] of rows.entries()){
+  if(!name)continue; // Die Zeilennummer bleibt auch bei Leerzeilen erhalten.
+  const number=index+1,student=byNumber.get(number);
+  if(student)student.name=name;
+  else students.push({id:newId(),name,number});
+ }
+}
+function firstFreeNumber(students){
+ const occupied=new Set(students.map(numberOf));
+ for(let number=1;number<=999;number++)if(!occupied.has(number))return number;
+ return null;
 }
 function linkByNumber(snapshot,catalog,courseId,year){
  const m=membership(snapshot,catalog,courseId,year);
@@ -223,7 +241,7 @@ function linkByNumber(snapshot,catalog,courseId,year){
  data.students=clone(sorted(master));data.initialized=true;
  return true;
 }
-const api={key,sorted,numberOf,ensure,membership,edit,importNames,linkByNumber,hasRecords};
+const api={key,sorted,numberOf,ensure,membership,edit,importNames,importByNumber,firstFreeNumber,linkByNumber,hasRecords};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 else root.HblClassRosters=api;
 })(typeof window==='undefined'?globalThis:window);

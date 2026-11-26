@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="10.0.4">
+<meta name="hbl-version" content="10.0.5">
 <title>Schul-Dashboard HBL · v10.0.4</title>
 <style>
 #hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
@@ -1414,11 +1414,11 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <script src="./hbl-courses.js?v=5.9.13"></script>
 <script src="./hbl-grades.js?v=5.9.20"></script>
 <script src="./hbl-participation-grades.js?v=7.4.0"></script>
-<script src="./hbl-class-rosters.js?v=7.0.13"></script>
+<script src="./hbl-class-rosters.js?v=10.0.5"></script>
 <script src="./hbl-seating.js?v=5.9.21"></script>
 <script src="./hbl-seat-rating.js?v=7.6.0"></script>
 <script src="./hbl-seat-view.js?v=6.1.2"></script>
-<script src="./hbl-course-page.js?v=8.1.0"></script>
+<script src="./hbl-course-page.js?v=10.0.5"></script>
 <link rel="stylesheet" href="./hbl-course-page.css?v=8.1.0">
 <link rel="stylesheet" href="./hbl-quickbar.css?v=9.0.0">
 <script defer src="./mein-hbl.js?v=10.0.0"></script><script defer src="./hbl-music.js?v=10.0.4"></script>
@@ -2722,7 +2722,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 26. November 2026">v10.0.4 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 26. November 2026">v10.0.5 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2911,7 +2911,7 @@ function hblEnsureClassRosters(catalog=hblRosterCatalog()){
  return result.changed;
 }
 function hblEditClassStudent(courseId,change){
- if(!hblCourseRosterKey(courseId))return false;
+ if(!hblCourseRosterKey(courseId)||hblRosterConflicts.has(courseId))return false;
  HblClassRosters.edit(prepDone,hblRosterCatalog(),courseId,hblCurrentRosterYear(),change,partId);
  renderParticipationOverview();renderParticipationTable();
  return true;
@@ -3161,7 +3161,8 @@ function hblManageCourseRoster(courseId,operation,raw=''){
  if(!serverReady)throw Error('Die Kursdaten sind noch nicht vollständig geladen.');
  const c=prepDone.__participation?.classes?.[courseId];
  if(!c)throw Error('Die Kursliste ist noch nicht verfügbar.');
- const shared=!!hblCourseRosterKey(courseId);
+ const numbered=!!hblCourseRosterKey(courseId);
+ const shared=numbered&&!hblRosterConflicts.has(courseId);
  const catalog=hblRosterCatalog(),year=hblCurrentRosterYear();
  if(operation==='prune'){
   if(shared){
@@ -3187,9 +3188,9 @@ function hblManageCourseRoster(courseId,operation,raw=''){
  }
  if(!['replace','add'].includes(operation))throw Error('Unbekannte Klassenlistenaktion.');
  const lines=String(raw).split(/\r?\n/).map(v=>v.split('\t')[0].trim());
- if(shared)while(lines.length&&!lines.at(-1))lines.pop();
- let names=shared?lines:lines.filter(Boolean);
- if(!shared){
+ if(numbered)while(lines.length&&!lines.at(-1))lines.pop();
+ let names=numbered?lines:lines.filter(Boolean);
+ if(!numbered){
   const used=new Set();
   names=names.filter(name=>{
    const normalized=name.toLocaleLowerCase('de-DE');
@@ -3216,10 +3217,11 @@ function hblManageCourseRoster(courseId,operation,raw=''){
   }
   return {changed:true,message:additions.length+' Namen hinzugefügt.'};
  }
- if(shared){
-  if(!confirm('Klassenliste nach Klassenbuchnummern 1 bis '+names.length+' abgleichen?\nVorhandene Schüler-IDs, Noten, Sitzplätze und Mitarbeit bleiben erhalten. Nicht enthaltene Schüler werden NICHT gelöscht. Prüfe vorher, ob die Reihenfolge dem Klassenbuch entspricht.'))
+ if(numbered){
+  if(!confirm((shared?'Gemeinsame Klassenliste':'Nur die Liste dieses Fachkurses')+' nach Klassenbuchnummern 1 bis '+names.length+' abgleichen?\nVorhandene Schüler-IDs, Noten, Sitzplätze und Mitarbeit bleiben erhalten. Nicht enthaltene Schüler werden NICHT gelöscht. Prüfe vorher, ob die Reihenfolge dem Klassenbuch entspricht.'))
    return {changed:false,message:'Import abgebrochen.'};
-  HblClassRosters.importNames(prepDone,catalog,courseId,year,names,partId);
+  if(shared)HblClassRosters.importNames(prepDone,catalog,courseId,year,names,partId);
+  else HblClassRosters.importByNumber(c.students,names,partId);
   return {changed:true,message:'Klassenliste übernommen. Schüler-IDs und Bewertungen bleiben erhalten.'};
  }
  // Bei gemischten Kursen mit Einzelnoten oder bereits bestätigter Mitarbeit
@@ -3567,7 +3569,7 @@ function hblRenderRoute(route){
    id:route.id,mode:route.mode,courses:()=>PARTICIPATION_COURSES,
    removeStudent:removeCourseStudent,
    editStudent:change=>hblEditClassStudent(coursePageId,change),
-   isClassRoster:()=>!!hblCourseRosterKey(coursePageId),
+   isClassRoster:()=>!!hblCourseRosterKey(coursePageId)&&!hblRosterConflicts.has(coursePageId),
    rosterWarning:()=>hblRosterConflicts.has(coursePageId),
    linkClass:()=>hblLinkClassRoster(coursePageId),
    manageRoster:(action,names)=>hblManageCourseRoster(coursePageId,action,names),

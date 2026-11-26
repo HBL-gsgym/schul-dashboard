@@ -1,3 +1,7 @@
+## v10.0.5 – 26.11.2026 · Codex
+
+Schülerlisten lassen sich auch bei noch nicht abgeglichenen Fachkursen ergänzen und erneut nach Nummer importieren. Beim Hinzufügen wird die erste freie Klassenbuchnummer vorgeschlagen. Gleiche Namen erzeugen bei bereits bekannten Schüler-IDs keinen Abgleichkonflikt. Mit synthetischen Listen und vorhandenen Bewertungen geprüft.
+
 ## v10.0.4 – 26.11.2026 · Codex
 
 Musik ist der fünfte Reiter in „Meine Links“. Über „Links bearbeiten“ lassen sich eigene Links hinzufügen und eigene oder vorgegebene Links persönlich entfernen. In der Schuladministration erscheint der eigene Benutzername in den Gruppenlisten. Offene Anträge lassen sich direkt bestätigen oder ablehnen.
