@@ -115,7 +115,9 @@
    const box=section('Anträge');
    for(const r of adminData.requests){
     const row=node('article');row.append(node('p',[kinds[r.kind],memberName(r),r.proposed_name||groupName(r.group_id)].filter(Boolean).join(' · ')));
-    row.append(form([select('Entscheidung','approved',[['true','Bestätigen'],['false','Ablehnen']])],'Antrag entscheiden',d=>change('decide',{request_id:r.id,approved:d.get('approved')==='true'})));box.append(row);
+    const own=r.user_id===window.hblCloudUser?.()?.id;
+    if(own&&(!adminData.sole_admin||r.kind==='join'))row.append(node('p','Eigener Antrag. Ein anderer Schuladmin muss entscheiden.'));
+    else row.append(form([select('Entscheidung','approved',[['true','Bestätigen'],['false','Ablehnen']])],'Antrag entscheiden',d=>change('decide',{request_id:r.id,approved:d.get('approved')==='true'})));box.append(row);
    }
    if(!adminData.requests.length)box.append(node('p','Keine offenen Anträge.'));
    host.append(box);return;

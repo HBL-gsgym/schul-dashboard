@@ -1,3 +1,7 @@
+## v10.0.2 – 26.11.2026 · Codex
+
+Der einzige aktive Schuladmin kann eigene Fachgruppen- und Gremienanträge sowie Katalogvorschläge entscheiden. Sobald ein zweiter aktiver Schuladmin vorhanden ist, muss ein anderer entscheiden. Die Ausnahme vergibt keine Rollen und bestätigt keinen eigenen Schulbeitritt. Geprüft mit synthetischen Konten.
+
 ## v10.0.1 – 25.11.2026 · Codex
 
 Musiklinks sind jetzt ein Abschnitt in „Meine Links“. Gespeicherte Musiklinks und Bearbeitung bleiben erhalten. Die separate Kachel entfällt. Automatisierte Tests und Browserprüfung des Links-Bereichs.
