@@ -26,16 +26,18 @@ function render(){
  const entries=items();
  if(!entries.length){
   const note=document.createElement("span");
-  note.textContent="Noch keine Musiklinks – über „Musiklinks bearbeiten“ hinzufügen.";
+  note.textContent="Noch keine Musiklinks – über „Links bearbeiten“ hinzufügen.";
   list.append(note);return;
  }
  for(const item of entries){
-  const a=document.createElement("a");a.className="music-shortcut";a.href=item.url;
+  const row=document.createElement("div");row.className="hbl-links-row";
+  const a=document.createElement("a");a.href=item.url;
   a.target="_blank";a.rel="noopener noreferrer";a.title=item.name+" öffnen";
   const symbol=document.createElement("span");symbol.textContent="♫";symbol.setAttribute("aria-hidden","true");
-  const external=document.createElement("span");external.className="music-external";
+  const external=document.createElement("span");external.className="hbl-links-arrow";
   external.textContent="↗";external.setAttribute("aria-hidden","true");
-  a.append(symbol,document.createTextNode(item.name),external);list.append(a);
+  const title=document.createElement("span");title.textContent=item.name;
+  a.append(symbol,title,external);row.append(a);list.append(row);
  }
 }
 function updateAdd(){
@@ -99,5 +101,6 @@ function init(){
  render();
 }
 window.hblRenderMusicLinks=render;
+window.hblCloseMusicEditor=()=>edit(false);
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

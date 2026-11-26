@@ -1,3 +1,7 @@
+## v10.0.4 – 26.11.2026 · Codex
+
+Musik ist der fünfte Reiter in „Meine Links“. Über „Links bearbeiten“ lassen sich eigene Links hinzufügen und eigene oder vorgegebene Links persönlich entfernen. In der Schuladministration erscheint der eigene Benutzername in den Gruppenlisten. Offene Anträge lassen sich direkt bestätigen oder ablehnen.
+
 ## v10.0.3 – 26.11.2026 · Codex
 
 Lehrkräfteansicht zeigt Schulstatus und Gruppen direkt. Hauptadmin kann angelegte Dashboard-Konten ansehen und einzelne bestätigte Konten zur Schule übernehmen. Vorhandene Freigabe- und Zuordnungsregeln bleiben in Kraft.

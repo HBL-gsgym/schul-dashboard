@@ -4,12 +4,14 @@
 const safe = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const EVENTS_TABLE="hbl_school_events",ROLES_TABLE="hbl_dashboard_admins";
 let events=[],isAdmin=false,isOwner=false,loadedUser=null,busy=false,lastEvents=null;
+let linkEditing=false,linkSaving=false;
 let linkCategory="orga",adminUsers=[],adminOpen=false,linkWorking=false;
 const categories=[
  {id:"orga",label:"Organisation",icon:"🏫"},
  {id:"ki",label:"KI",icon:"✨"},
  {id:"tools",label:"Digi-Tools",icon:"🧩"},
- {id:"material",label:"Materialien",icon:"📚"}
+ {id:"material",label:"Materialien",icon:"📚"},
+ {id:"music",label:"Musik",icon:"♫"}
 ];
 const defaults={
  orga:[
@@ -127,31 +129,48 @@ async function refreshSession(){
 const linkExtras=()=>Array.isArray(prepDone?.__linksV1)?prepDone.__linksV1.filter(x=>x&&categories.some(c=>c.id===x.category)&&/^https?:\/\//i.test(x.url||"")):[];
 function categoryLinks(id){
  return [
-  ...(defaults[id]||[]).map((x,i)=>({id:"default-"+id+"-"+i,title:x[0],url:x[1],icon:x[2],custom:false})),
+  ...(defaults[id]||[]).map((x,i)=>({id:"default-"+id+"-"+i,title:x[0],url:x[1],icon:x[2],custom:false})).filter(x=>!prepDone.__hiddenDefaultLinksV1?.includes(x.url)),
   ...linkExtras().filter(x=>x.category===id).map(x=>({...x,icon:"🔗",custom:true}))
  ];
 }
 function renderLinks(){
  const root=byId("hblLinksRoot");if(!root)return;
  const group=categories.find(c=>c.id===linkCategory)||categories[0],links=categoryLinks(group.id);
+ const music=group.id==="music";
+ const musicPanel=byId("hblMusicPanel");
+ musicPanel.hidden=!music;
+ if(!music)window.hblCloseMusicEditor();
  root.innerHTML='<div class="hbl-links-tabs" role="tablist" aria-label="Link-Kategorien">'+
   categories.map(c=>'<button type="button" role="tab" aria-selected="'+(group.id===c.id)+'" class="hbl-links-tab '+(group.id===c.id?"active":"")+'" data-cat="'+c.id+'"><span>'+c.icon+'</span><span>'+safe(c.label)+'</span></button>').join("")+
- '</div><div class="hbl-links-list">'+links.map(x=>
+ '</div>';
+ if(!music)root.innerHTML+='<div class="hbl-links-list">'+links.map(x=>
   '<div class="hbl-links-row"><a href="'+safe(x.url)+'" target="_blank" rel="noopener noreferrer"><span class="hbl-links-emoji">'+x.icon+'</span><span>'+safe(x.title)+'</span><span class="hbl-links-arrow">↗</span></a>'+
-  (x.custom?'<button type="button" class="hbl-link-delete" aria-label="Link entfernen: '+safe(x.title)+'" data-remove="'+safe(x.id)+'">✕</button>':"")+
+  (linkEditing?'<button type="button" class="hbl-link-delete" aria-label="Link entfernen: '+safe(x.title)+'" data-remove="'+safe(x.id)+'">Entfernen</button>':"")+
   '</div>').join("")+'</div>'+
- '<div class="hbl-links-actions"><button type="button" id="hblLinksAdd">+ Link hinzufügen</button><button type="button" id="hblLinksOpenAll">Alle dieser Kategorie öffnen ↗</button></div>'+
+ (!links.length?'<p>Keine Links in dieser Kategorie.</p>':'')+
+ '<div class="hbl-links-actions"><button type="button" id="hblLinksEdit" aria-expanded="'+linkEditing+'">'+(linkEditing?'Bearbeitung beenden':'Links bearbeiten')+'</button>'+
+ (linkEditing?'<button type="button" id="hblLinksAdd">+ Link hinzufügen</button>':links.length?'<button type="button" id="hblLinksOpenAll">Alle dieser Kategorie öffnen ↗</button>':'')+'</div>'+
  '<form class="hbl-links-form" id="hblLinksForm" hidden><label>Bezeichnung<input id="hblLinkName" maxlength="80" required placeholder="z. B. Schulbuchverlag"></label>'+
  '<label>Adresse (https://...)<input id="hblLinkUrl" type="url" maxlength="500" required placeholder="https://..."></label>'+
  '<div><button type="submit">Speichern</button><button type="button" id="hblLinksCancel">Abbrechen</button></div></form>'+
  '<p id="hblLinksStatus" class="hbl-links-status" role="status"></p>';
- root.querySelectorAll("[data-cat]").forEach(button=>button.addEventListener("click",()=>{linkCategory=button.dataset.cat;renderLinks();}));
+ root.querySelectorAll("[data-cat]").forEach(button=>button.addEventListener("click",()=>{
+   if(linkSaving)return;
+   linkCategory=button.dataset.cat;linkEditing=false;renderLinks();
+   root.querySelector('[aria-selected="true"]').focus();
+  }));
  root.querySelectorAll("[data-remove]").forEach(button=>button.addEventListener("click",()=>void removeLink(button.dataset.remove)));
- byId("hblLinksAdd").onclick=()=>{
+ if(music)return;
+ byId("hblLinksEdit").onclick=()=>{
+  if(linkSaving)return;
+  linkEditing=!linkEditing;renderLinks();byId("hblLinksEdit").focus();
+ };
+ const add=byId("hblLinksAdd"),openAll=byId("hblLinksOpenAll");
+ if(add)add.onclick=()=>{
   byId("hblLinksForm").hidden=false;byId("hblLinkName").focus();
  };
  byId("hblLinksCancel").onclick=()=>{byId("hblLinksForm").hidden=true;};
- byId("hblLinksOpenAll").onclick=()=>{
+ if(openAll)openAll.onclick=()=>{
   const links=categoryLinks(linkCategory);
   const tabs=links.map(()=>window.open("about:blank","_blank"));
   tabs.forEach((tab,i)=>{if(tab){try{tab.opener=null;}catch(_){ }tab.location.href=links[i].url;}});
@@ -160,6 +179,7 @@ function renderLinks(){
  byId("hblLinksForm").onsubmit=e=>{e.preventDefault();void addLink();};
 }
 async function addLink(){
+ if(linkSaving)return;
  const title=byId("hblLinkName")?.value.trim(),input=byId("hblLinkUrl")?.value.trim();
  try{
   if(!title||title.length>80||!input)throw Error("Titel und Adresse fehlen.");
@@ -170,17 +190,26 @@ async function addLink(){
   if(previous.length>=100)throw Error("Maximal 100 eigene Links.");
   const id="l"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   prepDone.__linksV1=[...previous,{id,category:linkCategory,title,url:url.href.slice(0,500)}];
-  try{await savePrepFile();renderLinks();}
+  linkSaving=true;
+  try{await savePrepFile();renderLinks();byId("hblLinksAdd")?.focus();}
   catch(e){prepDone.__linksV1=previous;throw e;}
+  finally{linkSaving=false;}
  }catch(e){const p=byId("hblLinksStatus");if(p)p.textContent=e.message;}
 }
 async function removeLink(id){
- const previous=Array.isArray(prepDone.__linksV1)?prepDone.__linksV1.slice():[];
- const item=previous.find(x=>x.id===id);
+ if(linkSaving)return;
+ const item=categoryLinks(linkCategory).find(x=>x.id===id);
+ if(!serverReady){byId("hblLinksStatus").textContent="Speicherung noch nicht bereit.";return;}
  if(!item||!confirm('Link „'+item.title+'“ entfernen?'))return;
- prepDone.__linksV1=previous.filter(x=>x.id!==id);
- try{await savePrepFile();renderLinks();}
- catch(e){prepDone.__linksV1=previous;renderLinks();byId("hblLinksStatus").textContent=e.message;}
+ const key=item.custom?"__linksV1":"__hiddenDefaultLinksV1";
+ const previous=prepDone[key];
+ prepDone[key]=item.custom?previous.filter(x=>x.id!==id):[...(previous||[]),item.url];
+ linkSaving=true;
+ try{await savePrepFile();renderLinks();byId("hblLinksEdit").focus();}
+ catch(e){
+  if(previous===undefined)delete prepDone[key];else prepDone[key]=previous;
+  byId("hblLinksStatus").textContent=e.message;
+ }finally{linkSaving=false;}
 }
 window.hblAfterPrepLoad=function(){renderLinks();};
 window.hblDecorateSchoolMilestones=function(aside,year){
@@ -210,7 +239,7 @@ function mountEventEditor(){
  let el=byId("hblEventOverlay");if(el)return el;
  el=document.createElement("div");el.id="hblEventOverlay";el.className="hbl-v56-overlay";el.hidden=true;
  el.innerHTML='<div class="hbl-v56-dialog" role="dialog" aria-modal="true" aria-labelledby="hblEventDialogTitle">'+
- '<button type="button" class="hbl-v56-close" id="hblEventClose" aria-label="Schließen">✕</button>'+
+ '<button type="button" class="hbl-v56-close" id="hblEventClose" aria-label="Schließen">Entfernen</button>'+
  '<h2 id="hblEventDialogTitle">Schulveranstaltung</h2>'+
  '<form id="hblEventForm"><label>Veranstaltung<input id="hblEventTitle" maxlength="120" required placeholder="z. B. Projekttag"></label>'+
  '<div class="hbl-v56-two"><label>Von<input type="date" id="hblEventStart" required></label><label>Bis<input type="date" id="hblEventEnd" required></label></div>'+
@@ -293,7 +322,7 @@ async function openAdminUsers(){
  if(!overlay){
   overlay=document.createElement("div");overlay.id="hblAdminsOverlay";overlay.className="hbl-v56-overlay";overlay.hidden=true;
   overlay.innerHTML='<div class="hbl-v56-dialog" role="dialog" aria-modal="true" aria-labelledby="hblAdminsTitle">'+
-   '<button type="button" id="hblAdminsClose" class="hbl-v56-close" aria-label="Schließen">✕</button>'+
+   '<button type="button" id="hblAdminsClose" class="hbl-v56-close" aria-label="Schließen">Entfernen</button>'+
    '<h2 id="hblAdminsTitle">Benutzer- und Chatverwaltung</h2>'+
    '<p class="hbl-v56-note">Registrierte Lehrkräfte erhalten hier getrennte Rechte für den Schulkalender und den Kollegium-Chat. Nur du kannst diese Freigaben ändern.</p>'+
    '<section class="hbl-invite-box"><h3>Kollegen einladen</h3>'+

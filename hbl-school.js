@@ -13,7 +13,12 @@
  };
  const groups=()=>overview?.groups||[];
  const groupName=id=>(adminData?.groups||groups()).find(g=>g.id===id)?.name||'';
- const memberName=m=>[m.first_name,m.last_name].filter(Boolean).join(' ')||m.name||'Lehrkraft';
+ const memberName=m=>{
+  const id=m.user_id||m.id;
+  if(id&&id===window.hblCloudUser?.()?.id&&window.hblCurrentUsername)return window.hblCurrentUsername;
+  const member=adminData?.members?.find(item=>item.user_id===id)||m;
+  return [member.first_name,member.last_name].filter(Boolean).join(' ')||m.name||'Lehrkraft';
+ };
  function input(label,name,type='text',value='',required=false){
   const row=node('label',label),field=node('input');Object.assign(field,{name,type,value,required});row.append(field);return row;
  }
@@ -108,7 +113,7 @@
    row.append(node('summary','Zuordnungen verwalten'));
    const record=node('article');
    record.dataset.memberSearch=row.dataset.memberSearch;
-   record.append(node('strong',m.user_id===window.hblCloudUser?.()?.id?(window.hblCurrentUsername||memberName(m)):memberName(m)),
+   record.append(node('strong',memberName(m)),
     node('span',' · '+statuses[m.status]),node('p',(m.status==='active'?'Gruppen: ':'Hinterlegte Gruppen: ')+(groupLabels.join(', ')||'Keine')));
 
    if(m.user_id!==window.hblCloudUser?.()?.id){
@@ -158,7 +163,21 @@
     const row=node('article');row.append(node('p',[kinds[r.kind],memberName(r),r.proposed_name||groupName(r.group_id)].filter(Boolean).join(' · ')));
     const own=r.user_id===window.hblCloudUser?.()?.id;
     if(own&&(!adminData.sole_admin||r.kind==='join'))row.append(node('p','Eigener Antrag. Ein anderer Schuladmin muss entscheiden.'));
-    else row.append(form([select('Entscheidung','approved',[['true','Bestätigen'],['false','Ablehnen']])],'Antrag entscheiden',d=>change('decide',{request_id:r.id,approved:d.get('approved')==='true'})));box.append(row);
+    else {
+     const actions=node('div'),status=node('span');
+     status.setAttribute('role','status');
+     for(const [label,approved] of [['Bestätigen',true],['Ablehnen',false]]){
+      actions.append(button(label,async()=>{
+       const buttons=actions.querySelectorAll('button');
+       buttons.forEach(b=>b.disabled=true);
+       status.textContent='Wird verarbeitet …';
+       try{await change('decide',{request_id:r.id,approved});}
+       catch(error){status.textContent=error.message;buttons.forEach(b=>b.disabled=false);}
+      }));
+     }
+     row.append(actions,status);
+    }
+    box.append(row);
    }
    if(!adminData.requests.length)box.append(node('p','Keine offenen Anträge.'));
    host.append(box);return;
