@@ -1,3 +1,7 @@
+## v10.0.7 – 27.11.2026 · Codex
+
+Die automatische Arbeitszeiterfassung beginnt mit dem ersten Unterrichts- oder Aufsichtsblock, der bei oder nach der Aktivierung startet. Ein bereits laufender Block bleibt vollständig aus der automatischen Statistik. Mit Regressionstests für Aktivierungsgrenze und Pausen geprüft.
+
 ## v10.0.6 – 27.11.2026 · Codex
 
 Private Arbeitszeiterfassung mit geräteübergreifender Stoppuhr, automatischen Planzeiten und Wochenübersicht.

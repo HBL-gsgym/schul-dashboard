@@ -20,7 +20,12 @@
   }
   return sum;
  }
- root.HblWorkTimeModel={totals};
+ function dayTotals(manual,scheduled,dayStart,dayEnd,activation,now){
+  // Ob ein Planblock zählt, entscheidet sein Beginn, auch wenn er noch läuft.
+  const automatic=scheduled.filter(interval=>interval.start>=activation);
+  return totals([...manual,...automatic],Math.max(activation,dayStart),Math.min(now,dayEnd));
+ }
+ root.HblWorkTimeModel={totals,dayTotals};
  if(typeof document==='undefined')return;
 
  const calendar=root.HblCalendarModel;
@@ -119,7 +124,7 @@
    const automatic=root.hblWorkSchedule(date).map(({kind,start,end})=>({
     kind,start:calendar.berlinInstant(date,start),end:calendar.berlinInstant(date,end)
    }));
-   return {date,...totals([...manual,...automatic],Math.max(activation,midnight(date)),Math.min(now,midnight(calendar.add(date,1))))};
+   return {date,...dayTotals(manual,automatic,midnight(date),midnight(calendar.add(date,1)),activation,now)};
   });
   const aggregate=Object.fromEntries(keys.map(key=>[key,rows.reduce((result,row)=>result+row[key],0)]));
   const total=sum(aggregate),peak=Math.max(...rows.map(sum));
