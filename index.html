@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="10.0.9">
+<meta name="hbl-version" content="10.0.10">
 <title>Schul-Dashboard HBL · v10.0.4</title>
 <style>
 #hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
@@ -1401,7 +1401,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="stylesheet" href="./hbl-v56.css?v=10.0.4">
 <link rel="stylesheet" href="./hbl-v57.css?v=5.9.7-chat">
 <link rel="stylesheet" href="./hbl-v58.css?v=5.8">
-<link rel="stylesheet" href="./hbl-v59.css?v=5.9.11-courses">
+<link rel="stylesheet" href="./hbl-v59.css?v=10.0.10">
 <link rel="manifest" href="./manifest.webmanifest?v=8.1.0">
 <meta name="theme-color" content="#253b60">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1411,7 +1411,7 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="icon" href="./hbl-icon.svg?v=8.1.0" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="./hbl-icon-180.png?v=8.1.0">
 <script src="./hbl-course-ids.js?v=5.9.10"></script>
-<script src="./hbl-courses.js?v=5.9.13"></script>
+<script src="./hbl-courses.js?v=10.0.10"></script>
 <script src="./hbl-grades.js?v=5.9.20"></script>
 <script src="./hbl-participation-grades.js?v=7.4.0"></script>
 <script src="./hbl-class-rosters.js?v=10.0.5"></script>
@@ -2730,7 +2730,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 27. November 2026">v10.0.9 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 27. November 2026">v10.0.10 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div id="hblWorkControls" class="hbl-work-controls" role="group" aria-label="Arbeitszeit">
               <div id="hblWorkStarts" class="hbl-work-actions">
@@ -2986,7 +2986,7 @@ function getParticipationRoot(){
 function partCourseData(create=false){
  if(!currentParticipationCourse)return null;
  const root=getParticipationRoot();
- if(!root.classes[currentParticipationCourse]&&create){root.classes[currentParticipationCourse]={students:[],dates:[],marks:{},finals:{}};if(serverReady&&hblCourseRosterKey(currentParticipationCourse))hblEnsureClassRosters();}
+ if(!root.classes[currentParticipationCourse]&&create&&Object.hasOwn(prepDone.__coursesV1?.courses||{},currentParticipationCourse)){root.classes[currentParticipationCourse]={students:[],dates:[],marks:{},finals:{}};if(serverReady&&hblCourseRosterKey(currentParticipationCourse))hblEnsureClassRosters();}
  const c=root.classes[currentParticipationCourse];
  if(!c)return {students:[],dates:[],marks:{},finals:{}};
  if(!Array.isArray(c.students))c.students=[];
@@ -3015,7 +3015,7 @@ function initializeCourseStudents(c){
 function initializeParticipationRoster(){
  // Erst nach erfolgreichem Laden vom PowerShell-Server anlegen.
  // Niemals vorhandene Namen oder Bewertungen überschreiben.
- if(!serverReady||!currentParticipationCourse)return;
+ if(!serverReady||!currentParticipationCourse||!Object.hasOwn(prepDone.__coursesV1?.courses||{},currentParticipationCourse))return;
  if(hblCourseRosterKey(currentParticipationCourse))hblEnsureClassRosters();
  const c=partCourseData(true);
  let changed=initializeCourseStudents(c);
@@ -3132,6 +3132,9 @@ function setParticipationStatus(msg,error=false){
  if(el){el.textContent=msg;el.classList.toggle("bad",error);}
 }
 function participationCanEdit(){
+ if(serverReady&&!Object.hasOwn(prepDone.__coursesV1?.courses||{},currentParticipationCourse)){
+  setParticipationStatus('Dieser Kurs ist nicht verfügbar.',true);return false;
+ }
  if(!serverReady){setParticipationStatus("Nicht verbunden: Daten konnten nicht gespeichert werden. TESTVERSION · Browser-Speicherung aktiv.",true);return false;}
  return true;
 }
@@ -3507,6 +3510,11 @@ function onMAClick(event){
 
 function renderParticipationTable(){
  const host=document.getElementById("participationTableHost");if(!host||!currentParticipationCourse)return;
+ if(serverReady&&!Object.hasOwn(prepDone.__coursesV1?.courses||{},currentParticipationCourse)){
+  document.getElementById('participationGradePanel')?.replaceChildren();
+  host.textContent='Dieser Kurs ist nicht verfügbar.';
+  return;
+ }
  const c=partCourseData(),students=HblClassRosters.sorted(c.students.map((student,index)=>({...student,number:HblClassRosters.numberOf(student,index)})));
  refreshParticipationMonthSelector(c); // Erst gültigen Monat ermitteln, dann Halbjahr zuordnen.
  renderParticipationGradePanel(c);
@@ -3699,6 +3707,16 @@ window.hblWriteCourses=async function(catalog){
  if(prepDone[STORE_KEY]?.slots)prepDone[STORE_KEY].slots=HblCourses.align(getSettings().slots,catalog);
  hblApplyTimetable();reconcileAll();renderParticipationOverview();renderParticipationTable();
  await savePrepFile();
+};
+window.hblDeleteCourse=async function(id){
+ if(!serverReady||!navigator.onLine||window.hblSyncState?.state==='error')
+  throw Error('Bitte zuerst synchronisieren, bevor du einen Kurs löschst.');
+ const change=HblCourses.remove(getCourseCatalog(),getSettings().slots,prepDone.__participation,id);
+ prepDone.__coursesV1=change.catalog;
+ if(change.participation)prepDone.__participation=change.participation;
+ try{await savePrepFile();}
+ catch(_){throw Error('Löschung konnte noch nicht mit der Cloud abgeglichen werden. Bitte prüfe den Speicherstatus.');}
+ finally{hblApplyTimetable();HblCoursePage.refresh();renderParticipationTable();}
 };
 function activeEntries(settings){
  const list=new Map();

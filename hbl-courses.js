@@ -39,6 +39,19 @@ function update(catalog,change,slots={},newId=()=> 'kurs-'+root.crypto.randomUUI
  result.courses[id]={...old,subject,group,archived:!!archived};
  return {catalog:result,id};
 }
+function remove(catalog,slots,participation,id){
+ if(!identities().valid(id)||!Object.hasOwn(catalog.courses,id))
+  throw Error('Der Kurs ist nicht mehr vorhanden. Bitte neu laden.');
+ if(count(slots,id))
+  throw Error('Der Kurs ist noch im Stundenplan. Entferne zuerst seine Belegungen.');
+ const courses={...catalog.courses};
+ delete courses[id];
+ if(!participation?.classes||!Object.hasOwn(participation.classes,id))
+  return {catalog:{...catalog,courses},participation};
+ const classes={...participation.classes};
+ delete classes[id];
+ return {catalog:{...catalog,courses},participation:{...participation,classes}};
+}
 function assign(slots,catalog,id,{day,block,week,room=''}){
  const course=catalog.courses[id];
  if(!course||course.archived)throw Error('Bitte einen aktiven Kurs auswählen.');
@@ -60,7 +73,7 @@ function status(message){byId('hblCourseStatus').textContent=message;}
 function render(){
  const {catalog,slots}=root.hblReadCourses();
  const rows=Object.entries(catalog.courses).sort((a,b)=>Number(a[1].archived)-Number(b[1].archived)||(a[1].subject+' '+a[1].group).localeCompare(b[1].subject+' '+b[1].group,'de'));
- byId('hblCourseList').innerHTML=rows.length?rows.map(([id,c])=>'<article class="hbl-course-row"><div><strong>'+esc(c.subject)+' · '+esc(c.group)+'</strong><small>'+(c.archived?'Archiviert':count(slots,id)+' A/B-Belegungen im Stundenplan')+'</small></div><div class="hbl-course-actions"><button type="button" data-course-edit="'+esc(id)+'">Bearbeiten</button><button type="button" data-course-archive="'+esc(id)+'">'+(c.archived?'Wiederherstellen':'Archivieren')+'</button><a href="?kurs='+encodeURIComponent(id)+'">Kurs öffnen</a></div></article>').join(''):'<p>Noch keine Kurse. Lege deinen ersten Kurs unten an – auch ohne Stundenplan.</p>';
+ byId('hblCourseList').innerHTML=rows.length?rows.map(([id,c])=>'<article class="hbl-course-row"><div><strong>'+esc(c.subject)+' · '+esc(c.group)+'</strong><small>'+(c.archived?'Archiviert':count(slots,id)+' A/B-Belegungen im Stundenplan')+'</small></div><div class="hbl-course-actions"><button type="button" data-course-edit="'+esc(id)+'">Bearbeiten</button><button type="button" data-course-archive="'+esc(id)+'">'+(c.archived?'Wiederherstellen':'Archivieren')+'</button><a href="?kurs='+encodeURIComponent(id)+'">Kurs öffnen</a><button type="button" data-course-delete="'+esc(id)+'">Löschen</button></div></article>').join(''):'<p>Noch keine Kurse. Lege deinen ersten Kurs unten an – auch ohne Stundenplan.</p>';
 }
 function resetForm(){editing=null;byId('hblCourseForm').reset();byId('hblCourseFormTitle').textContent='Neuen Kurs anlegen';byId('hblCourseCancel').hidden=true;}
 async function save(change){
@@ -75,11 +88,35 @@ async function save(change){
  }catch(error){status(error.message||'Speichern fehlgeschlagen.');}
  finally{working=false;overlay.querySelectorAll('button,input').forEach(e=>e.disabled=false);}
 }
+async function deleteCourse(id){
+ const {catalog,slots}=root.hblReadCourses();
+ const course=catalog.courses[id];
+ if(!course){render();status('Der Kurs ist nicht mehr vorhanden.');return;}
+ if(count(slots,id)){
+  status('Der Kurs ist noch im Stundenplan. Entferne zuerst seine Belegungen.');
+  return;
+ }
+ if(!root.confirm('„'+course.subject+' · '+course.group+'“ endgültig löschen?\n\nDie Kursnotiz, der Sitzplan sowie die Noten und Mitarbeit dieses Kurses werden entfernt. Gemeinsame Klassenlisten und andere Kurse bleiben erhalten. Zum späteren Nachschlagen kannst du stattdessen archivieren.'))return;
+ const overlay=byId('hblCourseManager');
+ working=true;
+ overlay.querySelectorAll('button:not(.hbl-plan-close),input').forEach(element=>element.disabled=true);
+ status('Kurs wird gelöscht …');
+ try{
+  await root.hblDeleteCourse(id);
+  resetForm();render();status('Kurs gelöscht.');
+ }catch(error){
+  render();status(error.message||'Löschen fehlgeschlagen. Bitte den Speicherstatus prüfen.');
+ }finally{
+  working=false;
+  overlay.querySelectorAll('button,input').forEach(element=>element.disabled=false);
+  byId('hblCourseStatus').focus();
+ }
+}
 function open(){
  let overlay=byId('hblCourseManager');
  if(!overlay){
   overlay=root.document.createElement('div');overlay.id='hblCourseManager';overlay.className='hbl-plan-overlay';overlay.hidden=true;
-  overlay.innerHTML='<section class="hbl-plan-dialog hbl-course-dialog" role="dialog" aria-modal="true" aria-labelledby="hblCourseTitle"><button type="button" class="hbl-plan-close" aria-label="Kursverwaltung schließen">✕</button><h2 id="hblCourseTitle">Meine Kurse</h2><p class="hbl-plan-info">Dein privater Kursbestand. Kurse bleiben auch ohne Stundenplaneintrag erhalten. Schüler und Bewertungen bleiben ihrem Kurs zugeordnet.</p><div id="hblCourseList"></div><form id="hblCourseForm"><h3 id="hblCourseFormTitle">Neuen Kurs anlegen</h3><label>Fach<input id="hblCourseSubject" required maxlength="60" autocomplete="off" placeholder="z. B. Mathematik"></label><label>Klasse / Kurs<input id="hblCourseGroup" required maxlength="30" autocomplete="off" placeholder="z. B. 9a oder GK 12"></label><div class="hbl-plan-buttons"><button type="submit" class="hbl-plan-primary">Kurs speichern</button><button type="button" id="hblCourseCancel" hidden>Abbrechen</button></div></form><p id="hblCourseStatus" role="status" aria-live="polite"></p></section>';
+  overlay.innerHTML='<section class="hbl-plan-dialog hbl-course-dialog" role="dialog" aria-modal="true" aria-labelledby="hblCourseTitle"><button type="button" class="hbl-plan-close" aria-label="Kursverwaltung schließen">✕</button><h2 id="hblCourseTitle">Meine Kurse</h2><p class="hbl-plan-info">Dein privater Kursbestand. Kurse bleiben auch ohne Stundenplaneintrag erhalten. Schüler und Bewertungen bleiben ihrem Kurs zugeordnet.</p><div id="hblCourseList"></div><form id="hblCourseForm"><h3 id="hblCourseFormTitle">Neuen Kurs anlegen</h3><label>Fach<input id="hblCourseSubject" required maxlength="60" autocomplete="off" placeholder="z. B. Mathematik"></label><label>Klasse / Kurs<input id="hblCourseGroup" required maxlength="30" autocomplete="off" placeholder="z. B. 9a oder GK 12"></label><div class="hbl-plan-buttons"><button type="submit" class="hbl-plan-primary">Kurs speichern</button><button type="button" id="hblCourseCancel" hidden>Abbrechen</button></div></form><p id="hblCourseStatus" tabindex="-1" role="status" aria-live="polite"></p></section>';
   root.document.body.appendChild(overlay);
   const close=()=>{overlay.hidden=true;returnFocus?.focus();};
   overlay.querySelector('.hbl-plan-close').onclick=close;
@@ -98,6 +135,8 @@ function open(){
   byId('hblCourseList').onclick=e=>{
    if(working)return;
    const edit=e.target.closest('[data-course-edit]'),archive=e.target.closest('[data-course-archive]');
+   const deletion=e.target.closest('[data-course-delete]');
+   if(deletion){void deleteCourse(deletion.dataset.courseDelete);return;}
    if(edit){
     editing=edit.dataset.courseEdit;const c=root.hblReadCourses().catalog.courses[editing];if(!c)return;
     byId('hblCourseSubject').value=c.subject;byId('hblCourseGroup').value=c.group;
@@ -107,7 +146,7 @@ function open(){
  }
  returnFocus=root.document.activeElement;resetForm();render();status('');overlay.hidden=false;overlay.querySelector('.hbl-plan-close').focus();
 }
-const api={reconcile,align,count,update,assign,identityClasses,open};
+const api={reconcile,align,count,update,remove,assign,identityClasses,open};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 else {root.HblCourses=api;root.hblOpenCourseManager=open;}
 })(typeof window!=='undefined'?window:globalThis);

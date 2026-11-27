@@ -151,3 +151,6 @@
 #hblPlanSubjectWrap[hidden],#hblPlanGroupWrap[hidden],#hblCourseCancel[hidden]{display:none!important}
 @media(max-width:710px){.hbl-course-actions button,.hbl-course-actions a{min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}.hbl-course-dialog input{font-size:16px}}
 .hbl-course-dialog .hbl-plan-info{color:var(--muted)}
+
+.hbl-course-actions button[data-course-delete]{color:var(--danger,#a52733)}
+body.dark .hbl-course-actions button[data-course-delete]{color:#ff9ca3}

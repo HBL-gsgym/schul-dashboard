@@ -1,3 +1,7 @@
+## v10.0.10 – 27.11.2026 · Codex
+
+In „Meine Kurse“ lassen sich aktive und archivierte Kurse nach Bestätigung löschen. Stundenplanbelegungen müssen vorher entfernt werden. Kursbezogene Daten werden zusammen gespeichert, gemeinsame Klassenlisten bleiben erhalten. Alte Mitarbeit-Links legen gelöschte Kurse nicht erneut an.
+
 ## v10.0.9 – 27.11.2026 · Codex
 
 Arbeitszeit mit Organisation/Sonstiges, Konferenz/Fortbildung und manuell startbarer Aufsicht. Automatische und manuelle Aufsicht werden bei Überschneidungen einmal gezählt. Die Wochenstatistik beginnt pro Konto beim ersten Öffnen der neuen Version bei null. Frühere Zeiten bleiben gespeichert.
