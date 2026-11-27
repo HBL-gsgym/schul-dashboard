@@ -6,7 +6,9 @@
 [data-activity=preparation]{--hbl-work-color:#226147}
 [data-activity=grading]{--hbl-work-color:#7d460d}
 [data-activity=organization]{--hbl-work-color:#2855a1}
-.hbl-work-controls button[data-activity],#hblWorkActivity[data-activity]:not([data-activity=manual]),.hbl-work-totals span[data-activity]:is([data-activity=preparation],[data-activity=grading],[data-activity=organization]){background:var(--hbl-work-color);border-color:transparent;color:white}
+[data-activity=conference]{--hbl-work-color:#624487}
+[data-activity=duty]{--hbl-work-color:#166273}
+.hbl-work-controls button[data-activity],#hblWorkActivity[data-activity],.hbl-work-totals span[data-activity]:is([data-activity=preparation],[data-activity=grading],[data-activity=organization],[data-activity=conference],[data-activity=duty]){background:var(--hbl-work-color);border-color:transparent;color:white}
 #hblWorkActivity{padding:.3rem .5rem;border-radius:.55rem;font-size:.77rem;font-weight:750}
 .hbl-work-controls #hblWorkStop{background:#ac262d;border-color:#ac262d;color:#fff}
 #hblWorkClock{font-size:1.025rem;font-weight:750;font-variant-numeric:tabular-nums}

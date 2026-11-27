@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="10.0.8">
+<meta name="hbl-version" content="10.0.9">
 <title>Schul-Dashboard HBL · v10.0.4</title>
 <style>
 #hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
@@ -1428,8 +1428,8 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="stylesheet" href="./hbl-calendar.css?v=9.1.0">
 <script src="./hbl-school-calendar.js?v=9.1.0"></script>
 <script src="./hbl-calendar-model.js?v=9.1.0"></script>
-<link rel="stylesheet" href="./hbl-work-time.css?v=10.0.8">
-<script src="./hbl-work-time.js?v=10.0.8"></script>
+<link rel="stylesheet" href="./hbl-work-time.css?v=10.0.9">
+<script src="./hbl-work-time.js?v=10.0.9"></script>
 <script src="./hbl-school.js?v=10.0.4"></script>
 <link rel="stylesheet" href="./hbl-school.css?v=10.0.3">
 <script src="./hbl-calendar.js?v=9.1.0"></script>
@@ -2730,13 +2730,15 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 27. November 2026">v10.0.8 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 27. November 2026">v10.0.9 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div id="hblWorkControls" class="hbl-work-controls" role="group" aria-label="Arbeitszeit">
               <div id="hblWorkStarts" class="hbl-work-actions">
                 <button type="button" data-work-start="preparation" data-activity="preparation" aria-label="Vorbereitung starten" disabled>Vorbereitung</button>
                 <button type="button" data-work-start="grading" data-activity="grading" aria-label="Korrektur starten" disabled>Korrektur</button>
-                <button type="button" data-work-start="organization" data-activity="organization" aria-label="Organisation starten" disabled>Organisation</button>
+                <button type="button" data-work-start="organization" data-activity="organization" aria-label="Organisation oder Sonstiges starten" disabled>Organisation/Sonstiges</button>
+                <button type="button" data-work-start="conference" data-activity="conference" aria-label="Konferenz oder Fortbildung starten" disabled>Konferenz/Fortbildung</button>
+                <button type="button" data-work-start="supervision" data-activity="duty" aria-label="Aufsicht starten" disabled>Aufsicht</button>
                 <button type="button" id="hblWorkOverview" aria-label="Arbeitszeitübersicht öffnen" title="Arbeitszeitübersicht" disabled>Übersicht</button>
               </div>
               <div id="hblWorkRunning" class="hbl-work-actions" hidden>

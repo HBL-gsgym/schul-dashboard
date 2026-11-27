@@ -1,3 +1,7 @@
+## v10.0.9 – 27.11.2026 · Codex
+
+Arbeitszeit mit Organisation/Sonstiges, Konferenz/Fortbildung und manuell startbarer Aufsicht. Automatische und manuelle Aufsicht werden bei Überschneidungen einmal gezählt. Die Wochenstatistik beginnt pro Konto beim ersten Öffnen der neuen Version bei null. Frühere Zeiten bleiben gespeichert.
+
 ## v10.0.8 – 27.11.2026 · Codex
 
 Die Arbeitszeit sitzt kompakt im Hero. Vorbereitung, Korrektur und Organisation lassen sich separat starten und auswerten. Während der Timer läuft, zeigt der Hero Kategorie, Laufzeit und Stopp. Vorhandene manuelle Zeiten ohne Kategorie bleiben als sonstige Arbeit erhalten.
