@@ -1,0 +1,13 @@
+.hbl-work-actions,.hbl-work-week,.hbl-work-totals{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.hbl-work-actions button,.hbl-work-week button{min-height:42px}
+.hbl-work-tile #hblWorkPrimary{background:#17643e;border:1px solid #17643e;color:#fff;font-weight:800;padding:.7rem 1rem;border-radius:.7rem}
+.hbl-work-tile #hblWorkPrimary[data-running=true]{background:var(--panel2);color:var(--text);border-color:var(--line)}
+.hbl-work-tile #hblWorkPrimary:disabled{opacity:.65}
+#hblWorkClock{font-size:1.35rem;font-weight:750;font-variant-numeric:tabular-nums}
+#hblWorkStatus:empty{display:none}
+.hbl-work-dialog{width:min(52rem,calc(100% - 1.5rem));max-height:calc(100dvh - 2rem);overflow:auto}
+.hbl-work-dialog .hbl-work-week{justify-content:space-between}
+.hbl-work-totals span{background:var(--panel2);padding:.35rem .6rem;border-radius:.45rem}
+.hbl-work-table{overflow-x:auto}
+.hbl-work-table table{border-collapse:collapse;width:100%;white-space:nowrap}
+.hbl-work-table :is(th,td){padding:.55rem;text-align:left;border-bottom:1px solid var(--line)}

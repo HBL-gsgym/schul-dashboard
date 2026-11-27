@@ -123,6 +123,15 @@ function isSchool(date){
  if(date.getDay()===0||date.getDay()===6)return false;
  return schoolDateDescription(key,year,publicHolidays(date.getFullYear())).kind==="school";
 }
+function scheduledDuties(date){
+ if(!isSchool(date))return [];
+ const day=date.getDay(),week=weekCycle(date),key=taskDateString(date),slots=dutyStore();
+ return DUTIES.flatMap(type=>{
+  const place=slots[day+"-"+type.id]?.[week]?.place;
+  return place?.trim()&&!window.hblCancelled?.(key,type.after)?[{type,place}]:[];
+ });
+}
+window.hblScheduledDuties=scheduledDuties;
 function upcomingEvents(){
  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
  const cur=now.getHours()*60+now.getMinutes(),out=[];
@@ -134,15 +143,10 @@ function upcomingEvents(){
    if(offset===0&&block.e<=cur)continue;
    event.push({kind:"lesson",date,offset,s:block.s,e:block.e,block});
   }
-  const day=date.getDay(),week=weekCycle(date);
-  for(const type of DUTIES){
-   const afterBlock=type.id==="breakfast"?1:2;
-   if(typeof window.hblCancelled==="function"&&window.hblCancelled(taskDateString(date),afterBlock))continue;
-   const v=dutyStore()[day+"-"+type.id]?.[week];
-   if(!v||!v.place||!v.place.trim())continue;
+  for(const {type,place} of scheduledDuties(date)){
    const s=tmin(type.start),e=tmin(type.end);
    if(offset===0&&e<=cur)continue;
-   event.push({kind:"duty",date,offset,s,e,type,place:v.place});
+   event.push({kind:"duty",date,offset,s,e,type,place});
   }
   out.push(...event.sort((a,b)=>a.s-b.s));
  }

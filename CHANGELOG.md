@@ -1,3 +1,7 @@
+## v10.0.6 – 27.11.2026 · Codex
+
+Private Arbeitszeiterfassung mit geräteübergreifender Stoppuhr, automatischen Planzeiten und Wochenübersicht.
+
 ## v10.0.5 – 26.11.2026 · Codex
 
 Schülerlisten lassen sich auch bei noch nicht abgeglichenen Fachkursen ergänzen und erneut nach Nummer importieren. Beim Hinzufügen wird die erste freie Klassenbuchnummer vorgeschlagen. Gleiche Namen erzeugen bei bereits bekannten Schüler-IDs keinen Abgleichkonflikt. Mit synthetischen Listen und vorhandenen Bewertungen geprüft.

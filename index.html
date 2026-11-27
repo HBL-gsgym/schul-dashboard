@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="hbl-version" content="10.0.5">
+<meta name="hbl-version" content="10.0.6">
 <title>Schul-Dashboard HBL · v10.0.4</title>
 <style>
 #hblStartup{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:24px;background:var(--start-bg,#f4f6f8);color:var(--start-ink,#18202a);text-align:center;font-family:system-ui,sans-serif}
@@ -1428,11 +1428,13 @@ body.dark .hbl-slot-item.shared{background:#253247;color:#ecf2fa}
 <link rel="stylesheet" href="./hbl-calendar.css?v=9.1.0">
 <script src="./hbl-school-calendar.js?v=9.1.0"></script>
 <script src="./hbl-calendar-model.js?v=9.1.0"></script>
+<link rel="stylesheet" href="./hbl-work-time.css?v=10.0.6">
+<script src="./hbl-work-time.js?v=10.0.6"></script>
 <script src="./hbl-school.js?v=10.0.4"></script>
 <link rel="stylesheet" href="./hbl-school.css?v=10.0.3">
 <script src="./hbl-calendar.js?v=9.1.0"></script>
-<script defer src="./cloud.js?v=8.1.0"></script>
-<script defer src="./hbl-v55.js?v=7.0.8"></script>
+<script defer src="./cloud.js?v=10.0.6"></script>
+<script defer src="./hbl-v55.js?v=10.0.6"></script>
 <script defer src="./hbl-v56.js?v=10.0.4"></script>
 <script defer src="./hbl-v57.js?v=5.9.7-chat"></script>
 <script defer src="./hbl-v58.js?v=5.9.5"></script>
@@ -1842,6 +1844,12 @@ function dayBlocks(date){
   return {...b,entries:unique,s:tmin(b.start),e:tmin(b.end)};
  }).filter(b=>b.entries.length&&!(typeof window.hblCancelled==="function"&&window.hblCancelled(key,b.n)));
 }
+window.hblWorkSchedule=function(isoDate){
+ const date=new Date(isoDate+"T12:00:00");
+ const lessons=dayBlocks(date).map(block=>({kind:"lesson",start:block.start,end:block.end}));
+ const duties=(window.hblScheduledDuties?.(date)||[]).map(({type})=>({kind:"duty",start:type.start,end:type.end}));
+ return [...lessons,...duties];
+};
 const hblUnchangedHtml=new WeakMap();
 function hblUpdateHtml(element,markup){
  if(hblUnchangedHtml.get(element)===markup)return;
@@ -2332,6 +2340,7 @@ window.hblOpenSlotDetails=function(day,block){
  * Die Klassen-/Kursansichten werden bewusst nicht verändert.
  */
 const HBL_TILE_SPECS=[
+ {id:"arbeitszeit",selector:".hbl-work-tile",title:"Arbeitszeit",span:12},
  {id:"unterricht",selector:".planninggrid > .planningpanel:nth-child(1)",title:"Heute & Ausblick",span:3},
  {id:"aufgaben",selector:".planninggrid > .planningpanel:nth-child(2)",title:"Korrekturen & Aufgaben",span:3},
  {id:"vorbereitung-diese",selector:".planninggrid > .planningpanel:nth-child(3)",title:"Vorbereitung – diese Woche",span:3},
@@ -2589,7 +2598,7 @@ function restoreDashboardTileLayout(data){
  {
   // Nur die bekannten IDs sortieren. Neue Kacheln bleiben erhalten.
   const oldOrder=Array.isArray(saved.order)?saved.order.filter(id=>names.has(id)):[];
-  const newcomers=["musik","suche"].filter(id=>!oldOrder.includes(id));
+  const newcomers=["arbeitszeit","musik","suche"].filter(id=>!oldOrder.includes(id));
   const order=new Set([...newcomers,...oldOrder,...names]);
   let index=0;
   for(const id of order){
@@ -2722,7 +2731,7 @@ function renderHome(){
       <section class="hero">
         <div class="hero-content">
           <div class="hero-intro">
-            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 26. November 2026">v10.0.5 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
+            <div class="hero-headline"><h1>Schul-Dashboard HBL</h1><span class="dashboard-version" title="Dashboard-Version vom 27. November 2026">v10.0.6 Pre-Alpha<span class="dashboard-version-date"> · GitHub Pages</span></span></div>
             <p>Alles Wichtige für den Schulalltag an einem Ort.</p><div class="demo-alert">TESTVERSION · Nur Beispieldaten verwenden · Persönliches Konto mit Cloud-Synchronisierung</div>
             <div class="dashboard-creator" aria-label="Designed by Michael Baumann"><span class="creator-label">Designed by</span><span class="creator-signature"><svg class="creator-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1058 119" role="img" aria-label="Michael Baumann" preserveAspectRatio="xMinYMid meet">
 <title>Michael Baumann</title>
@@ -2757,6 +2766,32 @@ function renderHome(){
         <div class="kw" id="kw"></div>
       </aside>
     </header>
+
+    <section class="card hbl-work-tile" aria-labelledby="hblWorkTitle">
+      <h2 id="hblWorkTitle">Arbeitszeit</h2>
+      <div class="hbl-work-actions">
+        <button type="button" id="hblWorkPrimary" disabled>Arbeitszeit laden</button>
+        <span id="hblWorkClock"></span>
+        <button type="button" id="hblWorkOverview" disabled>Übersicht</button>
+      </div>
+      <p id="hblWorkStatus" role="status"></p>
+      <dialog id="hblWorkDialog" class="grade-dialog hbl-work-dialog" aria-labelledby="hblWorkDialogTitle">
+        <h2 id="hblWorkDialogTitle">Meine Arbeitszeit</h2>
+        <div class="hbl-work-week">
+          <button type="button" class="part-button" data-prev aria-label="Vorherige Woche">‹</button>
+          <strong data-week-label aria-live="polite"></strong>
+          <button type="button" class="part-button" data-next aria-label="Nächste Woche">›</button>
+        </div>
+        <div class="hbl-work-totals" data-totals></div>
+        <p data-peak></p>
+        <div class="hbl-work-table" tabindex="0" role="region" aria-label="Arbeitszeit pro Tag">
+          <table><thead><tr><th scope="col">Tag</th><th scope="col">Unterricht</th><th scope="col">Aufsicht</th><th scope="col">Sonstige Arbeit</th><th scope="col">Gesamt</th></tr></thead><tbody></tbody></table>
+        </div>
+        <p>Automatische Zeiten sind aus deinem aktuellen Stundenplan und den eingetragenen Ausfällen berechnet.</p>
+        <p data-overview-status role="status"></p>
+        <form method="dialog"><button class="part-button">Schließen</button></form>
+      </dialog>
+    </section>
 
     <section class="search-tile" aria-label="Websuche">
       <form class="searchbar" action="https://www.ecosia.org/search" method="get" target="_blank">

@@ -183,6 +183,12 @@ window.hblLogout=async function(){
  loggingOut=true;
  try{
   await queue.catch(()=>{});
+  if(active&&typeof window.hblWorkBeforeLogout==="function"){
+   try{await window.hblWorkBeforeLogout();}
+   catch(_){
+    if(!confirm("Die Arbeitszeit konnte nicht abgeglichen werden. Ein laufender Timer könnte weiterlaufen. Trotzdem abmelden?"))return false;
+   }
+  }
   let pushWarning=false;
   if(typeof window.hblPushOnLogout==="function"){
    try{await window.hblPushOnLogout();}catch(_){pushWarning=true;}
