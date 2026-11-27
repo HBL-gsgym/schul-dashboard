@@ -1,3 +1,7 @@
+## v10.0.8 – 27.11.2026 · Codex
+
+Die Arbeitszeit sitzt kompakt im Hero. Vorbereitung, Korrektur und Organisation lassen sich separat starten und auswerten. Während der Timer läuft, zeigt der Hero Kategorie, Laufzeit und Stopp. Vorhandene manuelle Zeiten ohne Kategorie bleiben als sonstige Arbeit erhalten.
+
 ## v10.0.7 – 27.11.2026 · Codex
 
 Die automatische Arbeitszeiterfassung beginnt mit dem ersten Unterrichts- oder Aufsichtsblock, der bei oder nach der Aktivierung startet. Ein bereits laufender Block bleibt vollständig aus der automatischen Statistik. Mit Regressionstests für Aktivierungsgrenze und Pausen geprüft.
